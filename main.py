@@ -269,3 +269,8 @@ async def database_status():
         "info": config.get_display_info(),
         "database_url_masked": config.get_database_url().split("@")[-1] if "@" in config.get_database_url() else "local-sqlite"
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host=config.APP_HOST, port=config.APP_PORT, reload=True)
+
