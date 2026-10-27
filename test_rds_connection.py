@@ -103,7 +103,7 @@ def main():
 
     # For AWS RDS PostgreSQL or MySQL:
     host = config.RDS_HOSTNAME
-    port = config.RDS_PORT
+    port = config.get_port()
 
     if not host:
         print("[ERROR] RDS_HOSTNAME is missing in .env")

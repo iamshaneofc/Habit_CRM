@@ -18,7 +18,6 @@ class DatabaseConfig:
 
     # AWS RDS Connection Parameters
     RDS_HOSTNAME: Optional[str] = os.getenv("RDS_HOSTNAME")
-    RDS_PORT: int = int(os.getenv("RDS_PORT", "5432"))
     RDS_DB_NAME: str = os.getenv("RDS_DB_NAME", "habit_crm_db")
     RDS_USERNAME: Optional[str] = os.getenv("RDS_USERNAME")
     RDS_PASSWORD: Optional[str] = os.getenv("RDS_PASSWORD")
@@ -27,22 +26,31 @@ class DatabaseConfig:
     DATABASE_URL: Optional[str] = os.getenv("DATABASE_URL")
 
     @classmethod
+    def get_port(cls) -> int:
+        port_env = os.getenv("RDS_PORT")
+        if port_env and port_env.strip():
+            return int(port_env.strip())
+        return 3306 if cls.DB_TYPE == "mysql" else 5432
+
+    @classmethod
     def get_database_url(cls) -> str:
         """Returns SQLAlchemy-compatible connection string."""
         if cls.DATABASE_URL and cls.DATABASE_URL.strip():
             return cls.DATABASE_URL.strip()
 
+        port = cls.get_port()
+
         if cls.DB_TYPE == "postgres" or cls.DB_TYPE == "postgresql":
             if not cls.RDS_HOSTNAME or not cls.RDS_USERNAME:
                 raise ValueError("PostgreSQL/RDS configuration requires RDS_HOSTNAME and RDS_USERNAME")
             pwd = f":{cls.RDS_PASSWORD}" if cls.RDS_PASSWORD else ""
-            return f"postgresql+psycopg2://{cls.RDS_USERNAME}{pwd}@{cls.RDS_HOSTNAME}:{cls.RDS_PORT}/{cls.RDS_DB_NAME}"
+            return f"postgresql+psycopg2://{cls.RDS_USERNAME}{pwd}@{cls.RDS_HOSTNAME}:{port}/{cls.RDS_DB_NAME}"
 
         elif cls.DB_TYPE == "mysql":
             if not cls.RDS_HOSTNAME or not cls.RDS_USERNAME:
                 raise ValueError("MySQL/RDS configuration requires RDS_HOSTNAME and RDS_USERNAME")
             pwd = f":{cls.RDS_PASSWORD}" if cls.RDS_PASSWORD else ""
-            return f"mysql+pymysql://{cls.RDS_USERNAME}{pwd}@{cls.RDS_HOSTNAME}:{cls.RDS_PORT}/{cls.RDS_DB_NAME}"
+            return f"mysql+pymysql://{cls.RDS_USERNAME}{pwd}@{cls.RDS_HOSTNAME}:{port}/{cls.RDS_DB_NAME}"
 
         # Default fallback: SQLite
         return f"sqlite:///{cls.SQLITE_DB_PATH}"
