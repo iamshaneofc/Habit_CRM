@@ -44,7 +44,13 @@ class DatabaseConfig:
             if not cls.RDS_HOSTNAME or not cls.RDS_USERNAME:
                 raise ValueError("PostgreSQL/RDS configuration requires RDS_HOSTNAME and RDS_USERNAME")
             pwd = f":{cls.RDS_PASSWORD}" if cls.RDS_PASSWORD else ""
-            return f"postgresql+psycopg2://{cls.RDS_USERNAME}{pwd}@{cls.RDS_HOSTNAME}:{port}/{cls.RDS_DB_NAME}"
+            ssl_cert = os.getenv("RDS_SSL_CERT")
+            query_params = ""
+            if ssl_cert and os.path.exists(ssl_cert):
+                query_params = f"?sslmode=verify-full&sslrootcert={ssl_cert}"
+            elif os.getenv("RDS_SSLMODE"):
+                query_params = f"?sslmode={os.getenv('RDS_SSLMODE')}"
+            return f"postgresql+psycopg2://{cls.RDS_USERNAME}{pwd}@{cls.RDS_HOSTNAME}:{port}/{cls.RDS_DB_NAME}{query_params}"
 
         elif cls.DB_TYPE == "mysql":
             if not cls.RDS_HOSTNAME or not cls.RDS_USERNAME:
