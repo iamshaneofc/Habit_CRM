@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit CRM - Weekly Habit Tracker & Analytics</title>
+    <meta name="description" content="A modern, high-performance Habit Tracking System built with Python, FastAPI, and AWS RDS compatibility. Track habits Monday to Sunday with interactive visual charts.">
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-theme">
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">
+                    <h1>Habit<span>CRM</span></h1>
+                    <span class="tagline">Daily Consistency Operating System</span>
+                </div>
+            </div>
+
+            <!-- Database Connection Badge (SQLite / AWS RDS) -->
+            <div class="db-status-pill" id="db-status-badge">
+                <span class="pulse-dot {% if db_info.is_rds %}rds-active{% else %}local-active{% endif %}"></span>
+                <div class="db-details">
+                    <span class="db-title">{{ db_info.engine }}</span>
+                    <span class="db-target">{{ db_info.target }}</span>
+                </div>
+                {% if db_info.is_rds %}
+                    <span class="rds-badge">AWS RDS</span>
+                {% else %}
+                    <span class="sqlite-badge">Dev DB</span>
+                {% endif %}
+            </div>
+
+            <div class="header-actions">
+                <button class="btn btn-primary" id="btn-add-habit" onclick="openHabitModal()">
+                    <span class="btn-icon">+</span> New Habit
+                </button>
+                <button class="btn btn-secondary" id="btn-manage-habits" onclick="openManageModal()">
+                    ⚙️ Manage Habits
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+        <!-- Top Metrics Bar -->
+        <section class="metrics-grid">
+            <div class="metric-card glass-card">
+                <div class="metric-header">
+                    <span class="metric-label">Weekly Completion</span>
+                    <span class="metric-icon">📊</span>
+                </div>
+                <div class="metric-value-row">
+                    <span class="metric-number" id="metric-week-pct">{{ grid.overall_pct }}%</span>
+                    <span class="metric-sub">{{ grid.total_completed_checks }} of {{ grid.habits_count * 7 }} checks</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="metric-week-bar" style="width: {{ grid.overall_pct }}%;"></div>
+                </div>
+            </div>
+
+            <div class="metric-card glass-card">
+                <div class="metric-header">
+                    <span class="metric-label">Active Habits</span>
+                    <span class="metric-icon">🎯</span>
+                </div>
+                <div class="metric-value-row">
+                    <span class="metric-number" id="metric-active-count">{{ grid.habits_count }}</span>
+                    <span class="metric-sub">Default & Custom Targets</span>
+                </div>
+                <div class="metric-caption">Configurable via Manage modal</div>
+            </div>
+
+            <div class="metric-card glass-card">
+                <div class="metric-header">
+                    <span class="metric-label">Monthly Total ({{ monthly_stats.month_name }})</span>
+                    <span class="metric-icon">🔥</span>
+                </div>
+                <div class="metric-value-row">
+                    <span class="metric-number">{{ monthly_stats.total_completions }}</span>
+                    <span class="metric-sub">{{ monthly_stats.completion_rate_pct }}% monthly rate</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill accent-fill" style="width: {{ monthly_stats.completion_rate_pct }}%;"></div>
+                </div>
+            </div>
+
+            <div class="metric-card glass-card">
+                <div class="metric-header">
+                    <span class="metric-label">Active Month & Year</span>
+                    <span class="metric-icon">📅</span>
+                </div>
+                <div class="metric-value-row">
+                    <span class="metric-number">{{ monthly_stats.month_name }}</span>
+                    <span class="metric-sub">{{ selected_year }}</span>
+                </div>
+                <div class="metric-caption">{{ monthly_stats.days_in_month }} days in cycle</div>
+            </div>
+        </section>
+
+        <!-- Filters Section: Month Filter & Week Selector -->
+        <section class="filters-card glass-card">
+            <div class="filters-container">
+                <!-- Month Filter -->
+                <div class="month-filter-group">
+                    <label for="month-select" class="filter-label">Month Filter:</label>
+                    <select id="month-select" class="form-select" onchange="onMonthChange(this.value)">
+                        {% for m in months_list %}
+                            <option value="{{ m.num }}" {% if m.is_selected %}selected{% endif %}>
+                                {{ m.name }} {{ selected_year }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Week Navigator (Monday - Sunday) -->
+                <div class="week-navigator">
+                    <a href="/?week_date={{ grid.week_info.prev_week_str }}" class="nav-btn" title="Previous Week" id="btn-prev-week">
+                        ‹ Prev Week
+                    </a>
+
+                    <div class="week-display">
+                        <span class="week-badge">Week {{ grid.week_info.week_number }}</span>
+                        <span class="week-dates">
+                            {{ grid.week_info.days[0].month_name }} {{ grid.week_info.days[0].day_number }} – 
+                            {{ grid.week_info.days[6].month_name }} {{ grid.week_info.days[6].day_number }}, {{ grid.week_info.year }}
+                        </span>
+                        {% if grid.week_info.is_current_week %}
+                            <span class="current-week-tag">Current Week</span>
+                        {% endif %}
+                    </div>
+
+                    <a href="/?week_date={{ grid.week_info.next_week_str }}" class="nav-btn" title="Next Week" id="btn-next-week">
+                        Next Week ›
+                    </a>
+
+                    {% if not grid.week_info.is_current_week %}
+                        <a href="/?week_date={{ today_str }}" class="btn btn-sm btn-outline" id="btn-jump-today">
+                            Jump to Today
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Habit Tracking Grid (Monday to Sunday) -->
+        <section class="tracker-section glass-card">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Weekly Tracker (Monday – Sunday)</h2>
+                    <p class="section-desc">Click any checkbox to toggle completion. Streaks and analytics update in real-time.</p>
+                </div>
+                <div class="legend">
+                    <span class="legend-item"><span class="legend-dot today-dot"></span> Today</span>
+                    <span class="legend-item"><span class="legend-dot done-dot"></span> Completed</span>
+                    <span class="legend-item"><span class="legend-dot empty-dot"></span> Pending</span>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="habit-table" id="habits-table">
+                    <thead>
+                        <tr>
+                            <th class="th-habit">Habit ({{ grid.habits_count }})</th>
+                            <th class="th-category">Category</th>
+                            {% for day in grid.week_info.days %}
+                                <th class="th-day {% if day.is_today %}th-today{% endif %}">
+                                    <div class="day-col-header">
+                                        <span class="day-abbr">{{ day.day_name }}</span>
+                                        <span class="day-num">{{ day.day_number }}</span>
+                                        <span class="day-month">{{ day.month_name }}</span>
+                                    </div>
+                                </th>
+                            {% endfor %}
+                            <th class="th-progress">Week Progress</th>
+                            <th class="th-streak">Streak</th>
+                            <th class="th-actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in grid.habit_rows %}
+                            <tr class="habit-row" id="habit-row-{{ row.habit.id }}">
+                                <!-- Habit Name & Icon -->
+                                <td class="td-habit">
+                                    <div class="habit-title-wrapper">
+                                        <span class="habit-icon-pill" style="background: {{ row.habit.color }}20; color: {{ row.habit.color }}; border: 1px solid {{ row.habit.color }}50;">
+                                            {{ row.habit.icon }}
+                                        </span>
+                                        <div class="habit-meta">
+                                            <span class="habit-name">{{ row.habit.name }}</span>
+                                            {% if row.habit.description %}
+                                                <span class="habit-desc">{{ row.habit.description }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Category -->
+                                <td class="td-category">
+                                    <span class="category-badge">{{ row.habit.category }}</span>
+                                </td>
+
+                                <!-- 7 Days (Monday to Sunday) Tick Cells -->
+                                {% for day_stat in row.days %}
+                                    <td class="td-day {% if day_stat.is_today %}td-today-cell{% endif %}">
+                                        <button 
+                                            type="button" 
+                                            class="tick-btn {% if day_stat.is_completed %}is-checked{% endif %} {% if day_stat.is_today %}today-btn{% endif %}"
+                                            data-habit-id="{{ row.habit.id }}"
+                                            data-date="{{ day_stat.date_str }}"
+                                            onclick="toggleHabit(this)"
+                                            title="{{ row.habit.name }} on {{ day_stat.date_str }}"
+                                            aria-label="Toggle {{ row.habit.name }} on {{ day_stat.date_str }}"
+                                            id="tick-{{ row.habit.id }}-{{ day_stat.date_str }}"
+                                        >
+                                            <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                {% endfor %}
+
+                                <!-- Week Progress Bar -->
+                                <td class="td-progress">
+                                    <div class="row-progress-wrap">
+                                        <div class="row-progress-bar">
+                                            <div class="row-progress-fill" id="row-bar-{{ row.habit.id }}" style="width: {{ row.completion_pct }}%; background-color: {{ row.habit.color }};"></div>
+                                        </div>
+                                        <span class="row-progress-text" id="row-text-{{ row.habit.id }}">
+                                            <strong id="row-count-{{ row.habit.id }}">{{ row.week_completed }}</strong>/7 ({{ row.completion_pct }}%)
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <!-- Streak -->
+                                <td class="td-streak">
+                                    <div class="streak-pill">
+                                        <span class="streak-icon">🔥</span>
+                                        <span class="streak-count" id="streak-{{ row.habit.id }}">{{ row.current_streak }}d</span>
+                                    </div>
+                                </td>
+
+                                <!-- Actions -->
+                                <td class="td-actions">
+                                    <button class="action-btn edit-btn" onclick="openEditModal({{ row.habit.id }}, '{{ row.habit.name }}', '{{ row.habit.category }}', '{{ row.habit.description or '' }}', '{{ row.habit.icon }}', '{{ row.habit.color }}')" title="Edit habit">
+                                        ✏️
+                                    </button>
+                                    <button class="action-btn delete-btn" onclick="deleteHabit({{ row.habit.id }}, '{{ row.habit.name }}')" title="Delete habit">
+                                        🗑️
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Visuals and Charts Section -->
+        <section class="charts-grid">
+            <!-- Weekly Completion Trends (Mon - Sun) -->
+            <div class="chart-card glass-card">
+                <div class="chart-header">
+                    <div>
+                        <h3 class="chart-title">Weekly Daily Completion Trends</h3>
+                        <p class="chart-subtitle">Habits completed per day (Monday to Sunday)</p>
+                    </div>
+                    <span class="chart-badge">Mon – Sun</span>
+                </div>
+                <div class="chart-canvas-wrapper">
+                    <canvas id="weeklyTrendsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Category Breakdown Chart -->
+            <div class="chart-card glass-card">
+                <div class="chart-header">
+                    <div>
+                        <h3 class="chart-title">Habit Distribution by Category</h3>
+                        <p class="chart-subtitle">Focus areas and active habit breakdown</p>
+                    </div>
+                    <span class="chart-badge">Distribution</span>
+                </div>
+                <div class="chart-canvas-wrapper donut-wrapper">
+                    <canvas id="categoryDonutChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Add / Edit Habit -->
+    <div class="modal-backdrop" id="habit-modal" style="display: none;">
+        <div class="modal-dialog glass-card">
+            <div class="modal-header">
+                <h3 id="modal-title">Add New Habit</h3>
+                <button class="modal-close" onclick="closeHabitModal()">✕</button>
+            </div>
+            <form id="habit-form" onsubmit="handleHabitSubmit(event)">
+                <input type="hidden" id="form-habit-id" value="">
+                
+                <div class="form-group">
+                    <label for="form-habit-name">Habit Name *</label>
+                    <input type="text" id="form-habit-name" class="form-input" required placeholder="e.g. Read 20 Pages">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label for="form-habit-category">Category</label>
+                        <select id="form-habit-category" class="form-select">
+                            <option value="Fitness">Fitness</option>
+                            <option value="Health">Health</option>
+                            <option value="Learning">Learning</option>
+                            <option value="Mindfulness">Mindfulness</option>
+                            <option value="Productivity">Productivity</option>
+                            <option value="Nutrition">Nutrition</option>
+                            <option value="Career">Career / Tech</option>
+                            <option value="Recovery">Recovery</option>
+                            <option value="Activity">Activity</option>
+                            <option value="General">General</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-6">
+                        <label for="form-habit-icon">Icon (Emoji)</label>
+                        <input type="text" id="form-habit-icon" class="form-input" value="🎯" maxlength="4">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label for="form-habit-color">Accent Color</label>
+                        <input type="color" id="form-habit-color" class="form-input color-picker" value="#10b981">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="form-habit-desc">Description (Optional)</label>
+                    <input type="text" id="form-habit-desc" class="form-input" placeholder="e.g. Daily non-fiction reading">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeHabitModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="modal-save-btn">Save Habit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Manage Habits / Reset Defaults -->
+    <div class="modal-backdrop" id="manage-modal" style="display: none;">
+        <div class="modal-dialog glass-card">
+            <div class="modal-header">
+                <h3>Manage Habits & Reset</h3>
+                <button class="modal-close" onclick="closeManageModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="manage-desc">You can reset your habits back to the default 10 foundational habits (Morning Workout, Water, Reading, Meditation, Deep Work, Healthy Meal, AWS Tech Practice, Sleep, Steps, Reflection).</p>
+                
+                <div class="manage-action-card">
+                    <div class="action-info">
+                        <strong>Reset to Default 10 Habits</strong>
+                        <span>Restores standard 10 habits with fresh sample data.</span>
+                    </div>
+                    <button class="btn btn-danger" onclick="resetDefaultHabits()">Reset Defaults</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeManageModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Element -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Pass backend chart data into JavaScript -->
+    <script>
+        const INITIAL_DAILY_DATA = {{ grid.daily_chart_data | tojson }};
+        const INITIAL_CATEGORY_DATA = {{ monthly_stats.category_distribution | tojson }};
+        const CURRENT_WEEK_DATE = "{{ grid.week_info.monday_str }}";
+    </script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
