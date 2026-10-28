@@ -20,8 +20,8 @@ This document tracks the sequential 20-step execution of **Phase 1: Stabilizatio
 - [x] **Step 12: UI Enhancement: Preserve the Existing Design** — Commit: `f3b4b74`
 - [x] **Step 13: Add Attractive, Useful Visual Elements** — Commit: `9c645e8`
 - [x] **Step 14: Responsive Design & Accessibility** — Commit: `5c424f6`
-- [x] **Step 15: Security & Configuration Hardening** — Commit: `fef1b72`
-- [ ] **Step 16: Automated Tests & Regression Coverage** — Commit: Pending
+- [x] **Step 15: Security & Configuration Hardening** — Commit: `44c4dd8`
+- [x] **Step 16: Automated Tests & Regression Coverage** — Commit: `880edcb`
 - [ ] **Step 17: Performance & Reliability** — Commit: Pending
 - [ ] **Step 18: End-to-End QA & Bug Fixes** — Commit: Pending
 - [ ] **Step 19: Documentation & Deployment Readiness** — Commit: Pending

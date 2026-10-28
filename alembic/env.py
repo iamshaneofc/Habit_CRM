@@ -36,9 +36,26 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    # Ensure database connection is stabilized
-    database.check_and_stabilize_db()
-    connectable = database.engine
+    # 1. Use passed connection if available
+    conn = config.attributes.get("connection", None)
+    if conn is not None:
+        context.configure(
+            connection=conn,
+            target_metadata=target_metadata,
+            render_as_batch=True,
+        )
+        with context.begin_transaction():
+            context.run_migrations()
+        return
+
+    # 2. Check if a custom sqlalchemy.url was specified in config
+    custom_url = config.get_main_option("sqlalchemy.url")
+    if custom_url and not custom_url.endswith("habits.db"):
+        from sqlalchemy import create_engine
+        connectable = create_engine(custom_url)
+    else:
+        database.check_and_stabilize_db()
+        connectable = database.engine
 
     with connectable.connect() as connection:
         context.configure(
@@ -49,6 +66,9 @@ def run_migrations_online() -> None:
 
         with context.begin_transaction():
             context.run_migrations()
+
+    if custom_url and not custom_url.endswith("habits.db"):
+        connectable.dispose()
 
 if context.is_offline_mode():
     run_migrations_offline()
