@@ -18,7 +18,11 @@ function initWeeklyChart() {
     const ctx = document.getElementById("weeklyTrendsChart");
     if (!ctx || !INITIAL_DAILY_DATA) return;
 
-    const labels = INITIAL_DAILY_DATA.map(d => `${d.day_name} (${d.day_name === 'Sun' ? 'Sun' : d.day_name})`);
+    if (weeklyChart) {
+        weeklyChart.destroy();
+    }
+
+    const labels = INITIAL_DAILY_DATA.map(d => d.day_name);
     const completedCounts = INITIAL_DAILY_DATA.map(d => d.completed_count);
     const percentages = INITIAL_DAILY_DATA.map(d => d.percentage);
 
@@ -103,6 +107,10 @@ function initWeeklyChart() {
 function initCategoryChart() {
     const ctx = document.getElementById("categoryDonutChart");
     if (!ctx || !INITIAL_CATEGORY_DATA) return;
+
+    if (categoryChart) {
+        categoryChart.destroy();
+    }
 
     const labels = Object.keys(INITIAL_CATEGORY_DATA);
     const data = Object.values(INITIAL_CATEGORY_DATA);
@@ -214,6 +222,7 @@ async function toggleHabit(buttonElement) {
 
         // Update Chart data asynchronously
         refreshWeeklyChart();
+        refreshCategoryChart();
 
         showToast(data.completed ? "Habit marked complete! 🎉" : "Habit unchecked");
 
@@ -250,8 +259,16 @@ function updateRowProgress(habitId) {
 async function refreshWeeklyChart() {
     if (!weeklyChart) return;
     try {
-        const res = await fetch(`/?week_date=${CURRENT_WEEK_DATE}&format=json`);
-        // Recalculate directly from DOM tick buttons for instantaneous chart sync
+        const res = await fetch(`/api/charts/weekly-data?week_date=${encodeURIComponent(CURRENT_WEEK_DATE)}`);
+        if (!res.ok) throw new Error("Weekly chart fetch failed");
+        const data = await res.json();
+
+        weeklyChart.data.labels = data.labels;
+        weeklyChart.data.datasets[0].data = data.completed;
+        weeklyChart.data.datasets[1].data = data.percentages;
+        weeklyChart.update();
+    } catch (e) {
+        console.warn("API chart refresh failed, falling back to client DOM calculation:", e);
         const dayCounts = [0, 0, 0, 0, 0, 0, 0];
         const rows = document.querySelectorAll(".habit-row");
         const totalHabits = rows.length || 1;
@@ -268,8 +285,34 @@ async function refreshWeeklyChart() {
         weeklyChart.data.datasets[0].data = dayCounts;
         weeklyChart.data.datasets[1].data = dayCounts.map(c => Math.round((c / totalHabits) * 100));
         weeklyChart.update();
+    }
+}
+
+async function refreshCategoryChart() {
+    if (!categoryChart) return;
+    try {
+        const monthSelect = document.getElementById("month-select");
+        const yearSelect = document.getElementById("year-select");
+        const m = monthSelect ? monthSelect.value : "";
+        const y = yearSelect ? yearSelect.value : "";
+
+        const res = await fetch(`/api/charts/category-data?month=${m}&year=${y}`);
+        if (!res.ok) throw new Error("Category chart fetch failed");
+        const json = await res.json();
+
+        const labels = Object.keys(json.categories);
+        const data = Object.values(json.categories);
+        const palette = [
+            '#3b82f6', '#06b6d4', '#8b5cf6', '#10b981', '#f59e0b',
+            '#84cc16', '#6366f1', '#ec4899', '#14b8a6', '#f97316'
+        ];
+
+        categoryChart.data.labels = labels;
+        categoryChart.data.datasets[0].data = data;
+        categoryChart.data.datasets[0].backgroundColor = palette.slice(0, labels.length);
+        categoryChart.update();
     } catch (e) {
-        console.error("Chart refresh error:", e);
+        console.warn("Category chart refresh error:", e);
     }
 }
 

@@ -567,6 +567,26 @@ async def get_weekly_chart_data(
         "total_habits": grid["habits_count"]
     }
 
+@app.get("/api/charts/category-data")
+async def get_category_chart_data(
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Returns category breakdown and completion totals for Chart.js for the authenticated user."""
+    today = date.today()
+    y = year or today.year
+    m = month or today.month
+    monthly_stats = services.get_monthly_summary(db, y, m, user_id=current_user.id)
+    return {
+        "categories": monthly_stats["category_distribution"],
+        "month_name": monthly_stats["month_name"],
+        "year": y,
+        "total_completions": monthly_stats["total_completions"],
+        "completion_rate_pct": monthly_stats["completion_rate_pct"]
+    }
+
 @app.get("/api/database/status")
 async def database_status():
     """Returns database configuration and connectivity status securely."""
