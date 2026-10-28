@@ -12,17 +12,26 @@ venv.bak/
 
 # Environment variables & secrets
 .env
+*.env
+*.pem
+*.key
+*.crt
+*.cert
 
-# SQLite databases
+# SQLite databases & backups
 *.db
 *.sqlite
 *.sqlite3
+backups/
 
-# IDE & OS
+# IDE, OS & Test Caches
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
+.pytest_cache/
+.coverage
+htmlcov/
 
 # Antigravity artifacts
 .gemini/

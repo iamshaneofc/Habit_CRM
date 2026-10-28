@@ -96,3 +96,32 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+# ========================================================
+# IP-based Rate Limiting for Abuse Prevention
+# ========================================================
+import time
+from collections import defaultdict
+
+_rate_limits = defaultdict(lambda: defaultdict(list))
+
+def check_rate_limit(request: Request, action: str = "auth", max_attempts: int = 15, window_seconds: int = 60):
+    """
+    Enforces IP-based rate limiting for sensitive endpoints (e.g. login, register).
+    Raises HTTPException(429) if exceeded.
+    """
+    client_ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    attempts = _rate_limits[action][client_ip]
+    
+    # Filter out attempts older than window
+    _rate_limits[action][client_ip] = [t for t in attempts if now - t < window_seconds]
+    
+    if len(_rate_limits[action][client_ip]) >= max_attempts:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Too many {action} attempts. Please wait a minute before trying again."
+        )
+    
+    _rate_limits[action][client_ip].append(now)
+

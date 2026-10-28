@@ -124,8 +124,10 @@ def main():
             print(f"      [OK] Successfully connected to database engine!")
             print(f"      Engine Version: {result[0] if result else 'Unknown'}")
     except Exception as e:
+        import re
+        safe_msg = re.sub(r':([^:@]+)@', ':****@', str(e))
         print(f"      [FAILED] Database authentication error:")
-        print(f"      {e}")
+        print(f"      {safe_msg}")
         print("      Troubleshooting tip: Verify RDS_USERNAME, RDS_PASSWORD, and RDS_DB_NAME.")
         sys.exit(1)
 

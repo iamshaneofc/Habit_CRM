@@ -7,7 +7,8 @@ from fastapi import FastAPI, Depends, Request, HTTPException, Form
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+import re
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -16,7 +17,7 @@ import database
 from database import Base, get_db, check_and_stabilize_db
 from models import Habit, HabitLog, User
 import auth
-from auth import get_current_user, get_current_user_optional, SESSION_COOKIE_NAME
+from auth import get_current_user, get_current_user_optional, SESSION_COOKIE_NAME, check_rate_limit
 from seed_data import seed_default_habits
 import services
 
@@ -52,6 +53,16 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Security Headers Middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
 # Ensure directories exist
 os.makedirs("static/css", exist_ok=True)
 os.makedirs("static/js", exist_ok=True)
@@ -67,10 +78,26 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+    @field_validator("email")
+    @classmethod
+    def validate_email_format(cls, v: str) -> str:
+        clean = v.strip().lower()
+        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", clean):
+            raise ValueError("Invalid email format.")
+        return clean
+
 class RegisterRequest(BaseModel):
     email: str
     password: str = Field(..., min_length=6)
     full_name: Optional[str] = None
+
+    @field_validator("email")
+    @classmethod
+    def validate_email_format(cls, v: str) -> str:
+        clean = v.strip().lower()
+        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", clean):
+            raise ValueError("Invalid email format.")
+        return clean
 
 class ToggleRequest(BaseModel):
     habit_id: int
@@ -190,8 +217,10 @@ async def dashboard_page(
 # REST API Endpoints: Authentication
 # ========================================================
 @app.post("/api/auth/register")
-async def register_api(payload: RegisterRequest, db: Session = Depends(get_db)):
-    """Registers a new user account."""
+async def register_api(request: Request, payload: RegisterRequest, db: Session = Depends(get_db)):
+    """Registers a new user account with rate limit protection."""
+    check_rate_limit(request, action="register", max_attempts=10, window_seconds=60)
+
     clean_email = payload.email.lower().strip()
     existing = db.query(User).filter(User.email == clean_email).first()
     if existing:
@@ -222,13 +251,16 @@ async def register_api(payload: RegisterRequest, db: Session = Depends(get_db)):
         value=token,
         httponly=True,
         samesite="lax",
+        secure=config.is_production(),
         max_age=7 * 24 * 3600
     )
     return response
 
 @app.post("/api/auth/login")
-async def login_api(payload: LoginRequest, db: Session = Depends(get_db)):
-    """Authenticates a user and issues an HTTP-only session cookie and JWT."""
+async def login_api(request: Request, payload: LoginRequest, db: Session = Depends(get_db)):
+    """Authenticates a user and issues an HTTP-only session cookie and JWT with brute-force rate limit protection."""
+    check_rate_limit(request, action="login", max_attempts=15, window_seconds=60)
+
     clean_email = payload.email.lower().strip()
     user = db.query(User).filter(User.email == clean_email).first()
     if not user or not auth.verify_password(payload.password, user.hashed_password):
@@ -248,6 +280,7 @@ async def login_api(payload: LoginRequest, db: Session = Depends(get_db)):
         value=token,
         httponly=True,
         samesite="lax",
+        secure=config.is_production(),
         max_age=7 * 24 * 3600
     )
     return response
