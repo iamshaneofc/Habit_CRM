@@ -102,14 +102,14 @@
 
             <div class="metric-card glass-card">
                 <div class="metric-header">
-                    <span class="metric-label">Active Month & Year</span>
-                    <span class="metric-icon">📅</span>
+                    <span class="metric-label">Best Streak</span>
+                    <span class="metric-icon">⚡</span>
                 </div>
                 <div class="metric-value-row">
-                    <span class="metric-number">{{ monthly_stats.month_name }}</span>
-                    <span class="metric-sub">{{ selected_year }}</span>
+                    <span class="metric-number" id="metric-best-streak">{{ grid.best_streak }}d</span>
+                    <span class="metric-sub">{{ grid.best_current_streak }}d current best</span>
                 </div>
-                <div class="metric-caption">{{ monthly_stats.days_in_month }} days in cycle</div>
+                <div class="metric-caption">All-time personal record</div>
             </div>
         </section>
 
@@ -276,11 +276,12 @@
                                     </div>
                                 </td>
 
-                                <!-- Streak -->
+                                <!-- Streak (Current / Longest) -->
                                 <td class="td-streak">
-                                    <div class="streak-pill">
+                                    <div class="streak-pill" title="Current streak: {{ row.current_streak }}d | All-time record: {{ row.longest_streak }}d">
                                         <span class="streak-icon">🔥</span>
                                         <span class="streak-count" id="streak-{{ row.habit.id }}">{{ row.current_streak }}d</span>
+                                        <span class="streak-best" id="longest-streak-{{ row.habit.id }}">/{{ row.longest_streak }}d</span>
                                     </div>
                                 </td>
 
@@ -295,6 +296,20 @@
                                 </td>
                             </tr>
                         {% endfor %}
+
+                        {% if not grid.habit_rows %}
+                            <tr>
+                                <td colspan="12" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
+                                    <strong style="color: #fff; display: block; margin-bottom: 0.35rem;">No active habits tracked yet</strong>
+                                    <p style="font-size: 0.85rem; margin-bottom: 1rem;">Add a new habit or reset to the 10 foundational habits to start tracking.</p>
+                                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                                        <button class="btn btn-primary btn-sm" onclick="openHabitModal()">+ Add Habit</button>
+                                        <button class="btn btn-secondary btn-sm" onclick="openManageModal()">Manage Habits</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>

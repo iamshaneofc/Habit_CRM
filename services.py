@@ -186,6 +186,8 @@ def get_weekly_grid(db: Session, target_date: Optional[date] = None, user_id: Op
         })
 
     overall_pct = round((total_completed_checks / total_possible_checks) * 100) if total_possible_checks else 0
+    best_streak = max([r["longest_streak"] for r in habit_rows], default=0)
+    best_current_streak = max([r["current_streak"] for r in habit_rows], default=0)
 
     return {
         "week_info": week_info,
@@ -193,7 +195,9 @@ def get_weekly_grid(db: Session, target_date: Optional[date] = None, user_id: Op
         "habit_rows": habit_rows,
         "daily_chart_data": daily_chart_data,
         "overall_pct": overall_pct,
-        "total_completed_checks": total_completed_checks
+        "total_completed_checks": total_completed_checks,
+        "best_streak": best_streak,
+        "best_current_streak": best_current_streak
     }
 
 def get_monthly_summary(db: Session, year: int, month: int, user_id: Optional[int] = None) -> dict:

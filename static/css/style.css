@@ -818,6 +818,12 @@ h1, h2, h3, h4, .brand-font {
     color: #fbbf24;
 }
 
+.streak-best {
+    font-size: 0.65rem;
+    opacity: 0.65;
+    font-weight: 500;
+}
+
 /* Actions */
 .action-btn {
     background: transparent;

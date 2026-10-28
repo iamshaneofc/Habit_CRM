@@ -13,8 +13,8 @@ This document tracks the sequential 20-step execution of **Phase 1: Stabilizatio
 - [x] **Step 5: User Ownership & Data Isolation** — Commit: `717e472`
 - [x] **Step 6: Fix Weekly Tracking & Date Logic** — Commit: `befdfd9`
 - [x] **Step 7: Complete Habit CRUD & Archival** — Commit: `110d341`
-- [x] **Step 8: Complete Habit Logs & Completion Interactions** — Commit: `PENDING`
-- [ ] **Step 9: Metrics, Streaks & Analytics Accuracy** — Commit: Pending
+- [x] **Step 8: Complete Habit Logs & Completion Interactions** — Commit: `2e91d00`
+- [x] **Step 9: Metrics, Streaks & Analytics Accuracy** — Commit: `PENDING`
 - [ ] **Step 10: Fix Chart Data Flow & Refresh Behavior** — Commit: Pending
 - [ ] **Step 11: Improve Habit Controls & Interaction Quality** — Commit: Pending
 - [ ] **Step 12: UI Enhancement: Preserve the Existing Design** — Commit: Pending

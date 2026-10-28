@@ -198,6 +198,10 @@ async function toggleHabit(buttonElement) {
         if (streakEl) {
             streakEl.textContent = `${data.current_streak}d`;
         }
+        const longestEl = document.getElementById(`longest-streak-${habitId}`);
+        if (longestEl && data.longest_streak !== undefined) {
+            longestEl.textContent = `/${data.longest_streak}d`;
+        }
 
         // Update row progress
         updateRowProgress(habitId);
