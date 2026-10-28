@@ -158,6 +158,9 @@ async function toggleHabit(buttonElement) {
         return;
     }
 
+    if (buttonElement.dataset.loading === "true") return;
+    buttonElement.dataset.loading = "true";
+
     const habitId = buttonElement.getAttribute("data-habit-id");
     const dateStr = buttonElement.getAttribute("data-date");
 
@@ -183,6 +186,13 @@ async function toggleHabit(buttonElement) {
             throw new Error(data.detail || "Failed to toggle");
         }
 
+        // Authoritative server state sync
+        if (data.completed) {
+            buttonElement.classList.add("is-checked");
+        } else {
+            buttonElement.classList.remove("is-checked");
+        }
+
         // Update streak display
         const streakEl = document.getElementById(`streak-${habitId}`);
         if (streakEl) {
@@ -201,7 +211,7 @@ async function toggleHabit(buttonElement) {
         // Update Chart data asynchronously
         refreshWeeklyChart();
 
-        showToast(newChecked ? "Habit marked complete! 🎉" : "Habit unchecked");
+        showToast(data.completed ? "Habit marked complete! 🎉" : "Habit unchecked");
 
     } catch (err) {
         // Rollback optimistic state on error
@@ -211,6 +221,8 @@ async function toggleHabit(buttonElement) {
             buttonElement.classList.remove("is-checked");
         }
         showToast("Error updating habit: " + err.message);
+    } finally {
+        buttonElement.dataset.loading = "false";
     }
 }
 
@@ -469,4 +481,61 @@ function showToast(message) {
     toastTimer = setTimeout(() => {
         toast.classList.remove("show");
     }, 2400);
+}
+
+// ========================================================
+// 6. Habit Log Reflection Notes
+// ========================================================
+function openNoteModal(habitId, habitName, dateStr) {
+    document.getElementById("note-habit-id").value = habitId;
+    document.getElementById("note-date").value = dateStr;
+    document.getElementById("note-modal-title").textContent = `Note — ${habitName}`;
+    document.getElementById("note-modal-subtitle").textContent = `Log reflection for ${dateStr}`;
+    
+    const tickBtn = document.getElementById(`tick-${habitId}-${dateStr}`);
+    const existingNote = tickBtn ? (tickBtn.getAttribute("data-notes") || "") : "";
+    document.getElementById("form-note-text").value = existingNote;
+    document.getElementById("note-modal").style.display = "flex";
+}
+
+function closeNoteModal() {
+    document.getElementById("note-modal").style.display = "none";
+}
+
+async function handleNoteSubmit(event) {
+    event.preventDefault();
+    const habitId = document.getElementById("note-habit-id").value;
+    const dateStr = document.getElementById("note-date").value;
+    const notes = document.getElementById("form-note-text").value.trim();
+
+    try {
+        const res = await fetch("/api/habits/notes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ habit_id: parseInt(habitId), date: dateStr, notes })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Failed to save note");
+
+        // Update UI attributes
+        const tickBtn = document.getElementById(`tick-${habitId}-${dateStr}`);
+        if (tickBtn) {
+            tickBtn.setAttribute("data-notes", notes);
+        }
+        const noteBtn = document.getElementById(`note-btn-${habitId}-${dateStr}`);
+        if (noteBtn) {
+            if (notes) {
+                noteBtn.classList.add("has-note");
+                noteBtn.title = `Note: ${notes}`;
+            } else {
+                noteBtn.classList.remove("has-note");
+                noteBtn.title = "Add reflection note";
+            }
+        }
+
+        closeNoteModal();
+        showToast(notes ? "Note saved! 📝" : "Note cleared.");
+    } catch (err) {
+        showToast("Error saving note: " + err.message);
+    }
 }

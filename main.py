@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from config import config
 import database
@@ -74,6 +75,12 @@ class RegisterRequest(BaseModel):
 class ToggleRequest(BaseModel):
     habit_id: int
     date: str  # YYYY-MM-DD
+    notes: Optional[str] = None
+
+class HabitLogNoteRequest(BaseModel):
+    habit_id: int
+    date: str  # YYYY-MM-DD
+    notes: Optional[str] = Field(None, max_length=255)
 
 class HabitCreateRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
@@ -293,6 +300,8 @@ async def toggle_habit_day(
     if log:
         log.completed = not log.completed
         log.value = 1 if log.completed else 0
+        if payload.notes is not None:
+            log.notes = payload.notes.strip() if payload.notes else None
         new_state = log.completed
     else:
         new_state = True
@@ -301,11 +310,28 @@ async def toggle_habit_day(
             habit_id=payload.habit_id,
             date=log_date,
             completed=True,
-            value=1
+            value=1,
+            notes=payload.notes.strip() if payload.notes else None
         )
         db.add(log)
 
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        # Handle concurrent / duplicate toggle safely
+        log = db.query(HabitLog).filter(
+            HabitLog.habit_id == payload.habit_id,
+            HabitLog.user_id == current_user.id,
+            HabitLog.date == log_date
+        ).first()
+        if log:
+            log.completed = not log.completed
+            log.value = 1 if log.completed else 0
+            if payload.notes is not None:
+                log.notes = payload.notes.strip() if payload.notes else None
+            new_state = log.completed
+            db.commit()
 
     streak_info = services.calculate_habit_streak(payload.habit_id, db, user_id=current_user.id)
     
@@ -326,10 +352,66 @@ async def toggle_habit_day(
         "habit_id": payload.habit_id,
         "date": payload.date,
         "completed": new_state,
+        "notes": log.notes if log else None,
         "current_streak": streak_info["current_streak"],
         "longest_streak": streak_info["longest_streak"],
         "overall_week_pct": overall_week_pct
     }
+
+@app.post("/api/habits/notes")
+async def save_habit_log_notes(
+    payload: HabitLogNoteRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Attach or update a personal note on a habit log."""
+    try:
+        log_date = date.fromisoformat(payload.date)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+
+    if log_date > date.today():
+        raise HTTPException(status_code=400, detail="Cannot attach notes to future dates.")
+
+    habit = db.query(Habit).filter(Habit.id == payload.habit_id, Habit.user_id == current_user.id).first()
+    if not habit:
+        raise HTTPException(status_code=404, detail="Habit not found")
+
+    log = db.query(HabitLog).filter(
+        HabitLog.habit_id == payload.habit_id,
+        HabitLog.user_id == current_user.id,
+        HabitLog.date == log_date
+    ).first()
+
+    if not log:
+        log = HabitLog(
+            user_id=current_user.id,
+            habit_id=payload.habit_id,
+            date=log_date,
+            completed=False,
+            value=0,
+            notes=payload.notes.strip() if payload.notes else None
+        )
+        db.add(log)
+    else:
+        log.notes = payload.notes.strip() if payload.notes else None
+
+    try:
+        db.commit()
+        db.refresh(log)
+    except IntegrityError:
+        db.rollback()
+        log = db.query(HabitLog).filter(
+            HabitLog.habit_id == payload.habit_id,
+            HabitLog.user_id == current_user.id,
+            HabitLog.date == log_date
+        ).first()
+        if log:
+            log.notes = payload.notes.strip() if payload.notes else None
+            db.commit()
+            db.refresh(log)
+
+    return {"success": True, "log": log.to_dict()}
 
 @app.get("/api/habits")
 async def get_habits(

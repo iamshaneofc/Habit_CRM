@@ -128,8 +128,8 @@ def get_weekly_grid(db: Session, target_date: Optional[date] = None, user_id: Op
     else:
         logs = []
 
-    # Map (habit_id, date_str) -> completed
-    log_map = {(log.habit_id, log.date.isoformat()): log.completed for log in logs}
+    # Map (habit_id, date_str) -> log object
+    log_map = {(log.habit_id, log.date.isoformat()): log for log in logs}
 
     habit_rows = []
     daily_completions = {day["date_str"]: 0 for day in week_info["days"]}
@@ -143,7 +143,10 @@ def get_weekly_grid(db: Session, target_date: Optional[date] = None, user_id: Op
 
         for day in week_info["days"]:
             d_str = day["date_str"]
-            is_done = log_map.get((habit.id, d_str), False)
+            log_item = log_map.get((habit.id, d_str))
+            is_done = log_item.completed if log_item else False
+            note_content = log_item.notes if log_item else None
+
             if is_done:
                 habit_week_completed += 1
                 daily_completions[d_str] += 1
@@ -152,6 +155,7 @@ def get_weekly_grid(db: Session, target_date: Optional[date] = None, user_id: Op
             days_status.append({
                 "date_str": d_str,
                 "is_completed": is_done,
+                "notes": note_content,
                 "is_today": day["is_today"],
                 "is_future": day["is_future"]
             })

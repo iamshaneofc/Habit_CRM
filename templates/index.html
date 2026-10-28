@@ -227,26 +227,40 @@
                                 <!-- 7 Days (Monday to Sunday) Tick Cells -->
                                 {% for day_stat in row.days %}
                                     <td class="td-day {% if day_stat.is_today %}td-today-cell{% endif %} {% if day_stat.is_future %}td-future-cell{% endif %}">
-                                        <button 
-                                            type="button" 
-                                            class="tick-btn {% if day_stat.is_completed %}is-checked{% endif %} {% if day_stat.is_today %}today-btn{% endif %} {% if day_stat.is_future %}is-future-btn{% endif %}"
-                                            data-habit-id="{{ row.habit.id }}"
-                                            data-date="{{ day_stat.date_str }}"
-                                            {% if day_stat.is_future %}
-                                                disabled
-                                                aria-disabled="true"
-                                                title="Future date (cannot be completed)"
-                                            {% else %}
-                                                onclick="toggleHabit(this)"
-                                                title="{{ row.habit.name }} on {{ day_stat.date_str }}"
+                                        <div class="tick-cell-wrapper">
+                                            <button 
+                                                type="button" 
+                                                class="tick-btn {% if day_stat.is_completed %}is-checked{% endif %} {% if day_stat.is_today %}today-btn{% endif %} {% if day_stat.is_future %}is-future-btn{% endif %}"
+                                                data-habit-id="{{ row.habit.id }}"
+                                                data-date="{{ day_stat.date_str }}"
+                                                data-notes="{{ day_stat.notes or '' }}"
+                                                {% if day_stat.is_future %}
+                                                    disabled
+                                                    aria-disabled="true"
+                                                    title="Future date (cannot be completed)"
+                                                {% else %}
+                                                    onclick="toggleHabit(this)"
+                                                    title="{{ row.habit.name }} on {{ day_stat.date_str }}{% if day_stat.notes %} (Note: {{ day_stat.notes }}){% endif %}"
+                                                {% endif %}
+                                                aria-label="Toggle {{ row.habit.name }} on {{ day_stat.date_str }}"
+                                                id="tick-{{ row.habit.id }}-{{ day_stat.date_str }}"
+                                            >
+                                                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </button>
+                                            {% if not day_stat.is_future %}
+                                                <button 
+                                                    type="button" 
+                                                    class="note-pill-btn {% if day_stat.notes %}has-note{% endif %}" 
+                                                    id="note-btn-{{ row.habit.id }}-{{ day_stat.date_str }}"
+                                                    onclick="openNoteModal({{ row.habit.id }}, '{{ row.habit.name | escape }}', '{{ day_stat.date_str }}')"
+                                                    title="{% if day_stat.notes %}Note: {{ day_stat.notes }}{% else %}Add reflection note{% endif %}"
+                                                >
+                                                    📝
+                                                </button>
                                             {% endif %}
-                                            aria-label="Toggle {{ row.habit.name }} on {{ day_stat.date_str }}"
-                                            id="tick-{{ row.habit.id }}-{{ day_stat.date_str }}"
-                                        >
-                                            <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                                <polyline points="20 6 9 17 4 12"></polyline>
-                                            </svg>
-                                        </button>
+                                        </div>
                                     </td>
                                 {% endfor %}
 
@@ -409,6 +423,32 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeManageModal()">Close</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal: Habit Day Reflection Note -->
+    <div class="modal-backdrop" id="note-modal" style="display: none;">
+        <div class="modal-dialog glass-card" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3 id="note-modal-title">Habit Note</h3>
+                <button class="modal-close" onclick="closeNoteModal()">✕</button>
+            </div>
+            <form id="note-form" onsubmit="handleNoteSubmit(event)">
+                <input type="hidden" id="note-habit-id" value="">
+                <input type="hidden" id="note-date" value="">
+                
+                <p id="note-modal-subtitle" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;"></p>
+
+                <div class="form-group">
+                    <label for="form-note-text">Reflection Note</label>
+                    <textarea id="form-note-text" class="form-input" rows="3" maxlength="255" placeholder="e.g. Felt strong today, increased focus..."></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeNoteModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="note-save-btn">Save Note</button>
+                </div>
+            </form>
         </div>
     </div>
 
