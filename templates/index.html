@@ -88,7 +88,7 @@
 
             <div class="metric-card glass-card">
                 <div class="metric-header">
-                    <span class="metric-label">Monthly Total ({{ monthly_stats.month_name }})</span>
+                    <span class="metric-label">Total Completions ({{ monthly_stats.month_name }})</span>
                     <span class="metric-icon">🔥</span>
                 </div>
                 <div class="metric-value-row">
@@ -167,8 +167,10 @@
             </div>
         </section>
 
-        <!-- Main Habit Tracking Grid (Monday to Sunday) -->
-        <section class="tracker-section glass-card">
+        <!-- Dashboard Body Layout: Dominant Center Tracker + Right-Side Visual Sidebar -->
+        <div class="dashboard-body-layout">
+            <!-- Main Habit Tracking Grid (Monday to Sunday) -->
+            <section class="tracker-section glass-card">
             <div class="section-header">
                 <div>
                     <h2 class="section-title">Weekly Tracker (Monday – Sunday)</h2>
@@ -313,38 +315,62 @@
                     </tbody>
                 </table>
             </div>
-        </section>
+            </section>
 
-        <!-- Visuals and Charts Section -->
-        <section class="charts-grid">
-            <!-- Weekly Completion Trends (Mon - Sun) -->
-            <div class="chart-card glass-card">
-                <div class="chart-header">
-                    <div>
-                        <h3 class="chart-title">Weekly Daily Completion Trends</h3>
-                        <p class="chart-subtitle">Habits completed per day (Monday to Sunday)</p>
+            <!-- Right-Side Visual Sidebar -->
+            <aside class="dashboard-sidebar">
+                <!-- Weekly Trends Mini Chart -->
+                <div class="sidebar-card glass-card">
+                    <div class="sidebar-card-header">
+                        <div>
+                            <span class="sidebar-card-title">Daily Trends</span>
+                            <span class="sidebar-card-subtitle">Monday – Sunday</span>
+                        </div>
+                        <span class="sidebar-card-badge">7-Day</span>
                     </div>
-                    <span class="chart-badge">Mon – Sun</span>
+                    <div class="chart-canvas-wrapper sidebar-canvas-trend">
+                        <canvas id="weeklyTrendsChart"></canvas>
+                    </div>
                 </div>
-                <div class="chart-canvas-wrapper">
-                    <canvas id="weeklyTrendsChart"></canvas>
-                </div>
-            </div>
 
-            <!-- Category Breakdown Chart -->
-            <div class="chart-card glass-card">
-                <div class="chart-header">
-                    <div>
-                        <h3 class="chart-title">Habit Distribution by Category</h3>
-                        <p class="chart-subtitle">Focus areas and active habit breakdown</p>
+                <!-- Category Breakdown Mini Donut -->
+                <div class="sidebar-card glass-card">
+                    <div class="sidebar-card-header">
+                        <div>
+                            <span class="sidebar-card-title">Category Focus</span>
+                            <span class="sidebar-card-subtitle">Active distribution</span>
+                        </div>
+                        <span class="sidebar-card-badge">Breakdown</span>
                     </div>
-                    <span class="chart-badge">Distribution</span>
+                    <div class="chart-canvas-wrapper donut-wrapper sidebar-canvas-donut">
+                        <canvas id="categoryDonutChart"></canvas>
+                    </div>
                 </div>
-                <div class="chart-canvas-wrapper donut-wrapper">
-                    <canvas id="categoryDonutChart"></canvas>
+
+                <!-- Consistency Insight Card -->
+                <div class="sidebar-card glass-card consistency-card">
+                    <div class="sidebar-card-header">
+                        <span class="sidebar-card-title">Consistency Insight</span>
+                        <span class="sidebar-card-badge">Progress</span>
+                    </div>
+                    <div class="consistency-content">
+                        <div class="consistency-stat">
+                            <span class="consistency-rate">{{ grid.overall_pct }}%</span>
+                            <span class="consistency-label">Weekly Consistency</span>
+                        </div>
+                        <p class="consistency-desc">
+                            {% if grid.overall_pct >= 80 %}
+                                🌟 Exceptional consistency this week! Keep the momentum going strong.
+                            {% elif grid.overall_pct >= 50 %}
+                                📈 Solid progress this week! Focus on completing today's open habits.
+                            {% else %}
+                                🎯 Every day is a fresh opportunity to build lasting daily momentum.
+                            {% endif %}
+                        </p>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </aside>
+        </div>
     </main>
 
     <!-- Modal: Add / Edit Habit -->
