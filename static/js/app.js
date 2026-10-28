@@ -338,24 +338,34 @@ function openHabitModal() {
     document.getElementById("modal-title").textContent = "Add New Habit";
     document.getElementById("form-habit-id").value = "";
     document.getElementById("form-habit-name").value = "";
+    document.getElementById("form-habit-name").style.borderColor = "";
     document.getElementById("form-habit-category").value = "Fitness";
     document.getElementById("form-habit-icon").value = "🎯";
     document.getElementById("form-habit-color").value = "#10b981";
     document.getElementById("form-habit-target").value = "1";
     document.getElementById("form-habit-desc").value = "";
     document.getElementById("habit-modal").style.display = "flex";
+    setTimeout(() => {
+        const input = document.getElementById("form-habit-name");
+        if (input) input.focus();
+    }, 50);
 }
 
 function openEditModal(id, name, category, desc, icon, color, dailyTarget) {
     document.getElementById("modal-title").textContent = "Edit Habit";
     document.getElementById("form-habit-id").value = id;
     document.getElementById("form-habit-name").value = name;
+    document.getElementById("form-habit-name").style.borderColor = "";
     document.getElementById("form-habit-category").value = category;
     document.getElementById("form-habit-icon").value = icon;
     document.getElementById("form-habit-color").value = color;
     document.getElementById("form-habit-target").value = dailyTarget || 1;
     document.getElementById("form-habit-desc").value = desc;
     document.getElementById("habit-modal").style.display = "flex";
+    setTimeout(() => {
+        const input = document.getElementById("form-habit-name");
+        if (input) input.focus();
+    }, 50);
 }
 
 function closeHabitModal() {
@@ -365,14 +375,27 @@ function closeHabitModal() {
 async function handleHabitSubmit(event) {
     event.preventDefault();
     const id = document.getElementById("form-habit-id").value;
-    const name = document.getElementById("form-habit-name").value.trim();
+    const nameInput = document.getElementById("form-habit-name");
+    const name = nameInput.value.trim();
     const category = document.getElementById("form-habit-category").value;
     const icon = document.getElementById("form-habit-icon").value.trim() || "🎯";
     const color = document.getElementById("form-habit-color").value;
     const dailyTarget = parseInt(document.getElementById("form-habit-target").value) || 1;
     const desc = document.getElementById("form-habit-desc").value.trim();
+    const saveBtn = document.getElementById("modal-save-btn");
 
-    if (!name) return;
+    if (!name) {
+        nameInput.focus();
+        nameInput.style.borderColor = "#ef4444";
+        showToast("Please enter a habit name.");
+        return;
+    }
+    nameInput.style.borderColor = "";
+
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+    }
 
     try {
         let res;
@@ -406,10 +429,15 @@ async function handleHabitSubmit(event) {
 
         closeHabitModal();
         showToast(id ? "Habit updated!" : "Habit created!");
-        setTimeout(() => window.location.reload(), 400);
+        setTimeout(() => window.location.reload(), 300);
 
     } catch (err) {
         showToast("Error: " + err.message);
+    } finally {
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = "Save Habit";
+        }
     }
 }
 
@@ -543,6 +571,10 @@ function openNoteModal(habitId, habitName, dateStr) {
     const existingNote = tickBtn ? (tickBtn.getAttribute("data-notes") || "") : "";
     document.getElementById("form-note-text").value = existingNote;
     document.getElementById("note-modal").style.display = "flex";
+    setTimeout(() => {
+        const textInput = document.getElementById("form-note-text");
+        if (textInput) textInput.focus();
+    }, 50);
 }
 
 function closeNoteModal() {
@@ -554,6 +586,12 @@ async function handleNoteSubmit(event) {
     const habitId = document.getElementById("note-habit-id").value;
     const dateStr = document.getElementById("note-date").value;
     const notes = document.getElementById("form-note-text").value.trim();
+    const saveBtn = document.getElementById("note-save-btn");
+
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+    }
 
     try {
         const res = await fetch("/api/habits/notes", {
@@ -584,5 +622,25 @@ async function handleNoteSubmit(event) {
         showToast(notes ? "Note saved! 📝" : "Note cleared.");
     } catch (err) {
         showToast("Error saving note: " + err.message);
+    } finally {
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = "Save Note";
+        }
     }
 }
+
+// Global modal listeners: Escape key to close, click backdrop to close
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        closeHabitModal();
+        closeManageModal();
+        closeNoteModal();
+    }
+});
+
+document.addEventListener("click", (e) => {
+    if (e.target && e.target.classList.contains("modal-backdrop")) {
+        e.target.style.display = "none";
+    }
+});
