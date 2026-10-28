@@ -273,7 +273,7 @@ function onMonthChange(monthNum) {
 }
 
 // ========================================================
-// 4. Habit Modals (Add, Edit, Delete, Reset)
+// 4. Habit Modals (Add, Edit, Archive, Restore, Reset)
 // ========================================================
 function openHabitModal() {
     document.getElementById("modal-title").textContent = "Add New Habit";
@@ -282,17 +282,19 @@ function openHabitModal() {
     document.getElementById("form-habit-category").value = "Fitness";
     document.getElementById("form-habit-icon").value = "🎯";
     document.getElementById("form-habit-color").value = "#10b981";
+    document.getElementById("form-habit-target").value = "1";
     document.getElementById("form-habit-desc").value = "";
     document.getElementById("habit-modal").style.display = "flex";
 }
 
-function openEditModal(id, name, category, desc, icon, color) {
+function openEditModal(id, name, category, desc, icon, color, dailyTarget) {
     document.getElementById("modal-title").textContent = "Edit Habit";
     document.getElementById("form-habit-id").value = id;
     document.getElementById("form-habit-name").value = name;
     document.getElementById("form-habit-category").value = category;
     document.getElementById("form-habit-icon").value = icon;
     document.getElementById("form-habit-color").value = color;
+    document.getElementById("form-habit-target").value = dailyTarget || 1;
     document.getElementById("form-habit-desc").value = desc;
     document.getElementById("habit-modal").style.display = "flex";
 }
@@ -308,25 +310,35 @@ async function handleHabitSubmit(event) {
     const category = document.getElementById("form-habit-category").value;
     const icon = document.getElementById("form-habit-icon").value.trim() || "🎯";
     const color = document.getElementById("form-habit-color").value;
+    const dailyTarget = parseInt(document.getElementById("form-habit-target").value) || 1;
     const desc = document.getElementById("form-habit-desc").value.trim();
 
     if (!name) return;
 
     try {
         let res;
+        const payload = {
+            name,
+            category,
+            icon,
+            color,
+            daily_target: dailyTarget,
+            description: desc
+        };
+
         if (id) {
             // Update
             res = await fetch(`/api/habits/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, category, icon, color, description: desc })
+                body: JSON.stringify(payload)
             });
         } else {
             // Create
             res = await fetch("/api/habits", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, category, icon, color, description: desc })
+                body: JSON.stringify(payload)
             });
         }
 
@@ -342,27 +354,91 @@ async function handleHabitSubmit(event) {
     }
 }
 
-async function deleteHabit(id, name) {
-    if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
+async function archiveHabit(id, name) {
+    if (!confirm(`Are you sure you want to archive "${name}"?\nPast logs and stats will be preserved.`)) return;
 
     try {
-        const res = await fetch(`/api/habits/${id}`, { method: "DELETE" });
-        if (!res.ok) throw new Error("Delete failed");
-        showToast("Habit deleted");
+        const res = await fetch(`/api/habits/${id}/archive`, { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Failed to archive habit");
+        showToast("Habit archived (history preserved)");
         const row = document.getElementById(`habit-row-${id}`);
         if (row) row.remove();
         setTimeout(() => window.location.reload(), 400);
     } catch (err) {
-        showToast("Error deleting habit");
+        showToast("Error: " + err.message);
     }
+}
+
+async function deleteHabit(id, name) {
+    archiveHabit(id, name);
 }
 
 function openManageModal() {
     document.getElementById("manage-modal").style.display = "flex";
+    loadArchivedHabits();
 }
 
 function closeManageModal() {
     document.getElementById("manage-modal").style.display = "none";
+}
+
+async function loadArchivedHabits() {
+    const listEl = document.getElementById("archived-habits-list");
+    if (!listEl) return;
+    listEl.innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">Loading...</span>';
+
+    try {
+        const res = await fetch("/api/habits/archived");
+        const habits = await res.json();
+        if (!res.ok) throw new Error("Failed to load archived habits");
+
+        if (!habits || habits.length === 0) {
+            listEl.innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">No archived habits.</span>';
+            return;
+        }
+
+        listEl.innerHTML = habits.map(h => `
+            <div class="archived-item" style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>${h.icon || '🎯'}</span>
+                    <strong style="font-size: 0.85rem; color: #fff;">${h.name}</strong>
+                    <span style="font-size: 0.7rem; color: var(--text-muted); background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">${h.category}</span>
+                </div>
+                <div style="display: flex; gap: 0.4rem;">
+                    <button type="button" class="btn btn-sm btn-outline" onclick="restoreHabit(${h.id}, '${h.name}')" title="Restore to active tracker">↩️ Restore</button>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="deletePermanently(${h.id}, '${h.name}')" title="Permanently delete">🗑️ Delete</button>
+                </div>
+            </div>
+        `).join("");
+    } catch (err) {
+        listEl.innerHTML = `<span style="font-size: 0.8rem; color: #ef4444;">Error: ${err.message}</span>`;
+    }
+}
+
+async function restoreHabit(id, name) {
+    try {
+        const res = await fetch(`/api/habits/${id}/restore`, { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Failed to restore habit");
+        showToast(`Habit "${name}" restored!`);
+        setTimeout(() => window.location.reload(), 400);
+    } catch (err) {
+        showToast("Error: " + err.message);
+    }
+}
+
+async function deletePermanently(id, name) {
+    if (!confirm(`Permanently delete "${name}"?\nWarning: This will permanently delete all historical logs for this habit.`)) return;
+    try {
+        const res = await fetch(`/api/habits/${id}?permanent=true`, { method: "DELETE" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Failed to permanently delete");
+        showToast(`Habit "${name}" deleted permanently.`);
+        loadArchivedHabits();
+    } catch (err) {
+        showToast("Error: " + err.message);
+    }
 }
 
 async function resetDefaultHabits() {

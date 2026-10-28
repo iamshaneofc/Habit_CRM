@@ -272,11 +272,11 @@
 
                                 <!-- Actions -->
                                 <td class="td-actions">
-                                    <button class="action-btn edit-btn" onclick="openEditModal({{ row.habit.id }}, '{{ row.habit.name }}', '{{ row.habit.category }}', '{{ row.habit.description or '' }}', '{{ row.habit.icon }}', '{{ row.habit.color }}')" title="Edit habit">
+                                    <button class="action-btn edit-btn" onclick="openEditModal({{ row.habit.id }}, '{{ row.habit.name }}', '{{ row.habit.category }}', '{{ row.habit.description or '' }}', '{{ row.habit.icon }}', '{{ row.habit.color }}', {{ row.habit.daily_target or 1 }})" title="Edit habit">
                                         ✏️
                                     </button>
-                                    <button class="action-btn delete-btn" onclick="deleteHabit({{ row.habit.id }}, '{{ row.habit.name }}')" title="Delete habit">
-                                        🗑️
+                                    <button class="action-btn archive-btn" onclick="archiveHabit({{ row.habit.id }}, '{{ row.habit.name }}')" title="Archive habit (preserves logs)">
+                                        📦
                                     </button>
                                 </td>
                             </tr>
@@ -361,6 +361,10 @@
                         <label for="form-habit-color">Accent Color</label>
                         <input type="color" id="form-habit-color" class="form-input color-picker" value="#10b981">
                     </div>
+                    <div class="form-group col-6">
+                        <label for="form-habit-target">Daily Target</label>
+                        <input type="number" id="form-habit-target" class="form-input" min="1" max="100" value="1">
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -392,6 +396,14 @@
                         <span>Restores standard 10 habits with fresh sample data.</span>
                     </div>
                     <button class="btn btn-danger" onclick="resetDefaultHabits()">Reset Defaults</button>
+                </div>
+
+                <div class="archived-section" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+                    <h4 style="font-size: 0.95rem; margin-bottom: 0.35rem; color: #fff;">Archived Habits</h4>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Archived habits retain all past logs and analytics but are hidden from the active weekly tracker.</p>
+                    <div id="archived-habits-list" class="archived-list">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Loading archived habits...</span>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">

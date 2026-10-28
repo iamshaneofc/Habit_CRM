@@ -81,14 +81,16 @@ class HabitCreateRequest(BaseModel):
     description: Optional[str] = Field(None, max_length=255)
     icon: Optional[str] = Field("🎯", max_length=10)
     color: Optional[str] = Field("#10b981", max_length=20)
+    daily_target: Optional[int] = Field(1, ge=1, le=100)
     display_order: Optional[int] = 0
 
 class HabitUpdateRequest(BaseModel):
-    name: Optional[str] = None
-    category: Optional[str] = None
-    description: Optional[str] = None
-    icon: Optional[str] = None
-    color: Optional[str] = None
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    category: Optional[str] = Field(None, max_length=50)
+    description: Optional[str] = Field(None, max_length=255)
+    icon: Optional[str] = Field(None, max_length=10)
+    color: Optional[str] = Field(None, max_length=20)
+    daily_target: Optional[int] = Field(None, ge=1, le=100)
     is_active: Optional[bool] = None
     display_order: Optional[int] = None
 
@@ -347,11 +349,12 @@ async def create_habit(
     """Add a new custom habit for the authenticated user."""
     habit = Habit(
         user_id=current_user.id,
-        name=payload.name,
-        category=payload.category,
-        description=payload.description,
+        name=payload.name.strip(),
+        category=payload.category.strip() or "General",
+        description=payload.description.strip() if payload.description else None,
         icon=payload.icon or "🎯",
         color=payload.color or "#10b981",
+        daily_target=payload.daily_target or 1,
         display_order=payload.display_order or 0,
         is_active=True
     )
@@ -373,15 +376,17 @@ async def update_habit(
         raise HTTPException(status_code=404, detail="Habit not found")
 
     if payload.name is not None:
-        habit.name = payload.name
+        habit.name = payload.name.strip()
     if payload.category is not None:
-        habit.category = payload.category
+        habit.category = payload.category.strip()
     if payload.description is not None:
-        habit.description = payload.description
+        habit.description = payload.description.strip() if payload.description else None
     if payload.icon is not None:
         habit.icon = payload.icon
     if payload.color is not None:
         habit.color = payload.color
+    if payload.daily_target is not None:
+        habit.daily_target = payload.daily_target
     if payload.is_active is not None:
         habit.is_active = payload.is_active
     if payload.display_order is not None:
@@ -391,19 +396,69 @@ async def update_habit(
     db.refresh(habit)
     return {"success": True, "habit": habit.to_dict()}
 
-@app.delete("/api/habits/{habit_id}")
-async def delete_habit(
+@app.get("/api/habits/archived")
+async def get_archived_habits(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Fetch all archived (soft-deleted) habits for the authenticated user."""
+    habits = db.query(Habit).filter(
+        Habit.user_id == current_user.id,
+        Habit.is_active == False
+    ).order_by(Habit.id.desc()).all()
+    return [h.to_dict() for h in habits]
+
+@app.post("/api/habits/{habit_id}/archive")
+async def archive_habit(
     habit_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Delete a habit belonging to the user and its associated logs."""
+    """Soft-delete / archive a habit for the user, preserving historical logs."""
     habit = db.query(Habit).filter(Habit.id == habit_id, Habit.user_id == current_user.id).first()
     if not habit:
         raise HTTPException(status_code=404, detail="Habit not found")
-    db.delete(habit)
+    habit.is_active = False
     db.commit()
-    return {"success": True, "message": f"Habit '{habit.name}' deleted"}
+    return {"success": True, "message": f"Habit '{habit.name}' archived", "habit": habit.to_dict()}
+
+@app.post("/api/habits/{habit_id}/restore")
+async def restore_habit(
+    habit_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Restore an archived habit back to active tracking."""
+    habit = db.query(Habit).filter(Habit.id == habit_id, Habit.user_id == current_user.id).first()
+    if not habit:
+        raise HTTPException(status_code=404, detail="Habit not found")
+    habit.is_active = True
+    db.commit()
+    return {"success": True, "message": f"Habit '{habit.name}' restored", "habit": habit.to_dict()}
+
+@app.delete("/api/habits/{habit_id}")
+async def delete_habit(
+    habit_id: int,
+    permanent: bool = False,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Archive habit (soft delete, preserving logs) by default.
+    Permanent hard deletion with log cascade requires permanent=True query parameter.
+    """
+    habit = db.query(Habit).filter(Habit.id == habit_id, Habit.user_id == current_user.id).first()
+    if not habit:
+        raise HTTPException(status_code=404, detail="Habit not found")
+
+    if permanent:
+        db.delete(habit)
+        db.commit()
+        return {"success": True, "message": f"Habit '{habit.name}' permanently deleted"}
+    else:
+        habit.is_active = False
+        db.commit()
+        return {"success": True, "message": f"Habit '{habit.name}' archived"}
 
 @app.post("/api/habits/reset-defaults")
 async def reset_default_habits(
