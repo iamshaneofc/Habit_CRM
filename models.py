@@ -1,7 +1,10 @@
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime, ForeignKey, UniqueConstraint, Text
 from sqlalchemy.orm import relationship
 from database import Base
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 class Habit(Base):
     __tablename__ = "habits"
@@ -15,7 +18,7 @@ class Habit(Base):
     daily_target = Column(Integer, default=1)
     is_active = Column(Boolean, default=True)
     display_order = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
 
     # Relationships
     logs = relationship("HabitLog", back_populates="habit", cascade="all, delete-orphan", order_by="HabitLog.date")
@@ -43,8 +46,8 @@ class HabitLog(Base):
     completed = Column(Boolean, default=False, nullable=False)
     value = Column(Integer, default=1)
     notes = Column(String(255), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     habit = relationship("Habit", back_populates="logs")

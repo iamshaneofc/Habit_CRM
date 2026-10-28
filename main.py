@@ -11,7 +11,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from config import config
-from database import engine, Base, get_db, SessionLocal
+import database
+from database import Base, get_db, check_and_stabilize_db
 from models import Habit, HabitLog
 from seed_data import seed_default_habits
 import services
@@ -19,14 +20,26 @@ import services
 # Setup database on startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Ensure tables exist
-    Base.metadata.create_all(bind=engine)
-    # Seed default 10 habits if table is empty
-    db = SessionLocal()
-    try:
-        seed_default_habits(db, force=False, seed_sample_logs=True)
-    finally:
-        db.close()
+    # Verify and stabilize connection before creating tables
+    ok, status = check_and_stabilize_db()
+    if not ok:
+        print(f"[CRITICAL] Database connection failed: {status}")
+        if config.is_production():
+            raise RuntimeError(f"Database unavailable: {status}")
+    else:
+        try:
+            # Ensure tables exist
+            Base.metadata.create_all(bind=database.engine)
+            # Seed default 10 habits if table is empty
+            db = database.SessionLocal()
+            try:
+                seed_default_habits(db, force=False, seed_sample_logs=True)
+            finally:
+                db.close()
+        except Exception as e:
+            print(f"[ERROR] Database initialization failed: {e}")
+            if config.is_production():
+                raise
     yield
 
 app = FastAPI(
@@ -263,11 +276,20 @@ async def get_weekly_chart_data(week_date: Optional[str] = None, db: Session = D
 
 @app.get("/api/database/status")
 async def database_status():
-    """Returns database configuration and connectivity status."""
+    """Returns database configuration and connectivity status securely."""
+    is_connected = False
+    try:
+        from sqlalchemy import text
+        with database.engine.connect() as conn:
+            conn.execute(text("SELECT 1;"))
+            is_connected = True
+    except Exception:
+        is_connected = False
+
     return {
-        "status": "connected",
+        "status": "connected" if is_connected else "disconnected",
         "info": config.get_display_info(),
-        "database_url_masked": config.get_database_url().split("@")[-1] if "@" in config.get_database_url() else "local-sqlite"
+        "is_fallback": getattr(config, "_active_fallback", False)
     }
 
 if __name__ == "__main__":
