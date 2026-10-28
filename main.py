@@ -4,7 +4,7 @@ from typing import Optional, List
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends, Request, HTTPException, Form
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
@@ -13,7 +13,9 @@ from sqlalchemy.orm import Session
 from config import config
 import database
 from database import Base, get_db, check_and_stabilize_db
-from models import Habit, HabitLog
+from models import Habit, HabitLog, User
+import auth
+from auth import get_current_user, get_current_user_optional, SESSION_COOKIE_NAME
 from seed_data import seed_default_habits
 import services
 
@@ -60,6 +62,15 @@ templates = Jinja2Templates(directory="templates")
 # ========================================================
 # Pydantic Schemas for API Requests
 # ========================================================
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str = Field(..., min_length=6)
+    full_name: Optional[str] = None
+
 class ToggleRequest(BaseModel):
     habit_id: int
     date: str  # YYYY-MM-DD
@@ -84,18 +95,40 @@ class HabitUpdateRequest(BaseModel):
 # ========================================================
 # Web Pages
 # ========================================================
+@app.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request, current_user: Optional[User] = Depends(get_current_user_optional)):
+    if current_user:
+        return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.get("/register", response_class=HTMLResponse)
+async def register_page(request: Request, current_user: Optional[User] = Depends(get_current_user_optional)):
+    if current_user:
+        return RedirectResponse(url="/", status_code=303)
+    return templates.TemplateResponse("register.html", {"request": request})
+
+@app.get("/logout")
+async def logout_redirect():
+    response = RedirectResponse(url="/login", status_code=303)
+    response.delete_cookie(SESSION_COOKIE_NAME)
+    return response
+
 @app.get("/", response_class=HTMLResponse)
 async def dashboard_page(
     request: Request,
     week_date: Optional[str] = None,
     month: Optional[int] = None,
     year: Optional[int] = None,
+    current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
     """
     Main Habit Tracking Dashboard.
-    Shows the current Monday-to-Sunday view, month filters, streak metrics, and visual charts.
+    Requires authentication; redirects unauthenticated visitors to /login.
     """
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=303)
+
     today = date.today()
     target_dt = today
 
@@ -126,6 +159,7 @@ async def dashboard_page(
 
     return templates.TemplateResponse("index.html", {
         "request": request,
+        "current_user": current_user,
         "grid": grid,
         "monthly_stats": monthly_stats,
         "db_info": db_info,
@@ -136,10 +170,89 @@ async def dashboard_page(
     })
 
 # ========================================================
-# REST API Endpoints
+# REST API Endpoints: Authentication
+# ========================================================
+@app.post("/api/auth/register")
+async def register_api(payload: RegisterRequest, db: Session = Depends(get_db)):
+    """Registers a new user account."""
+    clean_email = payload.email.lower().strip()
+    existing = db.query(User).filter(User.email == clean_email).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="An account with this email already exists.")
+
+    user = User(
+        email=clean_email,
+        hashed_password=auth.hash_password(payload.password),
+        full_name=payload.full_name.strip() if payload.full_name else None,
+        is_active=True
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    token = auth.create_access_token({"sub": str(user.id), "email": user.email})
+    response = JSONResponse({
+        "success": True,
+        "message": "Account created successfully.",
+        "token": token,
+        "user": user.to_dict()
+    })
+    response.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=7 * 24 * 3600
+    )
+    return response
+
+@app.post("/api/auth/login")
+async def login_api(payload: LoginRequest, db: Session = Depends(get_db)):
+    """Authenticates a user and issues an HTTP-only session cookie and JWT."""
+    clean_email = payload.email.lower().strip()
+    user = db.query(User).filter(User.email == clean_email).first()
+    if not user or not auth.verify_password(payload.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="Account is deactivated.")
+
+    token = auth.create_access_token({"sub": str(user.id), "email": user.email})
+    response = JSONResponse({
+        "success": True,
+        "message": "Signed in successfully.",
+        "token": token,
+        "user": user.to_dict()
+    })
+    response.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=7 * 24 * 3600
+    )
+    return response
+
+@app.post("/api/auth/logout")
+async def logout_api():
+    """Clears the session cookie."""
+    response = JSONResponse({"success": True, "message": "Signed out successfully."})
+    response.delete_cookie(SESSION_COOKIE_NAME)
+    return response
+
+@app.get("/api/auth/me")
+async def get_me(current_user: User = Depends(get_current_user)):
+    """Returns details for the currently authenticated user."""
+    return {"success": True, "user": current_user.to_dict()}
+
+# ========================================================
+# REST API Endpoints: Habits
 # ========================================================
 @app.post("/api/habits/toggle")
-async def toggle_habit_day(payload: ToggleRequest, db: Session = Depends(get_db)):
+async def toggle_habit_day(
+    payload: ToggleRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """
     Toggles completion tick for a habit on a specific date.
     Returns the new state, streak count, and daily completion % for instant UI update.
@@ -198,13 +311,20 @@ async def toggle_habit_day(payload: ToggleRequest, db: Session = Depends(get_db)
     }
 
 @app.get("/api/habits")
-async def get_habits(db: Session = Depends(get_db)):
+async def get_habits(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """Fetch all habits."""
     habits = db.query(Habit).order_by(Habit.display_order.asc(), Habit.id.asc()).all()
     return [h.to_dict() for h in habits]
 
 @app.post("/api/habits")
-async def create_habit(payload: HabitCreateRequest, db: Session = Depends(get_db)):
+async def create_habit(
+    payload: HabitCreateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """Add a new custom habit."""
     habit = Habit(
         name=payload.name,
@@ -221,7 +341,12 @@ async def create_habit(payload: HabitCreateRequest, db: Session = Depends(get_db
     return {"success": True, "habit": habit.to_dict()}
 
 @app.put("/api/habits/{habit_id}")
-async def update_habit(habit_id: int, payload: HabitUpdateRequest, db: Session = Depends(get_db)):
+async def update_habit(
+    habit_id: int,
+    payload: HabitUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """Change / customize an existing habit."""
     habit = db.query(Habit).filter(Habit.id == habit_id).first()
     if not habit:
@@ -247,7 +372,11 @@ async def update_habit(habit_id: int, payload: HabitUpdateRequest, db: Session =
     return {"success": True, "habit": habit.to_dict()}
 
 @app.delete("/api/habits/{habit_id}")
-async def delete_habit(habit_id: int, db: Session = Depends(get_db)):
+async def delete_habit(
+    habit_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """Delete a habit and its associated logs."""
     habit = db.query(Habit).filter(Habit.id == habit_id).first()
     if not habit:
@@ -257,13 +386,20 @@ async def delete_habit(habit_id: int, db: Session = Depends(get_db)):
     return {"success": True, "message": f"Habit '{habit.name}' deleted"}
 
 @app.post("/api/habits/reset-defaults")
-async def reset_default_habits(db: Session = Depends(get_db)):
+async def reset_default_habits(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """Reset to the original 10 default habits."""
     seed_default_habits(db, force=True, seed_sample_logs=True)
     return {"success": True, "message": "Reset to 10 default habits successfully"}
 
 @app.get("/api/charts/weekly-data")
-async def get_weekly_chart_data(week_date: Optional[str] = None, db: Session = Depends(get_db)):
+async def get_weekly_chart_data(
+    week_date: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """Returns day-by-day Monday through Sunday completion data for Chart.js."""
     target_dt = date.fromisoformat(week_date) if week_date else date.today()
     grid = services.get_weekly_grid(db, target_dt)

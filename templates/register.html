@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account — Habit CRM</title>
+    <meta name="description" content="Create your personal Habit CRM account to begin tracking daily consistency.">
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .auth-card {
+            width: 100%;
+            max-width: 440px;
+            padding: 2.5rem 2rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: var(--shadow-glass);
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .auth-logo {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, var(--accent-emerald), var(--accent-cyan));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 15px var(--accent-emerald-glow);
+        }
+        .auth-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        .auth-title span {
+            color: var(--accent-emerald);
+        }
+        .auth-sub {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        .auth-error {
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.4);
+            color: #fca5a5;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1.25rem;
+            font-size: 0.85rem;
+            display: none;
+        }
+        .auth-field {
+            margin-bottom: 1.25rem;
+        }
+        .auth-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        .auth-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+        .auth-input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--accent-emerald-glow);
+        }
+        .auth-btn {
+            width: 100%;
+            padding: 0.85rem;
+            margin-top: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .auth-footer {
+            margin-top: 1.75rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .auth-footer a {
+            color: var(--accent-emerald);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="dark-theme">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">⚡</div>
+                <h1 class="auth-title">Habit<span>CRM</span></h1>
+                <p class="auth-sub">Create your account to start building habits.</p>
+            </div>
+
+            <div id="auth-error-box" class="auth-error"></div>
+
+            <form id="register-form" onsubmit="handleRegister(event)">
+                <div class="auth-field">
+                    <label for="full_name" class="auth-label">Full Name</label>
+                    <input type="text" id="full_name" class="auth-input" placeholder="Alex Taylor" autocomplete="name">
+                </div>
+
+                <div class="auth-field">
+                    <label for="email" class="auth-label">Email Address *</label>
+                    <input type="email" id="email" class="auth-input" required placeholder="you@example.com" autocomplete="email">
+                </div>
+
+                <div class="auth-field">
+                    <label for="password" class="auth-label">Password * (min 6 characters)</label>
+                    <input type="password" id="password" class="auth-input" required minlength="6" placeholder="••••••••" autocomplete="new-password">
+                </div>
+
+                <button type="submit" class="btn btn-primary auth-btn" id="reg-btn">Create Account</button>
+            </form>
+
+            <div class="auth-footer">
+                Already have an account? <a href="/login">Sign in here</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function handleRegister(e) {
+            e.preventDefault();
+            const fullName = document.getElementById("full_name").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const errBox = document.getElementById("auth-error-box");
+            const btn = document.getElementById("reg-btn");
+
+            errBox.style.display = "none";
+            btn.disabled = true;
+            btn.textContent = "Creating account...";
+
+            try {
+                const res = await fetch("/api/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password, full_name: fullName })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || "Registration failed");
+                }
+                window.location.href = "/";
+            } catch (err) {
+                errBox.textContent = err.message;
+                errBox.style.display = "block";
+                btn.disabled = false;
+                btn.textContent = "Create Account";
+            }
+        }
+    </script>
+</body>
+</html>

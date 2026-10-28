@@ -46,6 +46,12 @@
                 <button class="btn btn-secondary" id="btn-manage-habits" onclick="openManageModal()">
                     ⚙️ Manage Habits
                 </button>
+                {% if current_user %}
+                <div class="user-pill-badge" id="user-badge" title="{{ current_user.email }}">
+                    <span class="user-pill-name">{{ current_user.full_name or current_user.email.split('@')[0] }}</span>
+                    <a href="/logout" class="btn-logout" id="btn-logout" title="Sign Out">Sign Out</a>
+                </div>
+                {% endif %}
             </div>
         </div>
     </header>
