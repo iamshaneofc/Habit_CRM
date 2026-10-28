@@ -347,6 +347,25 @@
                     </div>
                 </div>
 
+                {% if grid.most_consistent_habit %}
+                <!-- Top Performer Habit Card -->
+                <div class="sidebar-card glass-card top-habit-card">
+                    <div class="sidebar-card-header">
+                        <span class="sidebar-card-title">Top Performer</span>
+                        <span class="sidebar-card-badge">Star Habit</span>
+                    </div>
+                    <div class="top-habit-body">
+                        <span class="top-habit-icon" style="background: {{ grid.most_consistent_habit.color }}20; color: {{ grid.most_consistent_habit.color }}; border: 1px solid {{ grid.most_consistent_habit.color }}50;">
+                            {{ grid.most_consistent_habit.icon }}
+                        </span>
+                        <div class="top-habit-info">
+                            <strong class="top-habit-name">{{ grid.most_consistent_habit.name }}</strong>
+                            <span class="top-habit-meta">🔥 {{ grid.most_consistent_habit.current_streak }}d streak · {{ grid.most_consistent_habit.week_completed }}/7 this week</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <!-- Consistency Insight Card -->
                 <div class="sidebar-card glass-card consistency-card">
                     <div class="sidebar-card-header">

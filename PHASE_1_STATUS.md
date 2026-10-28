@@ -17,8 +17,8 @@ This document tracks the sequential 20-step execution of **Phase 1: Stabilizatio
 - [x] **Step 9: Metrics, Streaks & Analytics Accuracy** — Commit: `fe9852c`
 - [x] **Step 10: Fix Chart Data Flow & Refresh Behavior** — Commit: `5ca3259`
 - [x] **Step 11: Improve Habit Controls & Interaction Quality** — Commit: `9cc6d40`
-- [x] **Step 12: UI Enhancement: Preserve the Existing Design** — Commit: `PENDING`
-- [ ] **Step 13: Add Attractive, Useful Visual Elements** — Commit: Pending
+- [x] **Step 12: UI Enhancement: Preserve the Existing Design** — Commit: `f3b4b74`
+- [x] **Step 13: Add Attractive, Useful Visual Elements** — Commit: `PENDING`
 - [ ] **Step 14: Responsive Design & Accessibility** — Commit: Pending
 - [ ] **Step 15: Security & Configuration Hardening** — Commit: Pending
 - [ ] **Step 16: Automated Tests & Regression Coverage** — Commit: Pending

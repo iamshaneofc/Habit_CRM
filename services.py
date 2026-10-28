@@ -189,6 +189,21 @@ def get_weekly_grid(db: Session, target_date: Optional[date] = None, user_id: Op
     best_streak = max([r["longest_streak"] for r in habit_rows], default=0)
     best_current_streak = max([r["current_streak"] for r in habit_rows], default=0)
 
+    most_consistent = None
+    if habit_rows:
+        sorted_habits = sorted(habit_rows, key=lambda r: (r["week_completed"], r["current_streak"]), reverse=True)
+        top_row = sorted_habits[0]
+        if top_row["week_completed"] > 0 or top_row["current_streak"] > 0:
+            most_consistent = {
+                "id": top_row["habit"].id,
+                "name": top_row["habit"].name,
+                "icon": top_row["habit"].icon,
+                "color": top_row["habit"].color,
+                "category": top_row["habit"].category,
+                "week_completed": top_row["week_completed"],
+                "current_streak": top_row["current_streak"]
+            }
+
     return {
         "week_info": week_info,
         "habits_count": len(habits),
@@ -197,7 +212,8 @@ def get_weekly_grid(db: Session, target_date: Optional[date] = None, user_id: Op
         "overall_pct": overall_pct,
         "total_completed_checks": total_completed_checks,
         "best_streak": best_streak,
-        "best_current_streak": best_current_streak
+        "best_current_streak": best_current_streak,
+        "most_consistent_habit": most_consistent
     }
 
 def get_monthly_summary(db: Session, year: int, month: int, user_id: Optional[int] = None) -> dict:
