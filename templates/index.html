@@ -116,16 +116,25 @@
         <!-- Filters Section: Month Filter & Week Selector -->
         <section class="filters-card glass-card">
             <div class="filters-container">
-                <!-- Month Filter -->
+                <!-- Month & Year Filter -->
                 <div class="month-filter-group">
-                    <label for="month-select" class="filter-label">Month Filter:</label>
-                    <select id="month-select" class="form-select" onchange="onMonthChange(this.value)">
-                        {% for m in months_list %}
-                            <option value="{{ m.num }}" {% if m.is_selected %}selected{% endif %}>
-                                {{ m.name }} {{ selected_year }}
-                            </option>
-                        {% endfor %}
-                    </select>
+                    <label for="month-select" class="filter-label">Period:</label>
+                    <div class="period-select-wrap">
+                        <select id="month-select" class="form-select" onchange="onDateFilterChange()" title="Filter by Month">
+                            {% for m in months_list %}
+                                <option value="{{ m.num }}" {% if m.is_selected %}selected{% endif %}>
+                                    {{ m.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <select id="year-select" class="form-select" onchange="onDateFilterChange()" title="Filter by Year">
+                            {% for y in years_list %}
+                                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>
+                                    {{ y }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Week Navigator (Monday - Sunday) -->
@@ -217,14 +226,20 @@
 
                                 <!-- 7 Days (Monday to Sunday) Tick Cells -->
                                 {% for day_stat in row.days %}
-                                    <td class="td-day {% if day_stat.is_today %}td-today-cell{% endif %}">
+                                    <td class="td-day {% if day_stat.is_today %}td-today-cell{% endif %} {% if day_stat.is_future %}td-future-cell{% endif %}">
                                         <button 
                                             type="button" 
-                                            class="tick-btn {% if day_stat.is_completed %}is-checked{% endif %} {% if day_stat.is_today %}today-btn{% endif %}"
+                                            class="tick-btn {% if day_stat.is_completed %}is-checked{% endif %} {% if day_stat.is_today %}today-btn{% endif %} {% if day_stat.is_future %}is-future-btn{% endif %}"
                                             data-habit-id="{{ row.habit.id }}"
                                             data-date="{{ day_stat.date_str }}"
-                                            onclick="toggleHabit(this)"
-                                            title="{{ row.habit.name }} on {{ day_stat.date_str }}"
+                                            {% if day_stat.is_future %}
+                                                disabled
+                                                aria-disabled="true"
+                                                title="Future date (cannot be completed)"
+                                            {% else %}
+                                                onclick="toggleHabit(this)"
+                                                title="{{ row.habit.name }} on {{ day_stat.date_str }}"
+                                            {% endif %}
                                             aria-label="Toggle {{ row.habit.name }} on {{ day_stat.date_str }}"
                                             id="tick-{{ row.habit.id }}-{{ day_stat.date_str }}"
                                         >

@@ -153,6 +153,11 @@ function initCategoryChart() {
 // 2. Interactive Tick / Toggle Handler
 // ========================================================
 async function toggleHabit(buttonElement) {
+    if (buttonElement.disabled || buttonElement.classList.contains("is-future-btn")) {
+        showToast("Future dates cannot be marked complete.");
+        return;
+    }
+
     const habitId = buttonElement.getAttribute("data-habit-id");
     const dateStr = buttonElement.getAttribute("data-date");
 
@@ -255,9 +260,16 @@ async function refreshWeeklyChart() {
 // ========================================================
 // 3. Month & Week Filters
 // ========================================================
+function onDateFilterChange() {
+    const monthSelect = document.getElementById("month-select");
+    const yearSelect = document.getElementById("year-select");
+    const monthNum = monthSelect ? monthSelect.value : (new Date().getMonth() + 1);
+    const yearNum = yearSelect ? yearSelect.value : (new Date().getFullYear());
+    window.location.href = `/?month=${monthNum}&year=${yearNum}`;
+}
+
 function onMonthChange(monthNum) {
-    const currentYear = new Date().getFullYear();
-    window.location.href = `/?month=${monthNum}&year=${currentYear}`;
+    onDateFilterChange();
 }
 
 // ========================================================

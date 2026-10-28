@@ -161,6 +161,8 @@ async def dashboard_page(
         {"num": i, "name": datetime(2000, i, 1).strftime("%B"), "is_selected": i == current_month}
         for i in range(1, 13)
     ]
+    current_calendar_year = today.year
+    years_list = list(range(current_calendar_year - 2, current_calendar_year + 3))
 
     return templates.TemplateResponse("index.html", {
         "request": request,
@@ -171,7 +173,8 @@ async def dashboard_page(
         "today_str": today.isoformat(),
         "selected_month": current_month,
         "selected_year": current_year,
-        "months_list": months_list
+        "months_list": months_list,
+        "years_list": years_list
     })
 
 # ========================================================
@@ -264,11 +267,16 @@ async def toggle_habit_day(
     """
     Toggles completion tick for a user's habit on a specific date.
     Returns the new state, streak count, and daily completion % for instant UI update.
+    Rejects future-date checkmark toggling.
     """
     try:
         log_date = date.fromisoformat(payload.date)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+
+    today = date.today()
+    if log_date > today:
+        raise HTTPException(status_code=400, detail="Future dates cannot be marked complete.")
 
     habit = db.query(Habit).filter(Habit.id == payload.habit_id, Habit.user_id == current_user.id).first()
     if not habit:
