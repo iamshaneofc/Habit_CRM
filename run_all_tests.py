@@ -23,6 +23,7 @@ TEST_SUITES = [
     ("Step 15: Security Hardening & Rate Limiting", "tests/test_step15_security.py"),
     ("Step 16: Cross-User Isolation & Auth Boundaries", "tests/test_step16_user_isolation.py"),
     ("Step 16: Alembic Migrations on Fresh DB", "tests/test_step16_migrations.py"),
+    ("Step 17: Performance & Query Optimization", "tests/test_step17_performance.py"),
 ]
 
 def main():

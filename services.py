@@ -55,20 +55,11 @@ def get_week_details(target_date: Optional[date] = None) -> dict:
         "is_current_week": (monday <= today <= sunday)
     }
 
-def calculate_habit_streak(habit_id: int, db: Session, user_id: Optional[int] = None) -> dict:
-    """Calculates current streak and longest streak for a habit."""
-    log_query = db.query(HabitLog).filter(
-        HabitLog.habit_id == habit_id,
-        HabitLog.completed == True
-    )
-    if user_id is not None:
-        log_query = log_query.filter(HabitLog.user_id == user_id)
-    logs = log_query.order_by(HabitLog.date.desc()).all()
-
-    if not logs:
+def calculate_streak_from_dates(completed_dates: set) -> dict:
+    """Computes current streak and longest streak in memory from a set of completed dates."""
+    if not completed_dates:
         return {"current_streak": 0, "longest_streak": 0, "total_completed": 0}
 
-    completed_dates = {log.date for log in logs}
     today = date.today()
     yesterday = today - timedelta(days=1)
 
@@ -103,9 +94,22 @@ def calculate_habit_streak(habit_id: int, db: Session, user_id: Optional[int] = 
         "total_completed": len(completed_dates)
     }
 
+def calculate_habit_streak(habit_id: int, db: Session, user_id: Optional[int] = None) -> dict:
+    """Calculates current streak and longest streak for a single habit."""
+    log_query = db.query(HabitLog.date).filter(
+        HabitLog.habit_id == habit_id,
+        HabitLog.completed == True
+    )
+    if user_id is not None:
+        log_query = log_query.filter(HabitLog.user_id == user_id)
+    logs = log_query.all()
+    completed_dates = {log[0] for log in logs}
+    return calculate_streak_from_dates(completed_dates)
+
 def get_weekly_grid(db: Session, target_date: Optional[date] = None, user_id: Optional[int] = None) -> dict:
     """
     Builds the complete weekly matrix for habits and tick status Monday-Sunday for a specific user.
+    Executes in constant O(1) query complexity (no N+1 per-habit queries).
     """
     week_info = get_week_details(target_date)
     monday = week_info["monday"]
@@ -125,8 +129,17 @@ def get_weekly_grid(db: Session, target_date: Optional[date] = None, user_id: Op
             HabitLog.date >= monday,
             HabitLog.date <= sunday
         ).all()
+        # Batch query all completed dates for streaks in a single query
+        all_completed_logs = db.query(HabitLog.habit_id, HabitLog.date).filter(
+            HabitLog.habit_id.in_(habit_ids),
+            HabitLog.completed == True
+        ).all()
+        completed_dates_by_habit = {h_id: set() for h_id in habit_ids}
+        for h_id, log_date in all_completed_logs:
+            completed_dates_by_habit[h_id].add(log_date)
     else:
         logs = []
+        completed_dates_by_habit = {}
 
     # Map (habit_id, date_str) -> log object
     log_map = {(log.habit_id, log.date.isoformat()): log for log in logs}
@@ -137,7 +150,7 @@ def get_weekly_grid(db: Session, target_date: Optional[date] = None, user_id: Op
     total_completed_checks = 0
 
     for habit in habits:
-        streak_info = calculate_habit_streak(habit.id, db, user_id=user_id)
+        streak_info = calculate_streak_from_dates(completed_dates_by_habit.get(habit.id, set()))
         days_status = []
         habit_week_completed = 0
 
