@@ -120,14 +120,14 @@
                 <div class="month-filter-group">
                     <label for="month-select" class="filter-label">Period:</label>
                     <div class="period-select-wrap">
-                        <select id="month-select" class="form-select" onchange="onDateFilterChange()" title="Filter by Month">
+                        <select id="month-select" class="form-select" onchange="onDateFilterChange()" title="Filter by Month" aria-label="Filter by Month">
                             {% for m in months_list %}
                                 <option value="{{ m.num }}" {% if m.is_selected %}selected{% endif %}>
                                     {{ m.name }}
                                 </option>
                             {% endfor %}
                         </select>
-                        <select id="year-select" class="form-select" onchange="onDateFilterChange()" title="Filter by Year">
+                        <select id="year-select" class="form-select" onchange="onDateFilterChange()" title="Filter by Year" aria-label="Filter by Year">
                             {% for y in years_list %}
                                 <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>
                                     {{ y }}
@@ -139,7 +139,7 @@
 
                 <!-- Week Navigator (Monday - Sunday) -->
                 <div class="week-navigator">
-                    <a href="/?week_date={{ grid.week_info.prev_week_str }}" class="nav-btn" title="Previous Week" id="btn-prev-week">
+                    <a href="/?week_date={{ grid.week_info.prev_week_str }}" class="nav-btn" title="Previous Week" id="btn-prev-week" aria-label="Go to Previous Week">
                         ‹ Prev Week
                     </a>
 
@@ -154,12 +154,12 @@
                         {% endif %}
                     </div>
 
-                    <a href="/?week_date={{ grid.week_info.next_week_str }}" class="nav-btn" title="Next Week" id="btn-next-week">
+                    <a href="/?week_date={{ grid.week_info.next_week_str }}" class="nav-btn" title="Next Week" id="btn-next-week" aria-label="Go to Next Week">
                         Next Week ›
                     </a>
 
                     {% if not grid.week_info.is_current_week %}
-                        <a href="/?week_date={{ today_str }}" class="btn btn-sm btn-outline" id="btn-jump-today">
+                        <a href="/?week_date={{ today_str }}" class="btn btn-sm btn-outline" id="btn-jump-today" aria-label="Jump to Today">
                             Jump to Today
                         </a>
                     {% endif %}
@@ -258,6 +258,7 @@
                                                     id="note-btn-{{ row.habit.id }}-{{ day_stat.date_str }}"
                                                     onclick="openNoteModal({{ row.habit.id }}, '{{ row.habit.name | escape }}', '{{ day_stat.date_str }}')"
                                                     title="{% if day_stat.notes %}Note: {{ day_stat.notes }}{% else %}Add reflection note{% endif %}"
+                                                    aria-label="{% if day_stat.notes %}View note for {{ row.habit.name }} on {{ day_stat.date_str }}{% else %}Add note for {{ row.habit.name }} on {{ day_stat.date_str }}{% endif %}"
                                                 >
                                                     📝
                                                 </button>
@@ -289,10 +290,10 @@
 
                                 <!-- Actions -->
                                 <td class="td-actions">
-                                    <button class="action-btn edit-btn" onclick="openEditModal({{ row.habit.id }}, '{{ row.habit.name }}', '{{ row.habit.category }}', '{{ row.habit.description or '' }}', '{{ row.habit.icon }}', '{{ row.habit.color }}', {{ row.habit.daily_target or 1 }})" title="Edit habit">
+                                    <button class="action-btn edit-btn" onclick="openEditModal({{ row.habit.id }}, '{{ row.habit.name }}', '{{ row.habit.category }}', '{{ row.habit.description or '' }}', '{{ row.habit.icon }}', '{{ row.habit.color }}', {{ row.habit.daily_target or 1 }})" title="Edit habit" aria-label="Edit habit {{ row.habit.name }}">
                                         ✏️
                                     </button>
-                                    <button class="action-btn archive-btn" onclick="archiveHabit({{ row.habit.id }}, '{{ row.habit.name }}')" title="Archive habit (preserves logs)">
+                                    <button class="action-btn archive-btn" onclick="archiveHabit({{ row.habit.id }}, '{{ row.habit.name }}')" title="Archive habit (preserves logs)" aria-label="Archive habit {{ row.habit.name }}">
                                         📦
                                     </button>
                                 </td>
@@ -393,11 +394,11 @@
     </main>
 
     <!-- Modal: Add / Edit Habit -->
-    <div class="modal-backdrop" id="habit-modal" style="display: none;">
+    <div class="modal-backdrop" id="habit-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-dialog glass-card">
             <div class="modal-header">
                 <h3 id="modal-title">Add New Habit</h3>
-                <button class="modal-close" onclick="closeHabitModal()">✕</button>
+                <button class="modal-close" onclick="closeHabitModal()" aria-label="Close modal">✕</button>
             </div>
             <form id="habit-form" onsubmit="handleHabitSubmit(event)">
                 <input type="hidden" id="form-habit-id" value="">
@@ -455,11 +456,11 @@
     </div>
 
     <!-- Modal: Manage Habits / Reset Defaults -->
-    <div class="modal-backdrop" id="manage-modal" style="display: none;">
+    <div class="modal-backdrop" id="manage-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="manage-modal-title">
         <div class="modal-dialog glass-card">
             <div class="modal-header">
-                <h3>Manage Habits & Reset</h3>
-                <button class="modal-close" onclick="closeManageModal()">✕</button>
+                <h3 id="manage-modal-title">Manage Habits & Reset</h3>
+                <button class="modal-close" onclick="closeManageModal()" aria-label="Close modal">✕</button>
             </div>
             <div class="modal-body">
                 <p class="manage-desc">You can reset your habits back to the default 10 foundational habits (Morning Workout, Water, Reading, Meditation, Deep Work, Healthy Meal, AWS Tech Practice, Sleep, Steps, Reflection).</p>
@@ -487,11 +488,11 @@
     </div>
 
     <!-- Modal: Habit Day Reflection Note -->
-    <div class="modal-backdrop" id="note-modal" style="display: none;">
+    <div class="modal-backdrop" id="note-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="note-modal-title">
         <div class="modal-dialog glass-card" style="max-width: 420px;">
             <div class="modal-header">
                 <h3 id="note-modal-title">Habit Note</h3>
-                <button class="modal-close" onclick="closeNoteModal()">✕</button>
+                <button class="modal-close" onclick="closeNoteModal()" aria-label="Close modal">✕</button>
             </div>
             <form id="note-form" onsubmit="handleNoteSubmit(event)">
                 <input type="hidden" id="note-habit-id" value="">

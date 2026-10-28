@@ -103,9 +103,14 @@ def test_habit_logs_and_notes():
         assert future_note_res.status_code == 400
         print("[OK] Future date note correctly rejected with 400.")
 
-        # 6. Past week logging
+        # 6. Past week logging (clean up existing log to ensure idempotency)
         past_date = date.today() - timedelta(days=8)
         past_str = past_date.isoformat()
+        db = database.SessionLocal()
+        db.query(HabitLog).filter(HabitLog.habit_id == habit_id, HabitLog.date == past_date).delete()
+        db.commit()
+        db.close()
+
         past_res = client.post("/api/habits/toggle", json={
             "habit_id": habit_id,
             "date": past_str
