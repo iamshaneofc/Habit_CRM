@@ -1,0 +1,326 @@
+{
+  "habits": [
+    {
+      "id": 1,
+      "name": "Morning Workout",
+      "category": "Fitness",
+      "description": "30 mins strength training, jogging, or stretching",
+      "icon": "\ud83c\udfcb\ufe0f",
+      "color": "#3b82f6",
+      "daily_target": 1,
+      "is_active": 1,
+      "display_order": 1,
+      "created_at": "2026-10-27 14:56:53.251136"
+    },
+    {
+      "id": 2,
+      "name": "Drink 2.5L Water",
+      "category": "Health",
+      "description": "Maintain hydration with 8-10 glasses daily",
+      "icon": "\ud83d\udca7",
+      "color": "#06b6d4",
+      "daily_target": 1,
+      "is_active": 1,
+      "display_order": 2,
+      "created_at": "2026-10-27 14:56:53.251144"
+    },
+    {
+      "id": 3,
+      "name": "Read 20 Pages",
+      "category": "Learning",
+      "description": "Read non-fiction, books, or technical articles",
+      "icon": "\ud83d\udcda",
+      "color": "#8b5cf6",
+      "daily_target": 1,
+      "is_active": 1,
+      "display_order": 3,
+      "created_at": "2026-10-27 14:56:53.251147"
+    },
+    {
+      "id": 4,
+      "name": "15-min Meditation",
+      "category": "Mindfulness",
+      "description": "Mindful breathing and mental calmness",
+      "icon": "\ud83e\uddd8",
+      "color": "#10b981",
+      "daily_target": 1,
+      "is_active": 1,
+      "display_order": 4,
+      "created_at": "2026-10-27 14:56:53.251150"
+    },
+    {
+      "id": 5,
+      "name": "Deep Work (2 hrs)",
+      "category": "Productivity",
+      "description": "Undistracted high-impact focus session",
+      "icon": "\ud83c\udfaf",
+      "color": "#f59e0b",
+      "daily_target": 1,
+      "is_active": 1,
+      "display_order": 5,
+      "created_at": "2026-10-27 14:56:53.251152"
+    },
+    {
+      "id": 6,
+      "name": "Healthy Meal / No Junk",
+      "category": "Nutrition",
+      "description": "Whole food meals, limit refined sugar and processed foods",
+      "icon": "\ud83e\udd57",
+      "color": "#84cc16",
+      "daily_target": 1,
+      "is_active": 1,
+      "display_order": 6,
+      "created_at": "2026-10-27 14:56:53.251154"
+    },
+    {
+      "id": 7,
+      "name": "AWS & Tech Practice",
+      "category": "Career",
+      "description": "Hands-on labs: AWS RDS, Cloud, Python, DevOps",
+      "icon": "\ud83d\udcbb",
+      "color": "#6366f1",
+      "daily_target": 1,
+      "is_active": 1,
+      "display_order": 7,
+      "created_at": "2026-10-27 14:56:53.251156"
+    },
+    {
+      "id": 8,
+      "name": "Sleep by 11:00 PM",
+      "category": "Recovery",
+      "description": "7-8 hours quality sleep for recovery",
+      "icon": "\ud83c\udf19",
+      "color": "#ec4899",
+      "daily_target": 1,
+      "is_active": 1,
+      "display_order": 8,
+      "created_at": "2026-10-27 14:56:53.251158"
+    },
+    {
+      "id": 9,
+      "name": "8,000 Steps Daily",
+      "category": "Activity",
+      "description": "Evening walking or moving throughout the day",
+      "icon": "\ud83d\udc5f",
+      "color": "#14b8a6",
+      "daily_target": 1,
+      "is_active": 1,
+      "display_order": 9,
+      "created_at": "2026-10-27 14:56:53.251160"
+    },
+    {
+      "id": 10,
+      "name": "Gratitude & Reflection",
+      "category": "Mindset",
+      "description": "Write 3 wins and highlights before bed",
+      "icon": "\u270d\ufe0f",
+      "color": "#f97316",
+      "daily_target": 1,
+      "is_active": 1,
+      "display_order": 10,
+      "created_at": "2026-10-27 14:56:53.251162"
+    }
+  ],
+  "habit_logs": [
+    {
+      "id": 1,
+      "habit_id": 1,
+      "date": "2026-10-26",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269640",
+      "updated_at": "2026-10-27 14:56:53.269643"
+    },
+    {
+      "id": 2,
+      "habit_id": 1,
+      "date": "2026-10-27",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269645",
+      "updated_at": "2026-10-27 14:56:53.269646"
+    },
+    {
+      "id": 3,
+      "habit_id": 2,
+      "date": "2026-10-26",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269648",
+      "updated_at": "2026-10-27 14:56:53.269649"
+    },
+    {
+      "id": 4,
+      "habit_id": 2,
+      "date": "2026-10-27",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269650",
+      "updated_at": "2026-10-27 14:56:53.269651"
+    },
+    {
+      "id": 5,
+      "habit_id": 3,
+      "date": "2026-10-26",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269652",
+      "updated_at": "2026-10-27 14:56:53.269653"
+    },
+    {
+      "id": 6,
+      "habit_id": 3,
+      "date": "2026-10-27",
+      "completed": 0,
+      "value": 0,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269654",
+      "updated_at": "2026-10-27 14:56:53.269655"
+    },
+    {
+      "id": 7,
+      "habit_id": 4,
+      "date": "2026-10-26",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269657",
+      "updated_at": "2026-10-27 14:56:53.269658"
+    },
+    {
+      "id": 8,
+      "habit_id": 4,
+      "date": "2026-10-27",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269659",
+      "updated_at": "2026-10-27 14:56:53.269660"
+    },
+    {
+      "id": 9,
+      "habit_id": 5,
+      "date": "2026-10-26",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269661",
+      "updated_at": "2026-10-27 14:56:53.269662"
+    },
+    {
+      "id": 10,
+      "habit_id": 5,
+      "date": "2026-10-27",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269663",
+      "updated_at": "2026-10-27 14:56:53.269664"
+    },
+    {
+      "id": 11,
+      "habit_id": 6,
+      "date": "2026-10-26",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269665",
+      "updated_at": "2026-10-27 14:56:53.269666"
+    },
+    {
+      "id": 12,
+      "habit_id": 6,
+      "date": "2026-10-27",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269668",
+      "updated_at": "2026-10-27 14:56:53.269669"
+    },
+    {
+      "id": 13,
+      "habit_id": 7,
+      "date": "2026-10-26",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269670",
+      "updated_at": "2026-10-27 14:56:53.269671"
+    },
+    {
+      "id": 14,
+      "habit_id": 7,
+      "date": "2026-10-27",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269672",
+      "updated_at": "2026-10-27 14:56:53.269673"
+    },
+    {
+      "id": 15,
+      "habit_id": 8,
+      "date": "2026-10-26",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269674",
+      "updated_at": "2026-10-27 14:56:53.269675"
+    },
+    {
+      "id": 16,
+      "habit_id": 8,
+      "date": "2026-10-27",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269676",
+      "updated_at": "2026-10-27 15:43:21.970127"
+    },
+    {
+      "id": 17,
+      "habit_id": 9,
+      "date": "2026-10-26",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269678",
+      "updated_at": "2026-10-27 14:56:53.269679"
+    },
+    {
+      "id": 18,
+      "habit_id": 9,
+      "date": "2026-10-27",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269681",
+      "updated_at": "2026-10-27 14:56:53.269682"
+    },
+    {
+      "id": 19,
+      "habit_id": 10,
+      "date": "2026-10-26",
+      "completed": 1,
+      "value": 1,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269683",
+      "updated_at": "2026-10-27 14:56:53.269684"
+    },
+    {
+      "id": 20,
+      "habit_id": 10,
+      "date": "2026-10-27",
+      "completed": 0,
+      "value": 0,
+      "notes": null,
+      "created_at": "2026-10-27 14:56:53.269685",
+      "updated_at": "2026-10-27 14:56:53.269686"
+    }
+  ]
+}
