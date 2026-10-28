@@ -86,25 +86,40 @@ DEFAULT_HABITS = [
     }
 ]
 
-def seed_default_habits(db: Session, force: bool = False, seed_sample_logs: bool = True):
+from typing import Optional
+
+def seed_default_habits(db: Session, force: bool = False, seed_sample_logs: bool = True, user_id: Optional[int] = None):
     """
-    Inserts 10 default habits into the database if none exist or if forced.
+    Inserts 10 default habits into the database for a specific user or globally.
     Optionally seeds realistic past week data so charts and streak displays shine immediately.
     """
-    existing_count = db.query(Habit).count()
+    query = db.query(Habit)
+    if user_id is not None:
+        query = query.filter(Habit.user_id == user_id)
+    else:
+        query = query.filter(Habit.user_id.is_(None))
+
+    existing_count = query.count()
     if existing_count > 0 and not force:
-        print(f"Database already contains {existing_count} habits. Skipping seed.")
+        print(f"Database already contains {existing_count} habits for user_id={user_id}. Skipping seed.")
         return
 
     if force:
-        db.query(HabitLog).delete()
-        db.query(Habit).delete()
+        if user_id is not None:
+            user_h_ids = [h.id for h in query.all()]
+            if user_h_ids:
+                db.query(HabitLog).filter(HabitLog.habit_id.in_(user_h_ids)).delete(synchronize_session=False)
+            query.delete(synchronize_session=False)
+        else:
+            db.query(HabitLog).filter(HabitLog.user_id.is_(None)).delete(synchronize_session=False)
+            db.query(Habit).filter(Habit.user_id.is_(None)).delete(synchronize_session=False)
         db.commit()
 
-    print("Seeding 10 default habits...")
+    print(f"Seeding 10 default habits for user_id={user_id}...")
     created_habits = []
     for item in DEFAULT_HABITS:
         habit = Habit(
+            user_id=user_id,
             name=item["name"],
             category=item["category"],
             description=item["description"],
@@ -148,6 +163,7 @@ def seed_default_habits(db: Session, force: bool = False, seed_sample_logs: bool
                 if log_date <= today:
                     is_completed = pattern[day_offset]
                     log = HabitLog(
+                        user_id=user_id,
                         habit_id=habit.id,
                         date=log_date,
                         completed=is_completed,
@@ -158,7 +174,7 @@ def seed_default_habits(db: Session, force: bool = False, seed_sample_logs: bool
         db.commit()
         print("Sample habit logs seeded for the current week!")
 
-    print(f"Successfully seeded {len(created_habits)} habits.")
+    print(f"Successfully seeded {len(created_habits)} habits for user_id={user_id}.")
 
 if __name__ == "__main__":
     Base.metadata.create_all(bind=engine)

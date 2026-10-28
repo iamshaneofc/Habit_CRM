@@ -147,8 +147,13 @@ async def dashboard_page(
     current_year = target_dt.year
     current_month = target_dt.month
 
-    grid = services.get_weekly_grid(db, target_dt)
-    monthly_stats = services.get_monthly_summary(db, current_year, current_month)
+    # Auto-seed default habits for fresh user accounts
+    user_habit_count = db.query(Habit).filter(Habit.user_id == current_user.id).count()
+    if user_habit_count == 0:
+        seed_default_habits(db, force=False, seed_sample_logs=True, user_id=current_user.id)
+
+    grid = services.get_weekly_grid(db, target_dt, user_id=current_user.id)
+    monthly_stats = services.get_monthly_summary(db, current_year, current_month, user_id=current_user.id)
     db_info = config.get_display_info()
 
     # List of months for filter dropdown
@@ -189,6 +194,9 @@ async def register_api(payload: RegisterRequest, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    # Seed initial default habits for the new user
+    seed_default_habits(db, force=False, seed_sample_logs=True, user_id=user.id)
 
     token = auth.create_access_token({"sub": str(user.id), "email": user.email})
     response = JSONResponse({
@@ -254,7 +262,7 @@ async def toggle_habit_day(
     db: Session = Depends(get_db)
 ):
     """
-    Toggles completion tick for a habit on a specific date.
+    Toggles completion tick for a user's habit on a specific date.
     Returns the new state, streak count, and daily completion % for instant UI update.
     """
     try:
@@ -262,12 +270,13 @@ async def toggle_habit_day(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
 
-    habit = db.query(Habit).filter(Habit.id == payload.habit_id).first()
+    habit = db.query(Habit).filter(Habit.id == payload.habit_id, Habit.user_id == current_user.id).first()
     if not habit:
         raise HTTPException(status_code=404, detail="Habit not found")
 
     log = db.query(HabitLog).filter(
         HabitLog.habit_id == payload.habit_id,
+        HabitLog.user_id == current_user.id,
         HabitLog.date == log_date
     ).first()
 
@@ -278,6 +287,7 @@ async def toggle_habit_day(
     else:
         new_state = True
         log = HabitLog(
+            user_id=current_user.id,
             habit_id=payload.habit_id,
             date=log_date,
             completed=True,
@@ -287,17 +297,18 @@ async def toggle_habit_day(
 
     db.commit()
 
-    streak_info = services.calculate_habit_streak(payload.habit_id, db)
+    streak_info = services.calculate_habit_streak(payload.habit_id, db, user_id=current_user.id)
     
-    # Calculate updated overall week completion
+    # Calculate updated overall week completion for current_user
     monday, sunday = services.get_week_range(log_date)
     week_logs_count = db.query(HabitLog).filter(
+        HabitLog.user_id == current_user.id,
         HabitLog.date >= monday,
         HabitLog.date <= sunday,
         HabitLog.completed == True
     ).count()
 
-    total_active_habits = db.query(Habit).filter(Habit.is_active == True).count()
+    total_active_habits = db.query(Habit).filter(Habit.user_id == current_user.id, Habit.is_active == True).count()
     overall_week_pct = round((week_logs_count / (total_active_habits * 7)) * 100) if total_active_habits > 0 else 0
 
     return {
@@ -315,8 +326,8 @@ async def get_habits(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Fetch all habits."""
-    habits = db.query(Habit).order_by(Habit.display_order.asc(), Habit.id.asc()).all()
+    """Fetch all habits for the authenticated user."""
+    habits = db.query(Habit).filter(Habit.user_id == current_user.id).order_by(Habit.display_order.asc(), Habit.id.asc()).all()
     return [h.to_dict() for h in habits]
 
 @app.post("/api/habits")
@@ -325,8 +336,9 @@ async def create_habit(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Add a new custom habit."""
+    """Add a new custom habit for the authenticated user."""
     habit = Habit(
+        user_id=current_user.id,
         name=payload.name,
         category=payload.category,
         description=payload.description,
@@ -347,8 +359,8 @@ async def update_habit(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Change / customize an existing habit."""
-    habit = db.query(Habit).filter(Habit.id == habit_id).first()
+    """Change / customize an existing habit belonging to the user."""
+    habit = db.query(Habit).filter(Habit.id == habit_id, Habit.user_id == current_user.id).first()
     if not habit:
         raise HTTPException(status_code=404, detail="Habit not found")
 
@@ -377,8 +389,8 @@ async def delete_habit(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Delete a habit and its associated logs."""
-    habit = db.query(Habit).filter(Habit.id == habit_id).first()
+    """Delete a habit belonging to the user and its associated logs."""
+    habit = db.query(Habit).filter(Habit.id == habit_id, Habit.user_id == current_user.id).first()
     if not habit:
         raise HTTPException(status_code=404, detail="Habit not found")
     db.delete(habit)
@@ -390,8 +402,8 @@ async def reset_default_habits(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Reset to the original 10 default habits."""
-    seed_default_habits(db, force=True, seed_sample_logs=True)
+    """Reset to the original 10 default habits for the authenticated user only."""
+    seed_default_habits(db, force=True, seed_sample_logs=True, user_id=current_user.id)
     return {"success": True, "message": "Reset to 10 default habits successfully"}
 
 @app.get("/api/charts/weekly-data")
@@ -400,9 +412,9 @@ async def get_weekly_chart_data(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Returns day-by-day Monday through Sunday completion data for Chart.js."""
+    """Returns day-by-day Monday through Sunday completion data for Chart.js for the authenticated user."""
     target_dt = date.fromisoformat(week_date) if week_date else date.today()
-    grid = services.get_weekly_grid(db, target_dt)
+    grid = services.get_weekly_grid(db, target_dt, user_id=current_user.id)
     return {
         "labels": [d["day_name"] for d in grid["daily_chart_data"]],
         "completed": [d["completed_count"] for d in grid["daily_chart_data"]],

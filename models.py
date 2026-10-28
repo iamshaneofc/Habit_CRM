@@ -17,6 +17,9 @@ class User(Base):
     created_at = Column(DateTime, default=utc_now)
     updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
+    # Relationships
+    habits = relationship("Habit", back_populates="user", cascade="all, delete-orphan")
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -30,6 +33,7 @@ class Habit(Base):
     __tablename__ = "habits"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
     name = Column(String(100), nullable=False)
     category = Column(String(50), nullable=False, default="General")
     description = Column(String(255), nullable=True)
@@ -41,11 +45,13 @@ class Habit(Base):
     created_at = Column(DateTime, default=utc_now)
 
     # Relationships
+    user = relationship("User", back_populates="habits")
     logs = relationship("HabitLog", back_populates="habit", cascade="all, delete-orphan", order_by="HabitLog.date")
 
     def to_dict(self):
         return {
             "id": self.id,
+            "user_id": self.user_id,
             "name": self.name,
             "category": self.category,
             "description": self.description,
@@ -61,6 +67,7 @@ class HabitLog(Base):
     __tablename__ = "habit_logs"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
     habit_id = Column(Integer, ForeignKey("habits.id", ondelete="CASCADE"), nullable=False, index=True)
     date = Column(Date, nullable=False, index=True)
     completed = Column(Boolean, default=False, nullable=False)
@@ -71,6 +78,7 @@ class HabitLog(Base):
 
     # Relationships
     habit = relationship("Habit", back_populates="logs")
+    user = relationship("User")
 
     __table_args__ = (
         UniqueConstraint('habit_id', 'date', name='uq_habit_date'),
@@ -79,6 +87,7 @@ class HabitLog(Base):
     def to_dict(self):
         return {
             "id": self.id,
+            "user_id": self.user_id,
             "habit_id": self.habit_id,
             "date": self.date.isoformat() if self.date else None,
             "completed": self.completed,

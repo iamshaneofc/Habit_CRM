@@ -55,12 +55,15 @@ def get_week_details(target_date: Optional[date] = None) -> dict:
         "is_current_week": (monday <= today <= sunday)
     }
 
-def calculate_habit_streak(habit_id: int, db: Session) -> dict:
+def calculate_habit_streak(habit_id: int, db: Session, user_id: Optional[int] = None) -> dict:
     """Calculates current streak and longest streak for a habit."""
-    logs = db.query(HabitLog).filter(
+    log_query = db.query(HabitLog).filter(
         HabitLog.habit_id == habit_id,
         HabitLog.completed == True
-    ).order_by(HabitLog.date.desc()).all()
+    )
+    if user_id is not None:
+        log_query = log_query.filter(HabitLog.user_id == user_id)
+    logs = log_query.order_by(HabitLog.date.desc()).all()
 
     if not logs:
         return {"current_streak": 0, "longest_streak": 0, "total_completed": 0}
@@ -100,21 +103,30 @@ def calculate_habit_streak(habit_id: int, db: Session) -> dict:
         "total_completed": len(completed_dates)
     }
 
-def get_weekly_grid(db: Session, target_date: Optional[date] = None) -> dict:
+def get_weekly_grid(db: Session, target_date: Optional[date] = None, user_id: Optional[int] = None) -> dict:
     """
-    Builds the complete weekly matrix for habits and tick status Monday-Sunday.
+    Builds the complete weekly matrix for habits and tick status Monday-Sunday for a specific user.
     """
     week_info = get_week_details(target_date)
     monday = week_info["monday"]
     sunday = week_info["sunday"]
 
-    habits = db.query(Habit).filter(Habit.is_active == True).order_by(Habit.display_order.asc(), Habit.id.asc()).all()
+    habit_query = db.query(Habit).filter(Habit.is_active == True)
+    if user_id is not None:
+        habit_query = habit_query.filter(Habit.user_id == user_id)
+    habits = habit_query.order_by(Habit.display_order.asc(), Habit.id.asc()).all()
+
+    habit_ids = [h.id for h in habits]
 
     # Query all logs within the week range in one efficient batch query
-    logs = db.query(HabitLog).filter(
-        HabitLog.date >= monday,
-        HabitLog.date <= sunday
-    ).all()
+    if habit_ids:
+        logs = db.query(HabitLog).filter(
+            HabitLog.habit_id.in_(habit_ids),
+            HabitLog.date >= monday,
+            HabitLog.date <= sunday
+        ).all()
+    else:
+        logs = []
 
     # Map (habit_id, date_str) -> completed
     log_map = {(log.habit_id, log.date.isoformat()): log.completed for log in logs}
@@ -125,7 +137,7 @@ def get_weekly_grid(db: Session, target_date: Optional[date] = None) -> dict:
     total_completed_checks = 0
 
     for habit in habits:
-        streak_info = calculate_habit_streak(habit.id, db)
+        streak_info = calculate_habit_streak(habit.id, db, user_id=user_id)
         days_status = []
         habit_week_completed = 0
 
@@ -180,23 +192,29 @@ def get_weekly_grid(db: Session, target_date: Optional[date] = None) -> dict:
         "total_completed_checks": total_completed_checks
     }
 
-def get_monthly_summary(db: Session, year: int, month: int) -> dict:
+def get_monthly_summary(db: Session, year: int, month: int, user_id: Optional[int] = None) -> dict:
     """
-    Computes monthly statistics, category breakdown, and progress for filters.
+    Computes monthly statistics, category breakdown, and progress for filters for a specific user.
     """
     num_days = calendar.monthrange(year, month)[1]
     start_date = date(year, month, 1)
     end_date = date(year, month, num_days)
 
-    habits = db.query(Habit).filter(Habit.is_active == True).all()
+    habit_query = db.query(Habit).filter(Habit.is_active == True)
+    if user_id is not None:
+        habit_query = habit_query.filter(Habit.user_id == user_id)
+    habits = habit_query.all()
     habit_ids = [h.id for h in habits]
 
-    logs = db.query(HabitLog).filter(
-        HabitLog.habit_id.in_(habit_ids),
-        HabitLog.date >= start_date,
-        HabitLog.date <= end_date,
-        HabitLog.completed == True
-    ).all()
+    if habit_ids:
+        logs = db.query(HabitLog).filter(
+            HabitLog.habit_id.in_(habit_ids),
+            HabitLog.date >= start_date,
+            HabitLog.date <= end_date,
+            HabitLog.completed == True
+        ).all()
+    else:
+        logs = []
 
     # Category distribution for chart
     categories = {}

@@ -9,8 +9,8 @@ This document tracks the sequential 20-step execution of **Phase 1: Stabilizatio
 - [x] **Step 1: Repository Audit, Backup & Baseline** — Commit: `c6b3741`
 - [x] **Step 2: Stabilize Application Structure & Configuration** — Commit: `4c14d84`
 - [x] **Step 3: Database Integrity & Migration Foundation** — Commit: `8b8fbf0`
-- [x] **Step 4: Authentication & Session Management** — Commit: `PENDING`
-- [ ] **Step 5: User Ownership & Data Isolation** — Commit: Pending
+- [x] **Step 4: Authentication & Session Management** — Commit: `e4a920e`
+- [x] **Step 5: User Ownership & Data Isolation** — Commit: `PENDING`
 - [ ] **Step 6: Fix Weekly Tracking & Date Logic** — Commit: Pending
 - [ ] **Step 7: Complete Habit CRUD & Archival** — Commit: Pending
 - [ ] **Step 8: Complete Habit Logs & Completion Interactions** — Commit: Pending

@@ -36,6 +36,7 @@ def check_and_stabilize_db():
         with engine.connect() as conn:
             conn.execute(text("SELECT 1;"))
         logger.info("Database connection established successfully.")
+        config._db_checked = True
         return True, "connected"
     except Exception as e:
         err_msg = f"{type(e).__name__}: {str(e).splitlines()[0]}"
@@ -51,12 +52,15 @@ def check_and_stabilize_db():
             from config import DatabaseConfig
             DatabaseConfig._active_fallback = True
             config._active_fallback = True
+            config._db_checked = True
             return True, "fallback_sqlite"
         logger.error("Database connection failure: %s", err_msg)
         return False, err_msg
 
 def get_db():
     """FastAPI database session dependency with transactional safety."""
+    if not getattr(config, "_db_checked", False):
+        check_and_stabilize_db()
     db = SessionLocal()
     try:
         yield db
