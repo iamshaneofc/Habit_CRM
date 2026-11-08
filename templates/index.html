@@ -1020,7 +1020,7 @@ body.focus-os-theme {
 /* Scrollable Weekly Matrix Table: Top 5 Tasks Visible */
 .focus-table-container {
     min-height: 520px !important;
-    max-height: 540px !important;
+    
     overflow-y: auto !important;
     overflow-x: auto !important;
     position: relative !important;
@@ -1240,7 +1240,7 @@ body.focus-os-theme {
 .focus-table-container {
     height: 100% !important;
     min-height: 520px !important;
-    max-height: 540px !important;
+    
     flex: 1 !important;
 }
 
@@ -1404,7 +1404,662 @@ body.focus-os-theme {
     border-radius: 50%;
 }
 
-    </style>
+    /* ========================================================
+   FOCUS OS: LIGHT MODE & EXECUTIVE RESPONSIVE COCKPIT
+   ======================================================== */
+:root {
+    --focus-bg: #0b0f17;
+    --focus-surface: #111722;
+    --focus-border: rgba(255, 255, 255, 0.08);
+    --focus-text: #f8fafc;
+    --focus-muted: #94a3b8;
+}
+
+[data-theme="light"], html[data-theme="light"] {
+    --focus-bg: #f1f5f9;
+    --focus-surface: #ffffff;
+    --focus-border: #e2e8f0;
+    --focus-text: #0f172a;
+    --focus-muted: #64748b;
+}
+
+/* Light Mode Overrides */
+[data-theme="light"] body.focus-os-theme,
+html[data-theme="light"] body {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
+[data-theme="light"] .focus-header {
+    background: rgba(255, 255, 255, 0.92) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    backdrop-filter: blur(16px) !important;
+}
+[data-theme="light"] .focus-brand-main {
+    color: #0f172a !important;
+}
+[data-theme="light"] .focus-nav-tabs {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+[data-theme="light"] .focus-tab-btn {
+    color: #64748b !important;
+}
+[data-theme="light"] .focus-tab-btn.active {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+}
+[data-theme="light"] .focus-action-btn,
+[data-theme="light"] .focus-settings-btn,
+[data-theme="light"] .focus-icon-btn,
+[data-theme="light"] .focus-theme-toggle-btn {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="light"] .focus-action-btn:hover,
+[data-theme="light"] .focus-settings-btn:hover,
+[data-theme="light"] .focus-theme-toggle-btn:hover {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+/* Subbar & Filter Controls */
+[data-theme="light"] .focus-week-dropdown {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="light"] .week-title-text {
+    color: #0f172a !important;
+}
+[data-theme="light"] .week-nav-arr,
+[data-theme="light"] .week-nav-today,
+[data-theme="light"] .focus-filter-select {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+}
+[data-theme="light"] .focus-tagline {
+    color: #64748b !important;
+}
+
+/* Cards (Top 4 + Summary + All Sub-Cards + Sidebar) */
+[data-theme="light"] .focus-domain-card,
+[data-theme="light"] .focus-summary-stats,
+[data-theme="light"] .focus-sub-card,
+[data-theme="light"] .sidebar-card,
+[data-theme="light"] .focus-table-container,
+[data-theme="light"] .month-stat-card,
+[data-theme="light"] .month-cal-card,
+[data-theme="light"] .side-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    color: #0f172a !important;
+}
+[data-theme="light"] .domain-name,
+[data-theme="light"] .sub-card-title,
+[data-theme="light"] .sidebar-title,
+[data-theme="light"] .stat-val,
+[data-theme="light"] .month-stat-val,
+[data-theme="light"] .side-card-title {
+    color: #0f172a !important;
+}
+[data-theme="light"] .domain-card-foot,
+[data-theme="light"] .stat-lbl,
+[data-theme="light"] .sidebar-sub-lbl,
+[data-theme="light"] .month-stat-lbl {
+    color: #64748b !important;
+}
+
+/* Weekly Table in Light Mode */
+[data-theme="light"] .focus-tracker-table thead tr {
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+[data-theme="light"] .focus-tracker-table thead th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+}
+[data-theme="light"] .focus-tracker-table tbody tr {
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+[data-theme="light"] .focus-tracker-table tbody tr:hover {
+    background: rgba(241, 245, 249, 0.6) !important;
+}
+[data-theme="light"] .domain-label {
+    color: #0f172a !important;
+}
+[data-theme="light"] .domain-subtag {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+[data-theme="light"] .focus-daily-total-row {
+    background: #f8fafc !important;
+    border-top: 1px solid #e2e8f0 !important;
+}
+[data-theme="light"] .td-daily-lbl {
+    color: #475569 !important;
+}
+[data-theme="light"] .td-dt-val {
+    color: #0f172a !important;
+}
+
+/* Hourly Chips in Light Mode */
+[data-theme="light"] .chip-zero {
+    background: #f8fafc !important;
+    color: #94a3b8 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+[data-theme="light"] .chip-zero:hover {
+    background: #f1f5f9 !important;
+    color: #64748b !important;
+    border-color: #cbd5e1 !important;
+}
+[data-theme="light"] .chip-active,
+[data-theme="light"] .chip-h-1 {
+    background: #ecfdf5 !important;
+    color: #059669 !important;
+    border: 1px solid #a7f3d0 !important;
+}
+[data-theme="light"] .chip-h-2,
+[data-theme="light"] .chip-h-3 {
+    background: #d1fae5 !important;
+    color: #047857 !important;
+    border: 1px solid #6ee7b7 !important;
+}
+[data-theme="light"] .chip-h-4,
+[data-theme="light"] .chip-h-5 {
+    background: #a7f3d0 !important;
+    color: #065f46 !important;
+    border: 1px solid #34d399 !important;
+}
+[data-theme="light"] .chip-h-6,
+[data-theme="light"] .chip-h-7 {
+    background: #6ee7b7 !important;
+    color: #064e3b !important;
+    border: 1px solid #10b981 !important;
+}
+[data-theme="light"] .chip-h-8,
+[data-theme="light"] .chip-h-9 {
+    background: #34d399 !important;
+    color: #ffffff !important;
+    border: 1px solid #059669 !important;
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.25) !important;
+}
+[data-theme="light"] .chip-h-10 {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    border: 1px solid #047857 !important;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35) !important;
+}
+
+/* User Goals & Heatmap in Light Mode */
+[data-theme="light"] .user-goal-row {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+[data-theme="light"] .user-goal-row:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+}
+[data-theme="light"] .goal-text {
+    color: #0f172a !important;
+}
+[data-theme="light"] .goal-check-btn {
+    border-color: #cbd5e1 !important;
+    color: #64748b !important;
+}
+[data-theme="light"] .gh-cell.level-0 {
+    background: #e2e8f0 !important;
+}
+[data-theme="light"] .gh-weekday-labels span,
+[data-theme="light"] .gh-heatmap-legend span {
+    color: #64748b !important;
+}
+[data-theme="light"] .row-total-hours,
+[data-theme="light"] .perf-number {
+    color: #0f172a !important;
+}
+[data-theme="light"] .row-mini-bar,
+[data-theme="light"] .dist-bar-track {
+    background: #e2e8f0 !important;
+}
+[data-theme="light"] .perf-circle-bg {
+    stroke: #e2e8f0 !important;
+}
+
+/* Popover & Modals in Light Mode */
+[data-theme="light"] .hour-dropdown-popover {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(16, 185, 129, 0.2) !important;
+}
+[data-theme="light"] .hour-opt-btn {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+}
+[data-theme="light"] .hour-opt-btn:hover {
+    background: #10b981 !important;
+    color: #ffffff !important;
+    border-color: #10b981 !important;
+}
+[data-theme="light"] .modal-card {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.15) !important;
+    color: #0f172a !important;
+}
+[data-theme="light"] .modal-header h3,
+[data-theme="light"] .modal-header h4 {
+    color: #0f172a !important;
+}
+[data-theme="light"] .modal-header {
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+[data-theme="light"] .form-group input,
+[data-theme="light"] .form-group textarea,
+[data-theme="light"] .form-group select {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+/* Theme Toggle Button */
+.focus-theme-toggle-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #cbd5e1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.focus-theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+/* Polished Subbar & Filter UI */
+.focus-subbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.2rem 0.45rem;
+    gap: 0.75rem;
+}
+.focus-week-picker-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+.focus-week-dropdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #111827;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 7px;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.76rem;
+    color: #ffffff;
+    cursor: default;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.focus-week-arrows {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 7px;
+    overflow: hidden;
+    background: #111827;
+}
+.week-nav-arr {
+    padding: 0.28rem 0.55rem;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.85rem;
+    line-height: 1;
+    transition: all 0.12s;
+}
+.week-nav-arr:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+.week-nav-today {
+    padding: 0.28rem 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #cbd5e1;
+    text-decoration: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.12s;
+}
+.week-nav-today:hover, .week-nav-today.active {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+}
+.focus-month-year-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.focus-filter-select {
+    appearance: none;
+    background: #111827 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.5rem center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 7px;
+    color: #cbd5e1;
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 0.3rem 1.6rem 0.3rem 0.6rem;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+}
+.focus-filter-select:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+.focus-filter-select:focus {
+    border-color: #10b981;
+}
+
+/* Subtopics: Hidden by default, show on hover tooltip */
+.domain-info-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+    cursor: default;
+}
+.domain-hover-hint {
+    font-size: 0.62rem;
+    opacity: 0.45;
+    margin-left: 5px;
+    transition: opacity 0.15s, transform 0.15s;
+    user-select: none;
+}
+.td-domain-cell:hover .domain-hover-hint {
+    opacity: 1;
+    transform: scale(1.15);
+}
+.domain-tags-wrap {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 4px;
+    z-index: 100;
+    background: #0f1622;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
+    padding: 6px 8px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7);
+    flex-wrap: wrap;
+    gap: 4px;
+    max-width: 250px;
+    white-space: normal;
+    pointer-events: none;
+    animation: tooltipFadeIn 0.15s ease-out;
+}
+[data-theme="light"] .domain-tags-wrap {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+}
+.td-domain-cell:hover .domain-tags-wrap,
+.domain-info-group:hover .domain-tags-wrap {
+    display: flex;
+}
+@keyframes tooltipFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Edit Weekly Goals Button & Modal Dialog */
+.btn-edit-goals {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 5px;
+    padding: 2px 7px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    transition: all 0.15s ease;
+}
+.btn-edit-goals:hover {
+    background: #10b981;
+    color: #ffffff;
+    border-color: #10b981;
+}
+
+.modal-goals-dialog {
+    max-width: 520px !important;
+    width: 92% !important;
+}
+.goals-modal-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+}
+.goal-edit-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 0.35rem 0.55rem;
+}
+[data-theme="light"] .goal-edit-row {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+.goal-edit-idx {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    width: 16px;
+}
+.goal-edit-emoji-btn {
+    font-size: 1.1rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.12s;
+}
+.goal-edit-emoji-btn:hover {
+    transform: scale(1.1);
+    border-color: #10b981;
+}
+.goal-edit-text-input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 0.35rem 0.55rem;
+    font-size: 0.8rem;
+    color: #ffffff;
+    outline: none;
+}
+[data-theme="light"] .goal-edit-text-input {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+.goal-edit-text-input:focus {
+    border-color: #10b981;
+}
+.goal-edit-color {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    background: transparent;
+    padding: 0;
+}
+.emoji-palette-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    padding: 0.4rem 0.6rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    margin-top: 0.4rem;
+}
+.emoji-palette-lbl {
+    font-size: 0.7rem;
+    color: #64748b;
+    font-weight: 600;
+}
+.palette-chip {
+    background: transparent;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: transform 0.12s, background 0.12s;
+}
+.palette-chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.2);
+}
+
+/* Dynamic Cockpit Fit to Full Viewport Height */
+.focus-main-container {
+    max-width: 1560px;
+    margin: 0 auto;
+    padding: 0.35rem 0.85rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 48px);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+.focus-cockpit-grid.focus-cockpit-3col {
+    display: grid !important;
+    grid-template-columns: 310px 1fr 265px !important;
+    gap: 0.65rem !important;
+    align-items: stretch !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    height: calc(100vh - 170px) !important;
+}
+
+/* Left Column: 3 Cards Balanced */
+.focus-left-column {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.55rem !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    width: 310px !important;
+    min-width: 310px !important;
+}
+.weekly-goals-card {
+    flex-shrink: 0;
+}
+.heatmap-card {
+    flex-shrink: 0;
+}
+.cumulative-progress-card {
+    flex: 1 !important;
+    min-height: 110px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}
+.cumulative-chart-canvas-wrap {
+    flex: 1 !important;
+    width: 100% !important;
+    min-height: 80px !important;
+    position: relative !important;
+}
+
+/* Middle Column: Habit Matrix Table Stretches Full Height Till Bottom */
+.focus-center-column {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    flex: 1 !important;
+}
+.focus-table-container {
+    height: 100% !important;
+    max-height: none !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+}
+
+/* Right Column: 3 Cards Stretch Flush to Bottom */
+.focus-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.55rem !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    width: 265px !important;
+    min-width: 265px !important;
+    justify-content: space-between !important;
+}
+.daily-bar-card {
+    flex: 1 !important;
+    min-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}
+.task-dist-card {
+    flex: 1.15 !important;
+    min-height: 135px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}
+.perf-score-card {
+    flex: 1 !important;
+    min-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}
+
+</style>
+<script>
+        (function() {
+            var t = localStorage.getItem('focus_os_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
 </head>
 <body class="focus-os-theme">
     <!-- FOCUS OS Header -->
@@ -1428,6 +2083,10 @@ body.focus-os-theme {
             <!-- Header Right: Quick Controls, Notification, Settings, Avatar -->
             <div class="focus-header-actions">
                 <button type="button" class="focus-action-btn" id="btn-add-habit" onclick="openHabitModal()" title="Add New Habit / Focus Track">+ Add</button>
+                <!-- Theme Switcher (Light / Dark Mode) -->
+                <button type="button" class="focus-theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light / Dark Mode" aria-label="Toggle Theme">
+                    <span class="theme-icon-indicator">☀️</span>
+                </button>
                 <button type="button" class="focus-action-btn" id="btn-manage-habits" onclick="openManageModal()" title="Manage Tracks">⚙️</button>
                 
                 <!-- Notification Bell -->
@@ -1575,8 +2234,11 @@ body.focus-os-theme {
                 <div class="focus-sub-card weekly-goals-card" style="display: flex; flex-direction: column; gap: 0.45rem; padding: 0.55rem 0.75rem; background: #131923; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px;">
                     <!-- Goals Header -->
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h4 class="sub-card-title" style="margin: 0; font-size: 0.78rem; font-weight: 700; color: #fff;">Weekly Goals</h4>
-                        <span style="font-size: 0.65rem; color: #10b981; font-weight: 600;">5 Focus Targets</span>
+                        <h4 class="sub-card-title" style="margin: 0; font-size: 0.78rem; font-weight: 700;">Weekly Goals</h4>
+                        <div style="display: flex; align-items: center; gap: 0.35rem;">
+                            <span style="font-size: 0.65rem; color: #10b981; font-weight: 600;">5 Focus Targets</span>
+                            <button type="button" class="btn-edit-goals" onclick="openGoalsModal()" title="Edit 5 Targets">✏️ Edit</button>
+                        </div>
                     </div>
 
                     <!-- 5 User-Customizable Goals with Color & Emoji -->
@@ -1684,7 +2346,7 @@ body.focus-os-theme {
             <section class="tracker-section focus-center-column" style="display: flex; flex-direction: column; gap: 0.55rem; min-width: 0; flex: 1; height: 100%; min-height: 520px;">
                 
                 <!-- Middle Top: The Dominant Weekly Tracker Table (Tasks and Week) -->
-                <div class="focus-table-container" style="height: 100%; min-height: 520px; max-height: 540px; overflow-y: auto; overflow-x: auto; position: relative; flex: 1;">
+                <div class="focus-table-container" style="height: 100%; min-height: 520px;  overflow-y: auto; overflow-x: auto; position: relative; flex: 1;">
                     <span style="display:none;" aria-hidden="true">Weekly Tracker (Monday – Sunday)</span>
                     <table class="focus-tracker-table">
                         <thead>
@@ -1721,12 +2383,15 @@ body.focus-os-theme {
                                             {% endif %}
                                         </td>
 
-                                        <!-- Domain Details (Dot, Title & Sub-Tags) -->
+                                        <!-- Domain Details (Dot, Title & Sub-Tags on Hover) -->
                                         <td class="td-habit td-domain-cell">
                                             <div class="domain-info-group">
                                                 <div class="domain-title-line">
                                                     <span class="domain-dot" style="background-color: {{ row.habit.color }};"></span>
                                                     <strong class="domain-label">{{ row.habit.name }}</strong>
+                                                    {% if row.habit.description %}
+                                                        <span class="domain-hover-hint" title="Hover to view tags">🏷️</span>
+                                                    {% endif %}
                                                 </div>
                                                 <div class="domain-tags-wrap">
                                                     {% if row.habit.description %}
@@ -1872,6 +2537,46 @@ body.focus-os-theme {
 
         </div>
     </main>
+
+        <!-- Modal: Edit 5 Weekly Goals -->
+    <div class="modal-backdrop" id="goals-modal" role="dialog" aria-modal="true" aria-labelledby="goals-modal-title" style="display: none;">
+        <div class="modal-card modal-goals-dialog">
+            <div class="modal-header">
+                <div>
+                    <h3 id="goals-modal-title" style="margin: 0; font-size: 1.05rem; font-weight: 700;">Edit Weekly Goals 🎯</h3>
+                    <p style="margin: 2px 0 0; font-size: 0.74rem; color: #94a3b8;">Customize your 5 core priorities for this sprint.</p>
+                </div>
+                <button type="button" class="btn-close modal-close" onclick="closeGoalsModal()" aria-label="Close modal">✕</button>
+            </div>
+            <form id="goals-modal-form" onsubmit="handleGoalsModalSave(event)">
+                <div class="goals-modal-rows" id="goals-modal-inputs">
+                    <!-- Populated dynamically by app.js -->
+                </div>
+                <!-- Quick Emoji Palette Bar -->
+                <div class="emoji-palette-bar">
+                    <span class="emoji-palette-lbl">Quick Emojis:</span>
+                    <div class="emoji-palette-chips" id="emoji-palette-chips">
+                        <button type="button" class="palette-chip" onclick="applyPresetEmoji('🎯')">🎯</button>
+                        <button type="button" class="palette-chip" onclick="applyPresetEmoji('🚀')">🚀</button>
+                        <button type="button" class="palette-chip" onclick="applyPresetEmoji('📚')">📚</button>
+                        <button type="button" class="palette-chip" onclick="applyPresetEmoji('💪')">💪</button>
+                        <button type="button" class="palette-chip" onclick="applyPresetEmoji('🧘')">🧘</button>
+                        <button type="button" class="palette-chip" onclick="applyPresetEmoji('⚡')">⚡</button>
+                        <button type="button" class="palette-chip" onclick="applyPresetEmoji('🔥')">🔥</button>
+                        <button type="button" class="palette-chip" onclick="applyPresetEmoji('🏆')">🏆</button>
+                        <button type="button" class="palette-chip" onclick="applyPresetEmoji('🧠')">🧠</button>
+                        <button type="button" class="palette-chip" onclick="applyPresetEmoji('💻')">💻</button>
+                        <button type="button" class="palette-chip" onclick="applyPresetEmoji('📈')">📈</button>
+                    </div>
+                </div>
+                <div class="modal-actions" style="margin-top: 1rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="resetGoalsModalDefaults()">Reset Defaults</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeGoalsModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-modal-goals">Save Goals</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Modal: Add / Edit Habit -->
     <div class="modal-backdrop" id="habit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" style="display: none;">

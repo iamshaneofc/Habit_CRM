@@ -1153,7 +1153,146 @@ function promptEditGoalEmoji(id) {
     }
 }
 
-// Ensure goals render on load
-document.addEventListener("DOMContentLoaded", function() {
+// ========================================================
+// FOCUS OS: THEME SWITCHER (Light / Dark Mode)
+// ========================================================
+function initTheme() {
+    const saved = localStorage.getItem('focus_os_theme') || 'dark';
+    setTheme(saved, false);
+}
+
+function setTheme(theme, notify = true) {
+    document.documentElement.setAttribute('data-theme', theme);
+    if (document.body) {
+        if (theme === 'light') {
+            document.body.classList.add('theme-light');
+        } else {
+            document.body.classList.remove('theme-light');
+        }
+    }
+    localStorage.setItem('focus_os_theme', theme);
+    const icon = document.querySelector('.theme-icon-indicator');
+    if (icon) {
+        icon.textContent = theme === 'light' ? '🌙' : '☀️';
+    }
+    const btn = document.getElementById('theme-toggle-btn');
+    if (btn) {
+        btn.title = theme === 'light' ? 'Switch to Dark Mode (🌙)' : 'Switch to Light Mode (☀️)';
+    }
+    if (typeof initFocusOSCharts === 'function') {
+        initFocusOSCharts();
+    }
+    if (notify && typeof showToast === 'function') {
+        showToast(`Switched to ${theme === 'light' ? 'Light' : 'Dark'} Mode ${theme === 'light' ? '☀️' : '🌙'}`);
+    }
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    setTheme(current === 'dark' ? 'light' : 'dark', true);
+}
+
+// ========================================================
+// FOCUS OS: EDIT WEEKLY GOALS MODAL DIALOG
+// ========================================================
+let activeEditingGoalIdx = 0;
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function openGoalsModal() {
+    const modal = document.getElementById('goals-modal');
+    if (!modal) return;
+    const goals = loadUserGoals();
+    const container = document.getElementById('goals-modal-inputs');
+    if (container) {
+        container.innerHTML = goals.map((g, idx) => `
+            <div class="goal-edit-row" data-goal-id="${g.id}">
+                <span class="goal-edit-idx">${idx + 1}.</span>
+                <button type="button" class="goal-edit-emoji-btn" id="modal-goal-emoji-${idx}" onclick="cycleGoalModalEmoji(${idx})" title="Click to cycle emoji">${g.emoji}</button>
+                <input type="text" class="goal-edit-text-input" id="modal-goal-text-${idx}" value="${escapeHtml(g.text)}" placeholder="Enter goal priority..." maxlength="80">
+                <input type="color" class="goal-edit-color" id="modal-goal-color-${idx}" value="${g.color || '#10b981'}" title="Accent color">
+                <label style="display:inline-flex; align-items:center; gap:4px; font-size:0.74rem; color:var(--text-muted, #94a3b8); cursor:pointer;" title="Toggle completed">
+                    <input type="checkbox" id="modal-goal-chk-${idx}" ${g.checked ? 'checked' : ''}>
+                    <span>Done</span>
+                </label>
+            </div>
+        `).join('');
+    }
+    modal.style.display = 'flex';
+}
+
+function closeGoalsModal() {
+    const modal = document.getElementById('goals-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+function cycleGoalModalEmoji(idx) {
+    activeEditingGoalIdx = idx;
+    const btn = document.getElementById(`modal-goal-emoji-${idx}`);
+    if (!btn) return;
+    const emojis = ["🎯", "🚀", "📚", "💪", "🧘", "⚡", "🔥", "🏆", "🧠", "💼", "💻", "📈", "🎨", "🔬"];
+    const curr = btn.textContent.trim();
+    const nextIdx = (emojis.indexOf(curr) + 1) % emojis.length;
+    btn.textContent = emojis[nextIdx];
+}
+
+function applyPresetEmoji(emoji) {
+    const btn = document.getElementById(`modal-goal-emoji-${activeEditingGoalIdx}`);
+    if (btn) {
+        btn.textContent = emoji;
+    }
+}
+
+function handleGoalsModalSave(e) {
+    if (e) e.preventDefault();
+    const goals = [];
+    for (let i = 0; i < 5; i++) {
+        const emojiEl = document.getElementById(`modal-goal-emoji-${i}`);
+        const textEl = document.getElementById(`modal-goal-text-${i}`);
+        const colorEl = document.getElementById(`modal-goal-color-${i}`);
+        const chkEl = document.getElementById(`modal-goal-chk-${i}`);
+        goals.push({
+            id: i + 1,
+            emoji: emojiEl ? emojiEl.textContent.trim() : '🎯',
+            text: textEl && textEl.value.trim() ? textEl.value.trim() : `Goal ${i + 1}`,
+            color: colorEl ? colorEl.value : '#10b981',
+            checked: chkEl ? chkEl.checked : false
+        });
+    }
+    saveUserGoalsList(goals);
+    renderUserGoals();
+    closeGoalsModal();
+    if (typeof showToast === 'function') {
+        showToast('5 Weekly Goals saved successfully! 🎯');
+    }
+}
+
+function resetGoalsModalDefaults() {
+    if (!confirm('Reset all 5 weekly goals to default targets?')) return;
+    saveUserGoalsList(DEFAULT_USER_GOALS);
+    renderUserGoals();
+    openGoalsModal();
+    if (typeof showToast === 'function') {
+        showToast('Goals reset to defaults.');
+    }
+}
+
+// Global modal close on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeGoalsModal();
+    }
+});
+
+// Auto initialize theme & goals
+document.addEventListener('DOMContentLoaded', function() {
+    initTheme();
     renderUserGoals();
 });
