@@ -1291,8 +1291,37 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Auto initialize theme & goals
+// Date Filter & Dynamic Real Today Date Handlers
+function jumpToMonthYear() {
+    const monthSelect = document.getElementById("select-month");
+    const yearSelect = document.getElementById("select-year");
+    if (!monthSelect || !yearSelect) return;
+    const m = monthSelect.value;
+    const y = yearSelect.value;
+    window.location.href = `/?year=${y}&month=${m}`;
+}
+
+function jumpToMonthlyDate() {
+    const monthSelect = document.getElementById("month-sel");
+    const yearSelect = document.getElementById("year-sel");
+    const m = monthSelect ? monthSelect.value : 11;
+    const y = yearSelect ? yearSelect.value : 2026;
+    window.location.href = `/monthly?year=${y}&month=${m}`;
+}
+
+function updateRealTodayDate() {
+    const el = document.getElementById("today-date-val");
+    if (!el) return;
+    try {
+        const now = new Date();
+        const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+        el.textContent = now.toLocaleDateString('en-US', options);
+    } catch (e) {}
+}
+
+// Auto initialize theme, goals & dynamic real today date
 document.addEventListener('DOMContentLoaded', function() {
     initTheme();
     renderUserGoals();
+    updateRealTodayDate();
 });

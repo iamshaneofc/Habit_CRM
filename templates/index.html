@@ -2053,6 +2053,50 @@ html[data-theme="light"] body {
     justify-content: space-between !important;
 }
 
+
+/* Focus Today Real Date Badge */
+.focus-today-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: #111827;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 7px;
+    padding: 0.28rem 0.65rem;
+    font-size: 0.74rem;
+    color: #cbd5e1;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    user-select: none;
+    white-space: nowrap;
+}
+.focus-today-badge .today-icon {
+    font-size: 0.8rem;
+}
+.focus-today-badge .today-lbl {
+    color: #94a3b8;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+}
+.focus-today-badge .today-date-text {
+    color: #10b981;
+    font-weight: 700;
+    font-size: 0.74rem;
+}
+[data-theme="light"] .focus-today-badge {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+[data-theme="light"] .focus-today-badge .today-lbl {
+    color: #64748b !important;
+}
+[data-theme="light"] .focus-today-badge .today-date-text {
+    color: #059669 !important;
+}
+
 </style>
 <script>
         (function() {
@@ -2155,13 +2199,22 @@ html[data-theme="light"] body {
                 <span>Consistency compounds. Track the work, not just the results.</span>
             </div>
 
-            <!-- Demo Mode Tag if applicable -->
-            {% if current_user and current_user.email == 'demo@habitcrm.com' %}
-            <div class="focus-demo-pill">
-                <span class="demo-spark">⚡ Demo Mode</span>
-                <button type="button" onclick="resetDemoData()" class="btn-reset-demo-sm" id="btn-reset-demo" title="Restore sample logs">Reset Data</button>
+            <!-- Subbar Right: Today's Real Date Badge & Demo Mode Pill -->
+            <div class="focus-subbar-right" style="display: flex; align-items: center; gap: 0.45rem;">
+                <div class="focus-today-badge" id="subbar-today-badge" title="Current Real Date">
+                    <span class="today-icon">📅</span>
+                    <span class="today-lbl">Today:</span>
+                    <strong class="today-date-text" id="today-date-val">{{ today_display_str }}</strong>
+                </div>
+
+                <!-- Demo Mode Tag if applicable -->
+                {% if current_user and current_user.email == 'demo@habitcrm.com' %}
+                <div class="focus-demo-pill">
+                    <span class="demo-spark">⚡ Demo Mode</span>
+                    <button type="button" onclick="resetDemoData()" class="btn-reset-demo-sm" id="btn-reset-demo" title="Restore sample logs">Reset Data</button>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
         </section>
 
         <!-- Top Focus Domain Cards Row (Dynamic 4 Cards + Summary Box) -->

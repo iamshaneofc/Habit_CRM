@@ -232,7 +232,8 @@ async def monthly_page(
         "next_month": next_m,
         "months_list": months_list,
         "years_list": years_list,
-        "today_str": today.isoformat()
+        "today_str": today.isoformat(),
+        "today_display_str": today.strftime("%a, %b %d, %Y")
     })
 
 @app.get("/", response_class=HTMLResponse)
@@ -298,7 +299,8 @@ async def dashboard_page(
         "selected_month": current_month,
         "selected_year": current_year,
         "months_list": months_list,
-        "years_list": years_list
+        "years_list": years_list,
+        "today_display_str": today.strftime("%a, %b %d, %Y")
     })
 
 # ========================================================

@@ -8,148 +8,198 @@
     <!-- Google Fonts: Inter & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <!-- Chart.js 4.4 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="/static/css/style.css?v=20261107_v5">
+    <link rel="stylesheet" href="/static/css/style.css?v=20261108_v6">
+    <script>
+        (function() {
+            var t = localStorage.getItem('focus_os_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
     <style>
-        .monthly-layout {
-            max-width: 1440px;
-            margin: 0 auto;
-            padding: 1.25rem 1.5rem;
+        /* ========================================================
+           FOCUS OS: HIGH-END SINGLE-PAGE MONTHLY TRACKER
+           ======================================================== */
+        html, body {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #0b0f17;
+            color: #f1f5f9;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
+
+        .monthly-viewport {
+            max-width: 1560px;
+            margin: 0 auto;
+            padding: 0.35rem 1rem 0.5rem;
+            height: calc(100vh - 48px);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            gap: 0.45rem;
+            overflow: hidden;
+        }
+
+        /* Monthly Header Bar */
         .month-header-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 1.25rem;
-            flex-wrap: wrap;
-            gap: 1rem;
+            gap: 0.75rem;
+            flex-shrink: 0;
         }
-        .month-title-group h2 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            font-family: 'Outfit', sans-serif;
-            color: #f8fafc;
+        .month-title-group {
             display: flex;
             align-items: center;
             gap: 0.5rem;
+        }
+        .month-title-group h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: #ffffff;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .month-title-sub {
+            font-size: 0.72rem;
+            color: #64748b;
+            font-weight: 500;
         }
         .month-nav-controls {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.45rem;
         }
-        .month-btn-nav {
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        .month-nav-btn {
+            padding: 0.28rem 0.65rem;
+            border-radius: 7px;
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: #cbd5e1;
-            font-size: 0.82rem;
+            font-size: 0.74rem;
+            font-weight: 600;
             text-decoration: none;
-            transition: all 0.2s;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
         }
-        .month-btn-nav:hover {
+        .month-nav-btn:hover {
             border-color: #10b981;
             color: #10b981;
             background: rgba(16, 185, 129, 0.1);
         }
-        .month-select {
-            padding: 0.4rem 0.75rem;
-            border-radius: 6px;
-            background: #111827;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #f8fafc;
-            font-size: 0.82rem;
-            font-family: inherit;
+        .month-nav-btn.active-current {
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.12);
         }
 
-        /* Top 4 Summary Cards */
+        /* Top 4 Summary Stat Cards */
         .month-summary-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            gap: 0.55rem;
+            height: 66px;
+            flex-shrink: 0;
         }
         .month-stat-card {
-            background: #111827;
+            background: #131923;
             border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 12px;
-            padding: 1.15rem 1.25rem;
+            border-radius: 11px;
+            padding: 0.45rem 0.75rem;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: space-around;
         }
         .month-stat-lbl {
-            font-size: 0.78rem;
-            font-weight: 500;
+            font-size: 0.68rem;
+            font-weight: 600;
             color: #94a3b8;
-            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
         }
         .month-stat-val {
-            font-size: 1.6rem;
+            font-size: 1.35rem;
             font-weight: 800;
             font-family: 'Outfit', sans-serif;
-            color: #f8fafc;
+            color: #ffffff;
+            line-height: 1.1;
         }
         .month-stat-sub {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: #64748b;
-            margin-top: 0.25rem;
         }
 
-        /* 2-Pane Split: Calendar + Breakdown */
+        /* Main Cockpit Split: 1fr x 340px */
         .month-main-grid {
+            flex: 1;
+            min-height: 0;
             display: grid;
-            grid-template-columns: 1fr 440px;
-            gap: 1.25rem;
+            grid-template-columns: 1fr 340px;
+            gap: 0.65rem;
+            height: 100%;
         }
 
-        /* Calendar Card */
+        /* Calendar Card (Hero View) */
         .month-cal-card {
-            background: #111827;
+            background: #131923;
             border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 14px;
-            padding: 1.25rem;
+            border-radius: 12px;
+            padding: 0.65rem 0.85rem;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+            box-sizing: border-box;
         }
         .month-cal-head {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 0.5rem;
-            margin-bottom: 0.6rem;
+            gap: 0.4rem;
+            margin-bottom: 0.4rem;
             text-align: center;
         }
         .cal-th {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 700;
-            color: #64748b;
+            color: #94a3b8;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            padding: 0.25rem 0;
+            padding: 0.15rem 0;
         }
         .month-cal-body {
+            flex: 1;
+            min-height: 0;
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 0.5rem;
+            gap: 0.4rem;
+            align-content: stretch;
         }
         .cal-day-cell {
-            aspect-ratio: 1.15 / 1;
+            background: #101622;
+            border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            background: rgba(15, 23, 42, 0.4);
-            padding: 0.45rem;
+            padding: 0.35rem 0.45rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             cursor: pointer;
             transition: all 0.15s ease;
             position: relative;
+            min-height: 48px;
+            box-sizing: border-box;
         }
         .cal-day-cell:hover:not(.cal-padding) {
             border-color: #10b981;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.18);
         }
         .cal-day-cell.cal-padding {
             background: transparent;
@@ -157,1029 +207,225 @@
             cursor: default;
         }
         .cal-day-cell.cal-today {
-            border: 2px solid #10b981;
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+            border: 2px solid #10b981 !important;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
         }
-        /* Intensity shades */
-        .cal-day-cell.intensity-0 { background: rgba(15, 23, 42, 0.5); }
-        .cal-day-cell.intensity-1 { background: rgba(14, 68, 41, 0.45); border-color: rgba(16, 185, 129, 0.15); }
-        .cal-day-cell.intensity-2 { background: rgba(0, 109, 50, 0.45); border-color: rgba(16, 185, 129, 0.25); }
-        .cal-day-cell.intensity-3 { background: rgba(38, 166, 65, 0.45); border-color: rgba(16, 185, 129, 0.4); }
-        .cal-day-cell.intensity-4 { background: rgba(57, 211, 83, 0.35); border-color: #39d353; box-shadow: inset 0 0 12px rgba(57, 211, 83, 0.15); }
 
+        /* Intensity Levels */
+        .cal-day-cell.intensity-0 { background: #101622; }
+        .cal-day-cell.intensity-1 { background: #0c2b20; border-color: rgba(16, 185, 129, 0.25); }
+        .cal-day-cell.intensity-2 { background: #0f3f2e; border-color: rgba(16, 185, 129, 0.45); }
+        .cal-day-cell.intensity-3 { background: #13553e; border-color: rgba(16, 185, 129, 0.65); }
+        .cal-day-cell.intensity-4 { background: #166e50; border-color: #10b981; box-shadow: inset 0 0 8px rgba(16, 185, 129, 0.2); }
+
+        .cal-cell-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
         .cal-day-num {
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             font-weight: 700;
             color: #cbd5e1;
         }
-        .cal-day-footer {
+        .cal-today-pill {
+            font-size: 0.58rem;
+            font-weight: 800;
+            background: #10b981;
+            color: #0b0f17;
+            padding: 1px 4px;
+            border-radius: 4px;
+            letter-spacing: 0.04em;
+        }
+        .cal-hrs-chip {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.15);
+            padding: 1px 5px;
+            border-radius: 4px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .cal-cell-foot {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 0.7rem;
-        }
-        .cal-hrs-badge {
-            font-weight: 600;
-            color: #10b981;
+            gap: 4px;
         }
         .cal-comp-pill {
-            color: #94a3b8;
-            font-size: 0.68rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            white-space: nowrap;
+            color: #64748b;
+        }
+        .cal-comp-pill.active {
+            color: #34d399;
+        }
+        .cal-cell-mini-bar {
+            flex: 1;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .cal-cell-bar-fill {
+            height: 100%;
+            background: #10b981;
+            border-radius: 9999px;
         }
 
-        /* Right Pane: Charts & Habit Breakdown */
+        /* Right Side Pane */
         .month-side-pane {
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
+            gap: 0.55rem;
+            height: 100%;
+            min-height: 0;
         }
         .side-card {
-            background: #111827;
+            background: #131923;
             border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 14px;
-            padding: 1.25rem;
+            border-radius: 12px;
+            padding: 0.55rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        .side-card.breakdown-card {
+            flex: 1;
+            min-height: 0;
+        }
+        .side-card.activity-card {
+            height: 140px;
+            flex-shrink: 0;
         }
         .side-card-title {
-            font-size: 0.95rem;
+            font-size: 0.78rem;
             font-weight: 700;
-            color: #f8fafc;
-            margin-bottom: 0.85rem;
+            color: #ffffff;
+            margin-bottom: 0.45rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-shrink: 0;
         }
         .habit-breakdown-list {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
-            max-height: 480px;
-            overflow-y: auto;
+            gap: 0.35rem;
+            padding-right: 2px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+        }
+        .habit-breakdown-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .habit-breakdown-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
         }
         .habit-bd-item {
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 0.75rem;
+            border-radius: 7px;
+            padding: 0.4rem 0.55rem;
         }
         .habit-bd-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.25rem;
         }
         .habit-bd-name {
             display: flex;
             align-items: center;
             gap: 0.4rem;
             font-weight: 600;
-            font-size: 0.85rem;
-            color: #f8fafc;
+            font-size: 0.78rem;
+            color: #ffffff;
         }
         .habit-bd-hrs {
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.76rem;
             color: #10b981;
         }
         .habit-bd-progress-track {
-            height: 5px;
-            border-radius: 3px;
-            background: rgba(255, 255, 255, 0.06);
+            height: 4px;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.08);
             overflow: hidden;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.25rem;
         }
         .habit-bd-progress-fill {
             height: 100%;
-            border-radius: 3px;
-            transition: width 0.3s;
+            border-radius: 9999px;
         }
         .habit-bd-foot {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            font-size: 0.72rem;
+            font-size: 0.65rem;
             color: #64748b;
         }
 
         /* Modal: Day Inspection */
         .day-modal-card {
             background: #111827;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
-            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 1.25rem;
             width: 100%;
-            max-width: 460px;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            max-width: 420px;
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.75);
         }
 
-        /* Focus OS Unified Header */
-        .focus-header {
-            background: #0f141d;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            height: 48px;
-            display: flex;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        /* Light Mode Specific Overrides */
+        [data-theme="light"] html,
+        [data-theme="light"] body {
+            background-color: #f1f5f9 !important;
+            color: #0f172a !important;
         }
-        .focus-header-inner {
-            max-width: 1440px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
+        [data-theme="light"] .month-stat-card,
+        [data-theme="light"] .month-cal-card,
+        [data-theme="light"] .side-card {
+            background: #ffffff !important;
+            border-color: #e2e8f0 !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
         }
-        .focus-brand-main {
-            font-size: 1.15rem;
-            font-weight: 800;
-            color: #10b981;
-            letter-spacing: -0.02em;
-            display: block;
-            line-height: 1;
+        [data-theme="light"] .month-stat-val,
+        [data-theme="light"] .month-title-group h2,
+        [data-theme="light"] .side-card-title,
+        [data-theme="light"] .habit-bd-name,
+        [data-theme="light"] .cal-day-num {
+            color: #0f172a !important;
         }
-        .focus-brand-os {
-            color: #ffffff;
+        [data-theme="light"] .cal-day-cell {
+            background: #ffffff !important;
+            border-color: #e2e8f0 !important;
         }
-        .focus-brand-sub {
-            font-size: 0.65rem;
-            color: #64748b;
-            font-weight: 400;
-            display: block;
-            margin-top: 2px;
+        [data-theme="light"] .cal-day-cell.intensity-0 { background: #ffffff !important; }
+        [data-theme="light"] .cal-day-cell.intensity-1 { background: #ecfdf5 !important; border-color: #a7f3d0 !important; }
+        [data-theme="light"] .cal-day-cell.intensity-2 { background: #d1fae5 !important; border-color: #6ee7b7 !important; }
+        [data-theme="light"] .cal-day-cell.intensity-3 { background: #a7f3d0 !important; border-color: #34d399 !important; }
+        [data-theme="light"] .cal-day-cell.intensity-4 { background: #34d399 !important; border-color: #10b981 !important; }
+        [data-theme="light"] .habit-bd-item {
+            background: #f8fafc !important;
+            border-color: #e2e8f0 !important;
         }
-        .focus-nav-tabs {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 3px 4px;
-            border-radius: 9999px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
+        [data-theme="light"] .month-nav-btn {
+            background: #ffffff !important;
+            border-color: #e2e8f0 !important;
+            color: #334155 !important;
         }
-        .focus-tab-btn {
-            background: transparent;
-            border: none;
-            color: #94a3b8;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.78rem;
-            font-weight: 500;
-            padding: 0.3rem 0.85rem;
-            border-radius: 9999px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        [data-theme="light"] .day-modal-card {
+            background: #ffffff !important;
+            border-color: #cbd5e1 !important;
+            color: #0f172a !important;
         }
-        .focus-tab-btn:hover {
-            color: #ffffff;
-            text-decoration: none;
-        }
-        .focus-tab-btn.active {
-            background: #1e2638;
-            color: #ffffff;
-            font-weight: 600;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            text-decoration: none;
-        }
-        .focus-header-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-        .focus-action-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #cbd5e1;
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.3rem 0.65rem;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .focus-action-btn:hover {
-            background: rgba(255, 255, 255, 0.12);
-            color: #fff;
-        }
-        .focus-icon-btn {
-            background: transparent;
-            border: none;
-            color: #94a3b8;
-            cursor: pointer;
-            position: relative;
-            padding: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .focus-bell-dot {
-            position: absolute;
-            top: 3px;
-            right: 3px;
-            width: 6px;
-            height: 6px;
-            background: #ef4444;
-            border-radius: 50%;
-        }
-        .focus-user-avatar-wrap {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-        .focus-avatar-img {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: 1.5px solid #10b981;
-            background: #142436;
-            color: #10b981;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.75rem;
-        }
-        .focus-logout-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #94a3b8;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .focus-logout-btn:hover {
-            color: #f43f5e;
-            background: rgba(244, 63, 94, 0.12);
-            border-color: rgba(244, 63, 94, 0.3);
-        }
-
-    
-        /* Single Page Dynamic Viewport Fit for Monthly Tracker */
-        html, body {
-            height: 100vh;
-            overflow: hidden;
-            margin: 0;
-            padding: 0;
-        }
-        .monthly-layout {
-            max-width: 1560px;
-            margin: 0 auto;
-            padding: 0.35rem 1rem 0.45rem;
-            height: calc(100vh - 50px);
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
-        .month-header-bar {
-            margin-bottom: 0.35rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.5rem;
-        }
-        .month-title-group h2 {
-            font-size: 1.25rem;
-            margin: 0;
-        }
-        .month-summary-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0.55rem;
-            margin-bottom: 0.45rem;
-            height: 64px;
-            flex-shrink: 0;
-        }
-        .month-stat-card {
-            padding: 0.45rem 0.75rem;
-            height: 64px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .month-stat-val {
-            font-size: 1.25rem;
-            line-height: 1.1;
-        }
-        .month-stat-lbl {
-            font-size: 0.72rem;
-            margin-bottom: 0.15rem;
-        }
-        .month-main-grid {
-            flex: 1;
-            min-height: 0;
-            display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 0.65rem;
-            height: calc(100% - 110px);
-        }
-        .month-cal-card {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 0.55rem 0.75rem;
-            min-height: 0;
-        }
-        .month-cal-body {
-            flex: 1;
-            min-height: 0;
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 0.3rem;
-            align-content: stretch;
-        }
-        .cal-day-cell {
-            aspect-ratio: auto !important;
-            height: 100% !important;
-            min-height: 38px !important;
-            padding: 0.25rem 0.35rem !important;
-        }
-        .cal-day-num {
-            font-size: 0.75rem !important;
-        }
-        .side-card {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 0.55rem 0.75rem;
-            min-height: 0;
-        }
-        .habit-breakdown-list {
-            flex: 1;
-            max-height: none !important;
-            overflow-y: auto;
-            gap: 0.4rem;
-        }
-        .habit-bd-item {
-            padding: 0.45rem 0.6rem;
-        }
-
-/* ========================================================
-   FOCUS OS: LIGHT MODE & EXECUTIVE RESPONSIVE COCKPIT
-   ======================================================== */
-:root {
-    --focus-bg: #0b0f17;
-    --focus-surface: #111722;
-    --focus-border: rgba(255, 255, 255, 0.08);
-    --focus-text: #f8fafc;
-    --focus-muted: #94a3b8;
-}
-
-[data-theme="light"], html[data-theme="light"] {
-    --focus-bg: #f1f5f9;
-    --focus-surface: #ffffff;
-    --focus-border: #e2e8f0;
-    --focus-text: #0f172a;
-    --focus-muted: #64748b;
-}
-
-/* Light Mode Overrides */
-[data-theme="light"] body.focus-os-theme,
-html[data-theme="light"] body {
-    background-color: #f1f5f9 !important;
-    color: #0f172a !important;
-}
-
-[data-theme="light"] .focus-header {
-    background: rgba(255, 255, 255, 0.92) !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    backdrop-filter: blur(16px) !important;
-}
-[data-theme="light"] .focus-brand-main {
-    color: #0f172a !important;
-}
-[data-theme="light"] .focus-nav-tabs {
-    background: #f1f5f9 !important;
-    border: 1px solid #e2e8f0 !important;
-}
-[data-theme="light"] .focus-tab-btn {
-    color: #64748b !important;
-}
-[data-theme="light"] .focus-tab-btn.active {
-    background: #ffffff !important;
-    color: #0f172a !important;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
-}
-[data-theme="light"] .focus-action-btn,
-[data-theme="light"] .focus-settings-btn,
-[data-theme="light"] .focus-icon-btn,
-[data-theme="light"] .focus-theme-toggle-btn {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #334155 !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
-}
-[data-theme="light"] .focus-action-btn:hover,
-[data-theme="light"] .focus-settings-btn:hover,
-[data-theme="light"] .focus-theme-toggle-btn:hover {
-    background: #f8fafc !important;
-    border-color: #cbd5e1 !important;
-    color: #0f172a !important;
-}
-
-/* Subbar & Filter Controls */
-[data-theme="light"] .focus-week-dropdown {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #0f172a !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
-}
-[data-theme="light"] .week-title-text {
-    color: #0f172a !important;
-}
-[data-theme="light"] .week-nav-arr,
-[data-theme="light"] .week-nav-today,
-[data-theme="light"] .focus-filter-select {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #334155 !important;
-}
-[data-theme="light"] .focus-tagline {
-    color: #64748b !important;
-}
-
-/* Cards (Top 4 + Summary + All Sub-Cards + Sidebar) */
-[data-theme="light"] .focus-domain-card,
-[data-theme="light"] .focus-summary-stats,
-[data-theme="light"] .focus-sub-card,
-[data-theme="light"] .sidebar-card,
-[data-theme="light"] .focus-table-container,
-[data-theme="light"] .month-stat-card,
-[data-theme="light"] .month-cal-card,
-[data-theme="light"] .side-card {
-    background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
-    color: #0f172a !important;
-}
-[data-theme="light"] .domain-name,
-[data-theme="light"] .sub-card-title,
-[data-theme="light"] .sidebar-title,
-[data-theme="light"] .stat-val,
-[data-theme="light"] .month-stat-val,
-[data-theme="light"] .side-card-title {
-    color: #0f172a !important;
-}
-[data-theme="light"] .domain-card-foot,
-[data-theme="light"] .stat-lbl,
-[data-theme="light"] .sidebar-sub-lbl,
-[data-theme="light"] .month-stat-lbl {
-    color: #64748b !important;
-}
-
-/* Weekly Table in Light Mode */
-[data-theme="light"] .focus-tracker-table thead tr {
-    background: #f8fafc !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-}
-[data-theme="light"] .focus-tracker-table thead th {
-    background: #f8fafc !important;
-    color: #475569 !important;
-}
-[data-theme="light"] .focus-tracker-table tbody tr {
-    border-bottom: 1px solid #f1f5f9 !important;
-}
-[data-theme="light"] .focus-tracker-table tbody tr:hover {
-    background: rgba(241, 245, 249, 0.6) !important;
-}
-[data-theme="light"] .domain-label {
-    color: #0f172a !important;
-}
-[data-theme="light"] .domain-subtag {
-    background: #f1f5f9 !important;
-    color: #475569 !important;
-    border: 1px solid #e2e8f0 !important;
-}
-[data-theme="light"] .focus-daily-total-row {
-    background: #f8fafc !important;
-    border-top: 1px solid #e2e8f0 !important;
-}
-[data-theme="light"] .td-daily-lbl {
-    color: #475569 !important;
-}
-[data-theme="light"] .td-dt-val {
-    color: #0f172a !important;
-}
-
-/* Hourly Chips in Light Mode */
-[data-theme="light"] .chip-zero {
-    background: #f8fafc !important;
-    color: #94a3b8 !important;
-    border: 1px solid #e2e8f0 !important;
-}
-[data-theme="light"] .chip-zero:hover {
-    background: #f1f5f9 !important;
-    color: #64748b !important;
-    border-color: #cbd5e1 !important;
-}
-[data-theme="light"] .chip-active,
-[data-theme="light"] .chip-h-1 {
-    background: #ecfdf5 !important;
-    color: #059669 !important;
-    border: 1px solid #a7f3d0 !important;
-}
-[data-theme="light"] .chip-h-2,
-[data-theme="light"] .chip-h-3 {
-    background: #d1fae5 !important;
-    color: #047857 !important;
-    border: 1px solid #6ee7b7 !important;
-}
-[data-theme="light"] .chip-h-4,
-[data-theme="light"] .chip-h-5 {
-    background: #a7f3d0 !important;
-    color: #065f46 !important;
-    border: 1px solid #34d399 !important;
-}
-[data-theme="light"] .chip-h-6,
-[data-theme="light"] .chip-h-7 {
-    background: #6ee7b7 !important;
-    color: #064e3b !important;
-    border: 1px solid #10b981 !important;
-}
-[data-theme="light"] .chip-h-8,
-[data-theme="light"] .chip-h-9 {
-    background: #34d399 !important;
-    color: #ffffff !important;
-    border: 1px solid #059669 !important;
-    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.25) !important;
-}
-[data-theme="light"] .chip-h-10 {
-    background: #10b981 !important;
-    color: #ffffff !important;
-    border: 1px solid #047857 !important;
-    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35) !important;
-}
-
-/* User Goals & Heatmap in Light Mode */
-[data-theme="light"] .user-goal-row {
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
-}
-[data-theme="light"] .user-goal-row:hover {
-    background: #f1f5f9 !important;
-    border-color: #cbd5e1 !important;
-}
-[data-theme="light"] .goal-text {
-    color: #0f172a !important;
-}
-[data-theme="light"] .goal-check-btn {
-    border-color: #cbd5e1 !important;
-    color: #64748b !important;
-}
-[data-theme="light"] .gh-cell.level-0 {
-    background: #e2e8f0 !important;
-}
-[data-theme="light"] .gh-weekday-labels span,
-[data-theme="light"] .gh-heatmap-legend span {
-    color: #64748b !important;
-}
-[data-theme="light"] .row-total-hours,
-[data-theme="light"] .perf-number {
-    color: #0f172a !important;
-}
-[data-theme="light"] .row-mini-bar,
-[data-theme="light"] .dist-bar-track {
-    background: #e2e8f0 !important;
-}
-[data-theme="light"] .perf-circle-bg {
-    stroke: #e2e8f0 !important;
-}
-
-/* Popover & Modals in Light Mode */
-[data-theme="light"] .hour-dropdown-popover {
-    background: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(16, 185, 129, 0.2) !important;
-}
-[data-theme="light"] .hour-opt-btn {
-    background: #f8fafc !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #334155 !important;
-}
-[data-theme="light"] .hour-opt-btn:hover {
-    background: #10b981 !important;
-    color: #ffffff !important;
-    border-color: #10b981 !important;
-}
-[data-theme="light"] .modal-card {
-    background: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
-    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.15) !important;
-    color: #0f172a !important;
-}
-[data-theme="light"] .modal-header h3,
-[data-theme="light"] .modal-header h4 {
-    color: #0f172a !important;
-}
-[data-theme="light"] .modal-header {
-    border-bottom: 1px solid #e2e8f0 !important;
-}
-[data-theme="light"] .form-group input,
-[data-theme="light"] .form-group textarea,
-[data-theme="light"] .form-group select {
-    background: #f8fafc !important;
-    border: 1px solid #cbd5e1 !important;
-    color: #0f172a !important;
-}
-
-/* Theme Toggle Button */
-.focus-theme-toggle-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
-    color: #cbd5e1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-.focus-theme-toggle-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
-}
-
-/* Polished Subbar & Filter UI */
-.focus-subbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.35rem 0.2rem 0.45rem;
-    gap: 0.75rem;
-}
-.focus-week-picker-wrap {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-}
-.focus-week-dropdown {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: #111827;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 7px;
-    padding: 0.3rem 0.65rem;
-    font-size: 0.76rem;
-    color: #ffffff;
-    cursor: default;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-}
-.focus-week-arrows {
-    display: inline-flex;
-    align-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 7px;
-    overflow: hidden;
-    background: #111827;
-}
-.week-nav-arr {
-    padding: 0.28rem 0.55rem;
-    color: #94a3b8;
-    text-decoration: none;
-    font-size: 0.85rem;
-    line-height: 1;
-    transition: all 0.12s;
-}
-.week-nav-arr:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-}
-.week-nav-today {
-    padding: 0.28rem 0.65rem;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #cbd5e1;
-    text-decoration: none;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-    transition: all 0.12s;
-}
-.week-nav-today:hover, .week-nav-today.active {
-    color: #10b981;
-    background: rgba(16, 185, 129, 0.1);
-}
-.focus-month-year-filters {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-}
-.focus-filter-select {
-    appearance: none;
-    background: #111827 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.5rem center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 7px;
-    color: #cbd5e1;
-    font-size: 0.74rem;
-    font-weight: 600;
-    padding: 0.3rem 1.6rem 0.3rem 0.6rem;
-    cursor: pointer;
-    outline: none;
-    transition: border-color 0.15s;
-}
-.focus-filter-select:hover {
-    border-color: rgba(255, 255, 255, 0.2);
-}
-.focus-filter-select:focus {
-    border-color: #10b981;
-}
-
-/* Subtopics: Hidden by default, show on hover tooltip */
-.domain-info-group {
-    display: flex;
-    align-items: center;
-    position: relative;
-    cursor: default;
-}
-.domain-hover-hint {
-    font-size: 0.62rem;
-    opacity: 0.45;
-    margin-left: 5px;
-    transition: opacity 0.15s, transform 0.15s;
-    user-select: none;
-}
-.td-domain-cell:hover .domain-hover-hint {
-    opacity: 1;
-    transform: scale(1.15);
-}
-.domain-tags-wrap {
-    display: none;
-    position: absolute;
-    top: calc(100% + 4px);
-    left: 4px;
-    z-index: 100;
-    background: #0f1622;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 8px;
-    padding: 6px 8px;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7);
-    flex-wrap: wrap;
-    gap: 4px;
-    max-width: 250px;
-    white-space: normal;
-    pointer-events: none;
-    animation: tooltipFadeIn 0.15s ease-out;
-}
-[data-theme="light"] .domain-tags-wrap {
-    background: #ffffff;
-    border-color: #cbd5e1;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
-}
-.td-domain-cell:hover .domain-tags-wrap,
-.domain-info-group:hover .domain-tags-wrap {
-    display: flex;
-}
-@keyframes tooltipFadeIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Edit Weekly Goals Button & Modal Dialog */
-.btn-edit-goals {
-    background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    border-radius: 5px;
-    padding: 2px 7px;
-    font-size: 0.68rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    transition: all 0.15s ease;
-}
-.btn-edit-goals:hover {
-    background: #10b981;
-    color: #ffffff;
-    border-color: #10b981;
-}
-
-.modal-goals-dialog {
-    max-width: 520px !important;
-    width: 92% !important;
-}
-.goals-modal-rows {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin: 0.75rem 0;
-}
-.goal-edit-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 0.35rem 0.55rem;
-}
-[data-theme="light"] .goal-edit-row {
-    background: #f8fafc;
-    border-color: #e2e8f0;
-}
-.goal-edit-idx {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #64748b;
-    width: 16px;
-}
-.goal-edit-emoji-btn {
-    font-size: 1.1rem;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 6px;
-    width: 32px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.12s;
-}
-.goal-edit-emoji-btn:hover {
-    transform: scale(1.1);
-    border-color: #10b981;
-}
-.goal-edit-text-input {
-    flex: 1;
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    padding: 0.35rem 0.55rem;
-    font-size: 0.8rem;
-    color: #ffffff;
-    outline: none;
-}
-[data-theme="light"] .goal-edit-text-input {
-    background: #ffffff;
-    border-color: #cbd5e1;
-    color: #0f172a;
-}
-.goal-edit-text-input:focus {
-    border-color: #10b981;
-}
-.goal-edit-color {
-    width: 24px;
-    height: 24px;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    background: transparent;
-    padding: 0;
-}
-.emoji-palette-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    flex-wrap: wrap;
-    padding: 0.4rem 0.6rem;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px dashed rgba(255, 255, 255, 0.08);
-    border-radius: 6px;
-    margin-top: 0.4rem;
-}
-.emoji-palette-lbl {
-    font-size: 0.7rem;
-    color: #64748b;
-    font-weight: 600;
-}
-.palette-chip {
-    background: transparent;
-    border: none;
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 2px 4px;
-    border-radius: 4px;
-    transition: transform 0.12s, background 0.12s;
-}
-.palette-chip:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: scale(1.2);
-}
-
-/* Dynamic Cockpit Fit to Full Viewport Height */
-.focus-main-container {
-    max-width: 1560px;
-    margin: 0 auto;
-    padding: 0.35rem 0.85rem 0.5rem;
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 48px);
-    box-sizing: border-box;
-    overflow: hidden;
-}
-.focus-cockpit-grid.focus-cockpit-3col {
-    display: grid !important;
-    grid-template-columns: 310px 1fr 265px !important;
-    gap: 0.65rem !important;
-    align-items: stretch !important;
-    flex: 1 !important;
-    min-height: 0 !important;
-    height: calc(100vh - 170px) !important;
-}
-
-/* Left Column: 3 Cards Balanced */
-.focus-left-column {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 0.55rem !important;
-    height: 100% !important;
-    min-height: 0 !important;
-    width: 310px !important;
-    min-width: 310px !important;
-}
-.weekly-goals-card {
-    flex-shrink: 0;
-}
-.heatmap-card {
-    flex-shrink: 0;
-}
-.cumulative-progress-card {
-    flex: 1 !important;
-    min-height: 110px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-}
-.cumulative-chart-canvas-wrap {
-    flex: 1 !important;
-    width: 100% !important;
-    min-height: 80px !important;
-    position: relative !important;
-}
-
-/* Middle Column: Habit Matrix Table Stretches Full Height Till Bottom */
-.focus-center-column {
-    display: flex !important;
-    flex-direction: column !important;
-    height: 100% !important;
-    min-height: 0 !important;
-    flex: 1 !important;
-}
-.focus-table-container {
-    height: 100% !important;
-    max-height: none !important;
-    flex: 1 !important;
-    min-height: 0 !important;
-    overflow-y: auto !important;
-    overflow-x: auto !important;
-}
-
-/* Right Column: 3 Cards Stretch Flush to Bottom */
-.focus-sidebar {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 0.55rem !important;
-    height: 100% !important;
-    min-height: 0 !important;
-    width: 265px !important;
-    min-width: 265px !important;
-    justify-content: space-between !important;
-}
-.daily-bar-card {
-    flex: 1 !important;
-    min-height: 120px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-}
-.task-dist-card {
-    flex: 1.15 !important;
-    min-height: 135px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-}
-.perf-score-card {
-    flex: 1 !important;
-    min-height: 120px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-}
-
-</style>
-<script>
-        (function() {
-            var t = localStorage.getItem('focus_os_theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', t);
-        })();
-    </script>
+    </style>
 </head>
 <body class="focus-os-theme">
     <!-- FOCUS OS Header -->
@@ -1200,9 +446,10 @@ html[data-theme="light"] body {
                 <a href="/onboarding" class="focus-tab-btn" role="tab" style="text-decoration: none;">Personalize CRM</a>
             </nav>
 
-            <!-- Header Right: Quick Controls, Notification, Settings, Avatar -->
+            <!-- Header Right: Quick Controls, Theme Switcher, Notification, Avatar -->
             <div class="focus-header-actions">
                 <a href="/onboarding" class="focus-action-btn" style="text-decoration: none;" title="Personalize Tracks">⚡ Setup</a>
+                
                 <!-- Theme Switcher (Light / Dark Mode) -->
                 <button type="button" class="focus-theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light / Dark Mode" aria-label="Toggle Theme">
                     <span class="theme-icon-indicator">☀️</span>
@@ -1234,30 +481,40 @@ html[data-theme="light"] body {
         </div>
     </header>
 
-    <main class="monthly-layout">
-        <!-- Month Header Navigation -->
+    <main class="monthly-viewport">
+        <!-- Month Header Navigation & Real Today Date Badge -->
         <div class="month-header-bar">
             <div class="month-title-group">
                 <h2>
                     <span>📅</span>
                     <span>{{ month_name }} {{ current_year }}</span>
-                    <span style="font-size: 0.85rem; font-weight: normal; color: #64748b; margin-left: 0.5rem;">Focus OS Performance</span>
                 </h2>
+                <span class="month-title-sub">Monthly Overview</span>
             </div>
+
             <div class="month-nav-controls">
-                <a href="/monthly?year={{ prev_year }}&month={{ prev_month }}" class="month-btn-nav" title="Previous Month">&larr; {{ prev_month }}/{{ prev_year }}</a>
-                <select class="month-select" onchange="window.location.href='/monthly?year=' + document.getElementById('year-sel').value + '&month=' + this.value">
+                <!-- Today's Real Date Badge -->
+                <div class="focus-today-badge" id="subbar-today-badge" title="Current Real Date" style="margin-right: 0.25rem;">
+                    <span class="today-icon">📅</span>
+                    <span class="today-lbl">Today:</span>
+                    <strong class="today-date-text" id="today-date-val">{{ today_display_str }}</strong>
+                </div>
+
+                <a href="/monthly?year={{ prev_year }}&month={{ prev_month }}" class="month-nav-btn" title="Previous Month">‹ {{ prev_month }}/{{ prev_year }}</a>
+                
+                <select class="focus-filter-select" id="month-sel" onchange="jumpToMonthlyDate()" aria-label="Select Month">
                     {% for m in months_list %}
                         <option value="{{ m.num }}" {% if m.is_selected %}selected{% endif %}>{{ m.name }}</option>
                     {% endfor %}
                 </select>
-                <select class="month-select" id="year-sel" onchange="window.location.href='/monthly?year=' + this.value + '&month={{ current_month }}'">
+                <select class="focus-filter-select" id="year-sel" onchange="jumpToMonthlyDate()" aria-label="Select Year">
                     {% for y in years_list %}
                         <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
                     {% endfor %}
                 </select>
-                <a href="/monthly?year={{ next_year }}&month={{ next_month }}" class="month-btn-nav" title="Next Month">{{ next_month }}/{{ next_year }} &rarr;</a>
-                <a href="/monthly" class="month-btn-nav" style="border-color: #10b981; color: #10b981;">Current Month</a>
+                
+                <a href="/monthly?year={{ next_year }}&month={{ next_month }}" class="month-nav-btn" title="Next Month">{{ next_month }}/{{ next_year }} ›</a>
+                <a href="/monthly" class="month-nav-btn active-current" title="Jump to Current Month">Current Month</a>
             </div>
         </div>
 
@@ -1287,7 +544,7 @@ html[data-theme="light"] body {
 
         <!-- 2-Pane Split: Calendar Grid + Breakdown Sidebar -->
         <div class="month-main-grid">
-            <!-- Left Pane: 7-Day Calendar Grid -->
+            <!-- Left Pane: 7-Day Calendar Grid (Spacious, No Clipping) -->
             <div class="month-cal-card">
                 <div class="month-cal-head">
                     <span class="cal-th">Mon</span>
@@ -1306,33 +563,37 @@ html[data-theme="light"] body {
                             <div 
                                 class="cal-day-cell intensity-{{ day.intensity }} {% if day.date_str == today_str %}cal-today{% endif %}" 
                                 onclick="inspectDay('{{ day.date_str }}', {{ day.completed_count }}, {{ day.total_habits }}, {{ day.hours }})"
-                                title="{{ day.date_str }}: {{ day.completed_count }}/{{ day.total_habits }} completed, {{ day.hours }}h"
+                                title="{{ day.date_str }}: {{ day.completed_count }}/{{ day.total_habits }} completed, {{ day.hours }}h logged"
                             >
-                                <span class="cal-day-num">{{ day.day_number }}</span>
-                                <div class="cal-day-footer">
-                                    <span class="cal-hrs-badge">{% if day.hours > 0 %}{{ day.hours }}h{% else %}&mdash;{% endif %}</span>
-                                    <span class="cal-comp-pill">{{ day.completed_count }}/{{ day.total_habits }}</span>
+                                <div class="cal-cell-head">
+                                    <span class="cal-day-num">{{ day.day_number }}</span>
+                                    {% if day.date_str == today_str %}
+                                        <span class="cal-today-pill">TODAY</span>
+                                    {% elif day.hours > 0 %}
+                                        <span class="cal-hrs-chip">{{ day.hours }}h</span>
+                                    {% endif %}
+                                </div>
+                                <div class="cal-cell-foot">
+                                    <span class="cal-comp-pill {% if day.completed_count > 0 %}active{% endif %}">
+                                        {{ day.completed_count }}/{{ day.total_habits }}
+                                    </span>
+                                    <div class="cal-cell-mini-bar">
+                                        <div class="cal-cell-bar-fill" style="width: {{ (day.completed_count / (day.total_habits or 1) * 100)|round }}%;"></div>
+                                    </div>
                                 </div>
                             </div>
                         {% endif %}
                     {% endfor %}
                 </div>
-
-                <!-- Monthly Activity Chart below calendar -->
-                <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.06);">
-                    <h4 style="font-size: 0.9rem; font-weight: 700; color: #cbd5e1; margin-bottom: 0.75rem;">Daily Hours Distribution Across {{ month_name }}</h4>
-                    <div style="height: 120px;">
-                        <canvas id="monthlyActivityBarChart"></canvas>
-                    </div>
-                </div>
             </div>
 
-            <!-- Right Pane: Habit-by-Habit Breakdown -->
+            <!-- Right Pane: Habit-by-Habit Breakdown + Monthly Activity Chart -->
             <div class="month-side-pane">
-                <div class="side-card">
+                <!-- Card 1: Habit Domain Breakdown -->
+                <div class="side-card breakdown-card">
                     <div class="side-card-title">
                         <span>Habit Domain Breakdown</span>
-                        <span style="font-size: 0.75rem; color: #64748b; font-weight: normal;">{{ month_name }}</span>
+                        <span style="font-size: 0.68rem; color: #64748b; font-weight: normal;">{{ month_name }}</span>
                     </div>
 
                     <div class="habit-breakdown-list">
@@ -1343,14 +604,15 @@ html[data-theme="light"] body {
                                         <span>{{ h.icon }}</span>
                                         <span>{{ h.name }}</span>
                                     </div>
-                                    <span class="habit-bd-hrs">{{ h.monthly_hours }}h</span>
+                                    <!-- Fixed double 'h' bug: using h.monthly_hours directly -->
+                                    <span class="habit-bd-hrs">{{ h.monthly_hours }}</span>
                                 </div>
                                 <div class="habit-bd-progress-track">
                                     <div class="habit-bd-progress-fill" style="width: {{ h.completion_pct }}%; background-color: {{ h.color }};"></div>
                                 </div>
                                 <div class="habit-bd-foot">
                                     <span>{{ h.completed_days }} / {{ h.target_days }} days ({{ h.completion_pct }}%)</span>
-                                    <span style="color: {% if h.trend_change >= 0 %}#10b981{% else %}#ef4444{% endif %};">
+                                    <span style="color: {% if h.trend_change >= 0 %}#10b981{% else %}#ef4444{% endif %}; font-weight: 600;">
                                         {% if h.trend_change > 0 %}+{% endif %}{{ h.trend_change }}% vs prev mo
                                     </span>
                                 </div>
@@ -1359,13 +621,14 @@ html[data-theme="light"] body {
                     </div>
                 </div>
 
-                <!-- Category Chart -->
-                <div class="side-card">
-                    <div class="side-card-title">
-                        <span>Category Breakdown</span>
+                <!-- Card 2: Daily Hours Distribution Across Month -->
+                <div class="side-card activity-card">
+                    <div class="side-card-title" style="margin-bottom: 0.25rem;">
+                        <span>Daily Hours Distribution</span>
+                        <span style="font-size: 0.65rem; color: #10b981; font-weight: 600;">Goal: 8h/day</span>
                     </div>
-                    <div style="height: 150px;">
-                        <canvas id="monthlyCategoryChart"></canvas>
+                    <div style="flex: 1; min-height: 0; position: relative;">
+                        <canvas id="monthlyActivityBarChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -1376,70 +639,78 @@ html[data-theme="light"] body {
     <div class="modal-backdrop" id="day-modal" role="dialog" aria-modal="true" style="display: none;">
         <div class="day-modal-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 id="modal-day-title" style="font-size: 1.15rem; font-weight: 700; color: #f8fafc;">Day Inspection</h3>
+                <h3 id="modal-day-title" style="font-size: 1.1rem; font-weight: 700; color: #f8fafc; margin: 0;">Day Details</h3>
                 <button type="button" class="btn-close" onclick="closeDayModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">✕</button>
             </div>
-            <div id="modal-day-content" style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.6;">
-                <!-- Populated via JS -->
-            </div>
-            <div style="margin-top: 1.25rem; text-align: right;">
-                <button type="button" class="btn btn-secondary" onclick="closeDayModal()" style="font-size: 0.82rem; padding: 0.4rem 1rem;">Close</button>
-            </div>
+            <div id="modal-day-content"></div>
         </div>
     </div>
 
+    <!-- Pass dynamic chart data to JS -->
     <script>
-        const DAILY_CHART_LABELS = {{ data.daily_chart_labels|tojson }};
-        const DAILY_CHART_HOURS = {{ data.daily_chart_hours|tojson }};
-        const CATEGORY_DISTRIBUTION = {{ data.category_distribution|tojson }};
+        const MONTHLY_CHART_LABELS = {{ (data.daily_chart_labels or []) | tojson }};
+        const MONTHLY_CHART_HOURS = {{ (data.daily_chart_hours or []) | tojson }};
 
-        // Render Monthly Activity Bar Chart
-        const actCtx = document.getElementById("monthlyActivityBarChart");
-        if (actCtx) {
-            new Chart(actCtx, {
+        document.addEventListener("DOMContentLoaded", function() {
+            initMonthlyActivityChart();
+        });
+
+        function initMonthlyActivityChart() {
+            const ctx = document.getElementById("monthlyActivityBarChart");
+            if (!ctx) return;
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            
+            new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: DAILY_CHART_LABELS,
+                    labels: MONTHLY_CHART_LABELS,
                     datasets: [{
-                        data: DAILY_CHART_HOURS,
-                        backgroundColor: '#10b981',
+                        label: 'Hours Logged',
+                        data: MONTHLY_CHART_HOURS,
+                        backgroundColor: function(context) {
+                            const chart = context.chart;
+                            const {ctx, chartArea} = chart;
+                            if (!chartArea) return '#10b981';
+                            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                            gradient.addColorStop(0, '#06b6d4');
+                            gradient.addColorStop(1, '#10b981');
+                            return gradient;
+                        },
                         borderRadius: 3,
-                        barPercentage: 0.7
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 9 } } },
-                        y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { size: 9 } } }
-                    }
-                }
-            });
-        }
-
-        // Render Monthly Category Donut Chart
-        const catCtx = document.getElementById("monthlyCategoryChart");
-        if (catCtx) {
-            const catLabels = Object.keys(CATEGORY_DISTRIBUTION);
-            const catVals = Object.values(CATEGORY_DISTRIBUTION);
-            new Chart(catCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: catLabels,
-                    datasets: [{
-                        data: catVals,
-                        backgroundColor: ['#10b981', '#38bdf8', '#8b5cf6', '#f59e0b', '#ec4899', '#6366f1'],
-                        borderColor: '#111827',
-                        borderWidth: 2
+                        borderSkipped: false,
+                        barPercentage: 0.65
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 10 } }
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => `Day ${items[0].label}`,
+                                label: (item) => `${item.raw} hours logged`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { 
+                                color: isLight ? '#64748b' : '#94a3b8', 
+                                font: { size: 8 },
+                                maxTicksLimit: 15
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)' },
+                            ticks: { 
+                                color: isLight ? '#64748b' : '#94a3b8', 
+                                font: { size: 8 },
+                                stepSize: 4
+                            }
+                        }
                     }
                 }
             });
@@ -1447,22 +718,23 @@ html[data-theme="light"] body {
 
         function inspectDay(dateStr, completed, total, hours) {
             document.getElementById("modal-day-title").textContent = `Day Details: ${dateStr}`;
+            const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
             document.getElementById("modal-day-content").innerHTML = `
-                <div style="background: rgba(15, 23, 42, 0.6); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255, 255, 255, 0.08);">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span>Habits Completed:</span>
-                        <strong style="color: #10b981;">${completed} / ${total} (${total > 0 ? Math.round((completed/total)*100) : 0}%)</strong>
+                <div style="background: rgba(255, 255, 255, 0.04); border-radius: 8px; padding: 0.85rem; border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                        <span style="color: #94a3b8;">Habits Completed:</span>
+                        <strong style="color: #10b981;">${completed} / ${total} (${pct}%)</strong>
                     </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Productive Time Logged:</span>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                        <span style="color: #94a3b8;">Productive Hours:</span>
                         <strong style="color: #38bdf8;">${hours} hours</strong>
                     </div>
                 </div>
-                <div style="margin-top: 1rem; font-size: 0.8rem; color: #94a3b8;">
-                    To view or toggle individual habit ticks for this week, jump to the dashboard for this date.
+                <div style="margin-top: 0.85rem; font-size: 0.76rem; color: #94a3b8;">
+                    Jump directly to this week's grid in your Focus OS cockpit to log or update hours.
                 </div>
-                <div style="margin-top: 0.75rem;">
-                    <a href="/?week_date=${dateStr}" class="btn btn-primary" style="font-size: 0.8rem; display: inline-block; padding: 0.4rem 0.8rem;">Open in Weekly Dashboard &rarr;</a>
+                <div style="margin-top: 0.85rem; text-align: right;">
+                    <a href="/?week_date=${dateStr}" class="btn btn-primary" style="font-size: 0.78rem; text-decoration: none; display: inline-block; padding: 0.4rem 0.85rem; border-radius: 6px; background: #10b981; color: #fff; font-weight: 600;">Open in Weekly Cockpit &rarr;</a>
                 </div>
             `;
             document.getElementById("day-modal").style.display = "flex";
