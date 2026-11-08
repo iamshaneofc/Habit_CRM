@@ -35,3 +35,7 @@ htmlcov/
 
 # Antigravity artifacts
 .gemini/
+
+# Scratch files & temporary downloads
+README (*).md
+gemini-code-*.js

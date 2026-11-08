@@ -53,9 +53,53 @@ def check_and_stabilize_db():
             DatabaseConfig._active_fallback = True
             config._active_fallback = True
             config._db_checked = True
+            upgrade_schema(engine)
             return True, "fallback_sqlite"
         logger.error("Database connection failure: %s", err_msg)
         return False, err_msg
+
+def upgrade_schema(eng=None):
+    """
+    Safely adds any missing columns across SQLite or PostgreSQL tables
+    to guarantee zero data loss and seamless evolution.
+    """
+    if eng is None:
+        eng = engine
+    from sqlalchemy import inspect
+    try:
+        insp = inspect(eng)
+        tables = insp.get_table_names()
+        # 1. Users table
+        if "users" in tables:
+            user_cols = {c["name"] for c in insp.get_columns("users")}
+            with eng.connect() as conn:
+                if "display_name" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN display_name VARCHAR(100);"))
+                if "profession" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN profession VARCHAR(100);"))
+                if "bio" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN bio VARCHAR(255);"))
+                if "onboarding_completed" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN onboarding_completed BOOLEAN DEFAULT 0;"))
+                if "tracking_start_date" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN tracking_start_date DATE;"))
+                if "timezone" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN timezone VARCHAR(50) DEFAULT 'UTC';"))
+                conn.commit()
+
+        # 2. Habits table
+        if "habits" in tables:
+            habit_cols = {c["name"] for c in insp.get_columns("habits")}
+            with eng.connect() as conn:
+                if "subtopics" not in habit_cols:
+                    conn.execute(text("ALTER TABLE habits ADD COLUMN subtopics TEXT;"))
+                if "activation_date" not in habit_cols:
+                    conn.execute(text("ALTER TABLE habits ADD COLUMN activation_date DATE;"))
+                if "archived_at" not in habit_cols:
+                    conn.execute(text("ALTER TABLE habits ADD COLUMN archived_at DATETIME;"))
+                conn.commit()
+    except Exception as e:
+        logger.warning(f"Schema upgrade check note: {e}")
 
 def get_db():
     """FastAPI database session dependency with transactional safety."""

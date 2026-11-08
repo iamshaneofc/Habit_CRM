@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ month_name }} {{ current_year }} — Monthly Tracker | Focus OS</title>
+    <meta name="description" content="Dedicated monthly performance and habit tracking calendar breakdown for Focus OS.">
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js 4.4 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css?v=20261107_v5">
+    <style>
+        .monthly-layout {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 1.25rem 1.5rem;
+        }
+        .month-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .month-title-group h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: #f8fafc;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .month-nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .month-btn-nav {
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
+            font-size: 0.82rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .month-btn-nav:hover {
+            border-color: #10b981;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .month-select {
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            font-size: 0.82rem;
+            font-family: inherit;
+        }
+
+        /* Top 4 Summary Cards */
+        .month-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .month-stat-card {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 12px;
+            padding: 1.15rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .month-stat-lbl {
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: #94a3b8;
+            margin-bottom: 0.4rem;
+        }
+        .month-stat-val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: #f8fafc;
+        }
+        .month-stat-sub {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        /* 2-Pane Split: Calendar + Breakdown */
+        .month-main-grid {
+            display: grid;
+            grid-template-columns: 1fr 440px;
+            gap: 1.25rem;
+        }
+
+        /* Calendar Card */
+        .month-cal-card {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 14px;
+            padding: 1.25rem;
+        }
+        .month-cal-head {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 0.6rem;
+            text-align: center;
+        }
+        .cal-th {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.25rem 0;
+        }
+        .month-cal-body {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+        .cal-day-cell {
+            aspect-ratio: 1.15 / 1;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(15, 23, 42, 0.4);
+            padding: 0.45rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+        .cal-day-cell:hover:not(.cal-padding) {
+            border-color: #10b981;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+        .cal-day-cell.cal-padding {
+            background: transparent;
+            border-color: transparent;
+            cursor: default;
+        }
+        .cal-day-cell.cal-today {
+            border: 2px solid #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+        }
+        /* Intensity shades */
+        .cal-day-cell.intensity-0 { background: rgba(15, 23, 42, 0.5); }
+        .cal-day-cell.intensity-1 { background: rgba(14, 68, 41, 0.45); border-color: rgba(16, 185, 129, 0.15); }
+        .cal-day-cell.intensity-2 { background: rgba(0, 109, 50, 0.45); border-color: rgba(16, 185, 129, 0.25); }
+        .cal-day-cell.intensity-3 { background: rgba(38, 166, 65, 0.45); border-color: rgba(16, 185, 129, 0.4); }
+        .cal-day-cell.intensity-4 { background: rgba(57, 211, 83, 0.35); border-color: #39d353; box-shadow: inset 0 0 12px rgba(57, 211, 83, 0.15); }
+
+        .cal-day-num {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #cbd5e1;
+        }
+        .cal-day-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.7rem;
+        }
+        .cal-hrs-badge {
+            font-weight: 600;
+            color: #10b981;
+        }
+        .cal-comp-pill {
+            color: #94a3b8;
+            font-size: 0.68rem;
+        }
+
+        /* Right Pane: Charts & Habit Breakdown */
+        .month-side-pane {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        .side-card {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 14px;
+            padding: 1.25rem;
+        }
+        .side-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .habit-breakdown-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 480px;
+            overflow-y: auto;
+        }
+        .habit-bd-item {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 0.75rem;
+        }
+        .habit-bd-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+        }
+        .habit-bd-name {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #f8fafc;
+        }
+        .habit-bd-hrs {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #10b981;
+        }
+        .habit-bd-progress-track {
+            height: 5px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.06);
+            overflow: hidden;
+            margin-bottom: 0.35rem;
+        }
+        .habit-bd-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        .habit-bd-foot {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: #64748b;
+        }
+
+        /* Modal: Day Inspection */
+        .day-modal-card {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 460px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Focus OS Unified Header */
+        .focus-header {
+            background: #0f141d;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            height: 48px;
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .focus-header-inner {
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .focus-brand-main {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #10b981;
+            letter-spacing: -0.02em;
+            display: block;
+            line-height: 1;
+        }
+        .focus-brand-os {
+            color: #ffffff;
+        }
+        .focus-brand-sub {
+            font-size: 0.65rem;
+            color: #64748b;
+            font-weight: 400;
+            display: block;
+            margin-top: 2px;
+        }
+        .focus-nav-tabs {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3px 4px;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .focus-tab-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 500;
+            padding: 0.3rem 0.85rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .focus-tab-btn:hover {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        .focus-tab-btn.active {
+            background: #1e2638;
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            text-decoration: none;
+        }
+        .focus-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .focus-action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.65rem;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .focus-action-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+        .focus-icon-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            position: relative;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .focus-bell-dot {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 6px;
+            height: 6px;
+            background: #ef4444;
+            border-radius: 50%;
+        }
+        .focus-user-avatar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .focus-avatar-img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1.5px solid #10b981;
+            background: #142436;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+        .focus-logout-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .focus-logout-btn:hover {
+            color: #f43f5e;
+            background: rgba(244, 63, 94, 0.12);
+            border-color: rgba(244, 63, 94, 0.3);
+        }
+
+    </style>
+</head>
+<body class="focus-os-theme">
+    <!-- FOCUS OS Header -->
+    <header class="focus-header">
+        <div class="focus-header-inner">
+            <!-- Brand Area -->
+            <div class="focus-brand">
+                <a href="/" style="text-decoration:none; display:flex; flex-direction:column;">
+                    <span class="focus-brand-main">FOCUS <span class="focus-brand-os">OS</span></span>
+                    <span class="focus-brand-sub">Personal Performance Dashboard</span>
+                </a>
+            </div>
+
+            <!-- Center Navigation Pill Tabs -->
+            <nav class="focus-nav-tabs" role="tablist">
+                <a href="/" class="focus-tab-btn" role="tab" style="text-decoration: none;">Dashboard</a>
+                <a href="/monthly" class="focus-tab-btn active" role="tab" style="text-decoration: none;">Monthly Tracker</a>
+                <a href="/onboarding" class="focus-tab-btn" role="tab" style="text-decoration: none;">Personalize CRM</a>
+            </nav>
+
+            <!-- Header Right: Quick Controls, Notification, Settings, Avatar -->
+            <div class="focus-header-actions">
+                <a href="/onboarding" class="focus-action-btn" style="text-decoration: none;" title="Personalize Tracks">⚡ Setup</a>
+                
+                <button type="button" class="focus-icon-btn focus-bell-btn" title="1 Unread Notification" aria-label="Notifications">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="focus-bell-dot"></span>
+                </button>
+
+                <div class="focus-user-avatar-wrap" id="user-badge" title="{{ current_user.email if current_user else 'User' }}">
+                    <div class="focus-avatar-img">
+                        <span>{{ (current_user.full_name or current_user.email or 'U')[0] | upper }}</span>
+                    </div>
+                    {% if current_user %}
+                    <a href="/logout" class="focus-logout-btn" id="btn-logout" title="Sign Out">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="monthly-layout">
+        <!-- Month Header Navigation -->
+        <div class="month-header-bar">
+            <div class="month-title-group">
+                <h2>
+                    <span>📅</span>
+                    <span>{{ month_name }} {{ current_year }}</span>
+                    <span style="font-size: 0.85rem; font-weight: normal; color: #64748b; margin-left: 0.5rem;">Focus OS Performance</span>
+                </h2>
+            </div>
+            <div class="month-nav-controls">
+                <a href="/monthly?year={{ prev_year }}&month={{ prev_month }}" class="month-btn-nav" title="Previous Month">&larr; {{ prev_month }}/{{ prev_year }}</a>
+                <select class="month-select" onchange="window.location.href='/monthly?year=' + document.getElementById('year-sel').value + '&month=' + this.value">
+                    {% for m in months_list %}
+                        <option value="{{ m.num }}" {% if m.is_selected %}selected{% endif %}>{{ m.name }}</option>
+                    {% endfor %}
+                </select>
+                <select class="month-select" id="year-sel" onchange="window.location.href='/monthly?year=' + this.value + '&month={{ current_month }}'">
+                    {% for y in years_list %}
+                        <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+                <a href="/monthly?year={{ next_year }}&month={{ next_month }}" class="month-btn-nav" title="Next Month">{{ next_month }}/{{ next_year }} &rarr;</a>
+                <a href="/monthly" class="month-btn-nav" style="border-color: #10b981; color: #10b981;">Current Month</a>
+            </div>
+        </div>
+
+        <!-- Top 4 Summary Cards -->
+        <div class="month-summary-grid">
+            <div class="month-stat-card">
+                <span class="month-stat-lbl">Total Productive Time</span>
+                <div class="month-stat-val" style="color: #10b981;">{{ data.total_hours }}h</div>
+                <span class="month-stat-sub">Across all tracked habit domains</span>
+            </div>
+            <div class="month-stat-card">
+                <span class="month-stat-lbl">Monthly Completion Rate</span>
+                <div class="month-stat-val" style="color: #38bdf8;">{{ data.completion_rate_pct }}%</div>
+                <span class="month-stat-sub">{{ data.total_completions }} habit completions recorded</span>
+            </div>
+            <div class="month-stat-card">
+                <span class="month-stat-lbl">Active Habit Tracks</span>
+                <div class="month-stat-val">{{ data.active_habits_count }}</div>
+                <span class="month-stat-sub">Focus CRM tracks monitored</span>
+            </div>
+            <div class="month-stat-card">
+                <span class="month-stat-lbl">Current Streak</span>
+                <div class="month-stat-val" style="color: #f59e0b;">{{ data.best_streak or 0 }} Days</div>
+                <span class="month-stat-sub">Best consistency streak</span>
+            </div>
+        </div>
+
+        <!-- 2-Pane Split: Calendar Grid + Breakdown Sidebar -->
+        <div class="month-main-grid">
+            <!-- Left Pane: 7-Day Calendar Grid -->
+            <div class="month-cal-card">
+                <div class="month-cal-head">
+                    <span class="cal-th">Mon</span>
+                    <span class="cal-th">Tue</span>
+                    <span class="cal-th">Wed</span>
+                    <span class="cal-th">Thu</span>
+                    <span class="cal-th">Fri</span>
+                    <span class="cal-th">Sat</span>
+                    <span class="cal-th">Sun</span>
+                </div>
+                <div class="month-cal-body">
+                    {% for day in data.calendar_days %}
+                        {% if day.is_padding %}
+                            <div class="cal-day-cell cal-padding"></div>
+                        {% else %}
+                            <div 
+                                class="cal-day-cell intensity-{{ day.intensity }} {% if day.date_str == today_str %}cal-today{% endif %}" 
+                                onclick="inspectDay('{{ day.date_str }}', {{ day.completed_count }}, {{ day.total_habits }}, {{ day.hours }})"
+                                title="{{ day.date_str }}: {{ day.completed_count }}/{{ day.total_habits }} completed, {{ day.hours }}h"
+                            >
+                                <span class="cal-day-num">{{ day.day_number }}</span>
+                                <div class="cal-day-footer">
+                                    <span class="cal-hrs-badge">{% if day.hours > 0 %}{{ day.hours }}h{% else %}&mdash;{% endif %}</span>
+                                    <span class="cal-comp-pill">{{ day.completed_count }}/{{ day.total_habits }}</span>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Monthly Activity Chart below calendar -->
+                <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+                    <h4 style="font-size: 0.9rem; font-weight: 700; color: #cbd5e1; margin-bottom: 0.75rem;">Daily Hours Distribution Across {{ month_name }}</h4>
+                    <div style="height: 120px;">
+                        <canvas id="monthlyActivityBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Pane: Habit-by-Habit Breakdown -->
+            <div class="month-side-pane">
+                <div class="side-card">
+                    <div class="side-card-title">
+                        <span>Habit Domain Breakdown</span>
+                        <span style="font-size: 0.75rem; color: #64748b; font-weight: normal;">{{ month_name }}</span>
+                    </div>
+
+                    <div class="habit-breakdown-list">
+                        {% for h in data.habit_breakdown %}
+                            <div class="habit-bd-item">
+                                <div class="habit-bd-top">
+                                    <div class="habit-bd-name">
+                                        <span>{{ h.icon }}</span>
+                                        <span>{{ h.name }}</span>
+                                    </div>
+                                    <span class="habit-bd-hrs">{{ h.monthly_hours }}h</span>
+                                </div>
+                                <div class="habit-bd-progress-track">
+                                    <div class="habit-bd-progress-fill" style="width: {{ h.completion_pct }}%; background-color: {{ h.color }};"></div>
+                                </div>
+                                <div class="habit-bd-foot">
+                                    <span>{{ h.completed_days }} / {{ h.target_days }} days ({{ h.completion_pct }}%)</span>
+                                    <span style="color: {% if h.trend_change >= 0 %}#10b981{% else %}#ef4444{% endif %};">
+                                        {% if h.trend_change > 0 %}+{% endif %}{{ h.trend_change }}% vs prev mo
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Category Chart -->
+                <div class="side-card">
+                    <div class="side-card-title">
+                        <span>Category Breakdown</span>
+                    </div>
+                    <div style="height: 150px;">
+                        <canvas id="monthlyCategoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Day Inspection -->
+    <div class="modal-backdrop" id="day-modal" role="dialog" aria-modal="true" style="display: none;">
+        <div class="day-modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 id="modal-day-title" style="font-size: 1.15rem; font-weight: 700; color: #f8fafc;">Day Inspection</h3>
+                <button type="button" class="btn-close" onclick="closeDayModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">✕</button>
+            </div>
+            <div id="modal-day-content" style="font-size: 0.88rem; color: #cbd5e1; line-height: 1.6;">
+                <!-- Populated via JS -->
+            </div>
+            <div style="margin-top: 1.25rem; text-align: right;">
+                <button type="button" class="btn btn-secondary" onclick="closeDayModal()" style="font-size: 0.82rem; padding: 0.4rem 1rem;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DAILY_CHART_LABELS = {{ data.daily_chart_labels|tojson }};
+        const DAILY_CHART_HOURS = {{ data.daily_chart_hours|tojson }};
+        const CATEGORY_DISTRIBUTION = {{ data.category_distribution|tojson }};
+
+        // Render Monthly Activity Bar Chart
+        const actCtx = document.getElementById("monthlyActivityBarChart");
+        if (actCtx) {
+            new Chart(actCtx, {
+                type: 'bar',
+                data: {
+                    labels: DAILY_CHART_LABELS,
+                    datasets: [{
+                        data: DAILY_CHART_HOURS,
+                        backgroundColor: '#10b981',
+                        borderRadius: 3,
+                        barPercentage: 0.7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 9 } } },
+                        y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { size: 9 } } }
+                    }
+                }
+            });
+        }
+
+        // Render Monthly Category Donut Chart
+        const catCtx = document.getElementById("monthlyCategoryChart");
+        if (catCtx) {
+            const catLabels = Object.keys(CATEGORY_DISTRIBUTION);
+            const catVals = Object.values(CATEGORY_DISTRIBUTION);
+            new Chart(catCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: catLabels,
+                    datasets: [{
+                        data: catVals,
+                        backgroundColor: ['#10b981', '#38bdf8', '#8b5cf6', '#f59e0b', '#ec4899', '#6366f1'],
+                        borderColor: '#111827',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 10 } }
+                    }
+                }
+            });
+        }
+
+        function inspectDay(dateStr, completed, total, hours) {
+            document.getElementById("modal-day-title").textContent = `Day Details: ${dateStr}`;
+            document.getElementById("modal-day-content").innerHTML = `
+                <div style="background: rgba(15, 23, 42, 0.6); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255, 255, 255, 0.08);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Habits Completed:</span>
+                        <strong style="color: #10b981;">${completed} / ${total} (${total > 0 ? Math.round((completed/total)*100) : 0}%)</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Productive Time Logged:</span>
+                        <strong style="color: #38bdf8;">${hours} hours</strong>
+                    </div>
+                </div>
+                <div style="margin-top: 1rem; font-size: 0.8rem; color: #94a3b8;">
+                    To view or toggle individual habit ticks for this week, jump to the dashboard for this date.
+                </div>
+                <div style="margin-top: 0.75rem;">
+                    <a href="/?week_date=${dateStr}" class="btn btn-primary" style="font-size: 0.8rem; display: inline-block; padding: 0.4rem 0.8rem;">Open in Weekly Dashboard &rarr;</a>
+                </div>
+            `;
+            document.getElementById("day-modal").style.display = "flex";
+        }
+
+        function closeDayModal() {
+            document.getElementById("day-modal").style.display = "none";
+        }
+    </script>
+</body>
+</html>

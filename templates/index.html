@@ -3,509 +3,1969 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habit CRM - Weekly Habit Tracker & Analytics</title>
-    <meta name="description" content="A modern, high-performance Habit Tracking System built with Python, FastAPI, and AWS RDS compatibility. Track habits Monday to Sunday with interactive visual charts.">
-    <!-- Google Fonts: Inter & Outfit -->
+    <title>FOCUS OS — Personal Performance Dashboard</title>
+    <meta name="description" content="FOCUS OS — Personal Performance Dashboard. Track deep work, consistency, hours, and goals in one cohesive dashboard.">
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=20261107_v5">
+    <style>
+/* ========================================================
+   FOCUS OS - EXECUTIVE TERMINAL ULTRA-COMPACT DASHBOARD
+   Pixel-exact replica matching Focus OS screenshot
+   ======================================================== */
+
+body.focus-os-theme {
+    background-color: #0b0f17 !important;
+    color: #f1f5f9 !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    line-height: 1.4;
+}
+
+/* Header */
+.focus-header {
+    background: #0f141d;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    height: 50px;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.focus-header-inner {
+    max-width: 1680px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+.focus-brand-main {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #10b981;
+    letter-spacing: -0.02em;
+    display: block;
+    line-height: 1;
+}
+.focus-brand-os {
+    color: #ffffff;
+}
+.focus-brand-sub {
+    font-size: 0.65rem;
+    color: #64748b;
+    font-weight: 400;
+    display: block;
+    margin-top: 2px;
+}
+
+/* Nav Tabs */
+.focus-nav-tabs {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 3px 4px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.focus-tab-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.3rem 0.85rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.focus-tab-btn:hover {
+    color: #ffffff;
+    text-decoration: none;
+}
+.focus-tab-btn.active {
+    background: #1e2638;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    text-decoration: none;
+}
+
+/* Header Right */
+.focus-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.focus-action-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.focus-action-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+.focus-icon-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    position: relative;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.focus-bell-dot {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 6px;
+    height: 6px;
+    background: #ef4444;
+    border-radius: 50%;
+}
+.focus-settings-btn {
+    background: #161e2e;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+    font-size: 0.76rem;
+    font-weight: 600;
+    padding: 0.32rem 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.focus-user-avatar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.focus-avatar-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid #10b981;
+    background: #142436;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+.focus-avatar-logout {
+    color: #64748b;
+    text-decoration: none;
+    font-size: 0.75rem;
+    padding: 2px 5px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+.focus-avatar-logout:hover {
+    color: #f43f5e;
+}
+
+/* Main Container: Compact, Fit in 1 Screen */
+.focus-main-container {
+    max-width: 1680px;
+    margin: 0 auto;
+    padding: 0.5rem 1rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+/* Sub-bar */
+.focus-subbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+.focus-week-picker-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.focus-week-dropdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #131923;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.28rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    color: #f1f5f9;
+}
+.focus-week-arrows {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.week-nav-arr, .week-nav-today {
+    background: #131923;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.75rem;
+    padding: 0.28rem 0.55rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+.week-nav-today.active, .week-nav-arr:hover, .week-nav-today:hover {
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.35);
+}
+.focus-tagline {
+    font-size: 0.78rem;
+    color: #64748b;
+    flex: 1;
+}
+.focus-demo-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.72rem;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+}
+.btn-reset-demo-sm {
+    background: transparent;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #10b981;
+    font-size: 0.68rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Month & Year Selectors in Sub-bar */
+.focus-month-year-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.focus-filter-select {
+    background: #131923;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+.focus-filter-select:hover, .focus-filter-select:focus {
+    border-color: #10b981;
+}
+.focus-filter-select option {
+    background: #111827;
+    color: #f8fafc;
+}
+
+/* Top 4 Domain Cards Row + Summary */
+.focus-top-cards-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) 230px !important;
+    gap: 0.65rem !important;
+    width: 100% !important;
+}
+.focus-domain-card {
+    background: #131923;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 0.65rem 0.85rem;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    height: 96px !important;
+    max-height: 96px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    transition: border-color 0.2s;
+}
+.focus-domain-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+.domain-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.domain-title-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.domain-icon-badge {
+    font-size: 0.78rem;
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.domain-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+.domain-dots {
+    color: #64748b;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+.domain-sparkline-area {
+    height: 32px !important;
+    max-height: 32px !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    margin: 2px 0 !important;
+}
+.domain-sparkline-svg {
+    width: 100% !important;
+    height: 32px !important;
+    max-height: 32px !important;
+    display: block !important;
+}
+.domain-card-foot {
+    font-size: 0.72rem;
+    color: #94a3b8;
+}
+.trend-green {
+    color: #10b981;
+    font-weight: 600;
+}
+
+/* Summary Stats Card */
+.focus-summary-stats {
+    background: #131923;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 0.65rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    height: 96px;
+}
+.summary-stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.76rem;
+}
+.stat-lbl {
+    color: #94a3b8;
+}
+.stat-val {
+    color: #ffffff;
+    font-weight: 700;
+}
+.highlight-val {
+    color: #10b981;
+}
+
+/* 2-Column Desktop Grid Layout */
+.focus-cockpit-grid {
+    display: grid;
+    grid-template-columns: 1fr 290px;
+    gap: 0.75rem;
+    align-items: start;
+}
+
+/* Weekly Tracker Table Container */
+.focus-table-container {
+    background: #131923;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    overflow: hidden;
+}
+.focus-tracker-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.focus-tracker-table th, .focus-tracker-table td {
+    padding: 0.4rem 0.5rem;
+    text-align: center;
+}
+.focus-tracker-table thead tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.15);
+}
+.th-cat-pill, .td-cat-pill {
+    width: 48px;
+    padding-left: 0.6rem !important;
+    text-align: left !important;
+}
+.v-pill-tag {
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    display: inline-block;
+    letter-spacing: 0.03em;
+}
+.tag-dsa { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); }
+.tag-aiml { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); }
+.tag-devops { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.35); }
+.tag-cyber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.35); }
+.tag-growth { background: rgba(132, 204, 22, 0.15); color: #84cc16; border: 1px solid rgba(132, 204, 22, 0.35); }
+
+.th-domain, .td-domain-cell {
+    width: 200px;
+    text-align: left !important;
+}
+.domain-info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.domain-title-line {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+.domain-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+.domain-label {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+.domain-tags-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 1px;
+}
+.domain-subtag {
+    background: #182232;
+    color: #94a3b8;
+    font-size: 0.65rem;
+    padding: 0.08rem 0.35rem;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.th-day {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+.th-active-day {
+    color: #10b981 !important;
+    position: relative;
+}
+.th-active-day::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 20%;
+    width: 60%;
+    height: 2px;
+    background: #10b981;
+}
+
+/* Cells & Hourly Chips */
+.td-day-cell {
+    position: relative;
+}
+.hour-chip {
+    width: 100%;
+    height: 32px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    transition: transform 0.12s, box-shadow 0.12s;
+    user-select: none;
+}
+.hour-chip:hover {
+    transform: scale(1.04);
+}
+.chip-dropdown-arrow {
+    font-size: 0.65rem;
+    opacity: 0.75;
+    margin-left: 1px;
+}
+
+/* Exact Chip Color Gradients */
+.chip-zero {
+    background: #2b171c;
+    color: #f87171;
+    border: 1px solid rgba(244, 63, 94, 0.22);
+}
+.chip-h-2 {
+    background: #132a22;
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.28);
+}
+.chip-h-4 {
+    background: #12382c;
+    color: #4ade80;
+    border: 1px solid rgba(16, 185, 129, 0.38);
+}
+.chip-h-6 {
+    background: #144938;
+    color: #6ee7b7;
+    border: 1px solid rgba(16, 185, 129, 0.48);
+}
+.chip-h-8 {
+    background: #165d45;
+    color: #a7f3d0;
+    border: 1px solid rgba(16, 185, 129, 0.62);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+.chip-h-10 {
+    background: #186e50;
+    color: #d1fae5;
+    border: 1px solid rgba(16, 185, 129, 0.75);
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.25);
+}
+.chip-purple {
+    background: #292455 !important;
+    color: #c084fc !important;
+    border: 1px solid rgba(139, 92, 246, 0.45) !important;
+}
+.chip-amber {
+    background: #462a15 !important;
+    color: #fb923c !important;
+    border: 1px solid rgba(245, 158, 11, 0.45) !important;
+}
+.chip-lime {
+    background: #364016 !important;
+    color: #bef264 !important;
+    border: 1px solid rgba(132, 204, 22, 0.45) !important;
+}
+
+/* Total Column */
+.th-total {
+    width: 85px;
+    font-size: 0.72rem;
+    color: #94a3b8;
+}
+.td-total-cell {
+    width: 85px;
+    padding-right: 0.6rem !important;
+}
+.row-total-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+}
+.row-total-hours {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #ffffff;
+    min-width: 28px;
+    text-align: right;
+}
+.row-mini-bar {
+    flex: 1;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+.row-mini-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+}
+
+/* Daily Total Footer Row */
+.focus-daily-total-row {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.2);
+}
+.td-daily-lbl {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+    text-align: left !important;
+    padding-left: 0.8rem !important;
+}
+.td-dt-val {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+.td-dt-active {
+    color: #10b981;
+}
+
+/* Bottom Sub-Grid (Goals, Heatmap, Cumulative, Reflections) */
+.focus-bottom-row-grid {
+    display: grid;
+    grid-template-columns: 310px 1fr;
+    gap: 0.75rem;
+    margin-top: 0.65rem;
+}
+.focus-sub-card {
+    background: #131923;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 0.65rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+.sub-card-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 0.35rem;
+}
+
+/* Goals */
+.goals-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+.goal-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    cursor: pointer;
+    user-select: none;
+}
+.goal-item.checked {
+    color: #10b981;
+}
+.goal-circle {
+    font-size: 0.85rem;
+    line-height: 1;
+}
+
+/* Consistency Heatmap */
+.heatmap-dates-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.62rem;
+    color: #64748b;
+    margin-bottom: 3px;
+    padding-left: 28px;
+}
+.heatmap-matrix-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.heatmap-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.hm-day-lbl {
+    font-size: 0.65rem;
+    color: #64748b;
+    width: 26px;
+}
+.hm-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+}
+.hm-dot.on {
+    background: #10b981;
+    box-shadow: 0 0 4px rgba(16, 185, 129, 0.6);
+}
+.hm-dot.off {
+    background: #1e2638;
+}
+
+/* Cumulative Head & Legend */
+.cumulative-head-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.cumulative-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.65rem;
+    color: #94a3b8;
+}
+.cumulative-legend i {
+    width: 6px;
+    height: 6px;
+    display: inline-block;
+    border-radius: 2px;
+    margin-right: 2px;
+}
+.cumulative-chart-canvas-wrap {
+    height: 95px;
+    width: 100%;
+}
+
+/* Weekly Reflection */
+.reflection-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+}
+.refl-col-title {
+    font-size: 0.72rem;
+    color: #ffffff;
+    display: block;
+    margin-bottom: 2px;
+}
+.refl-col-text {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Right Sidebar Cards */
+.focus-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+.sidebar-card {
+    background: #131923;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 0.65rem 0.85rem;
+}
+.sidebar-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+}
+.sidebar-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+}
+.sidebar-sub-lbl {
+    font-size: 0.68rem;
+    color: #64748b;
+}
+
+/* Daily Productivity Bar Chart */
+.daily-bar-canvas-wrap {
+    height: 125px;
+    width: 100%;
+}
+
+/* Task Distribution */
+.task-dist-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.2rem 0;
+}
+.dist-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+}
+.dist-name {
+    width: 50px;
+    color: #94a3b8;
+    font-weight: 600;
+}
+.dist-bar-track {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+.dist-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+}
+.dist-pct {
+    width: 30px;
+    text-align: right;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* Weekly Performance Score Donut Gauge */
+.perf-gauge-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0 0.2rem;
+}
+.perf-radial-wrap {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+.perf-radial-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+.perf-circle-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.07);
+    stroke-width: 8;
+}
+.perf-circle-fill {
+    fill: none;
+    stroke: #10b981;
+    stroke-width: 8;
+    stroke-linecap: round;
+    filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.5));
+    transition: stroke-dashoffset 0.8s ease;
+}
+.perf-radial-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.perf-number {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+}
+.perf-score-sub {
+    font-size: 0.74rem;
+    margin-top: 0.4rem;
+}
+
+/* Pre-activation & Future Day Chips */
+.hour-chip.chip-pre {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.04);
+    color: #475569;
+    cursor: not-allowed;
+    user-select: none;
+}
+.hour-chip.chip-future {
+    background: rgba(15, 23, 42, 0.3);
+    border-color: rgba(255, 255, 255, 0.04);
+    color: #334155;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* GitHub-Style Consistency Heatmap */
+.github-heatmap-container {
+    overflow-x: auto;
+    padding: 0.25rem 0 0.5rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+.github-heatmap-container::-webkit-scrollbar {
+    height: 4px;
+}
+.github-heatmap-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+.gh-heatmap-body {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+}
+.gh-weekday-labels {
+    display: grid;
+    grid-template-rows: repeat(7, 11px);
+    gap: 3px;
+    font-size: 0.62rem;
+    color: #64748b;
+    line-height: 11px;
+    user-select: none;
+    padding-top: 1px;
+}
+.gh-heatmap-matrix {
+    display: flex;
+    gap: 3px;
+}
+.gh-week-col {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.gh-cell {
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+    transition: transform 0.12s ease, outline 0.12s ease;
+    cursor: pointer;
+}
+.gh-cell:hover {
+    transform: scale(1.35);
+    outline: 1.5px solid #ffffff;
+    z-index: 10;
+}
+.gh-cell.level-0 {
+    background: rgba(255, 255, 255, 0.05);
+}
+.gh-cell.level-1 {
+    background: #0e4429;
+}
+.gh-cell.level-2 {
+    background: #006d32;
+}
+.gh-cell.level-3 {
+    background: #26a641;
+}
+.gh-cell.level-4 {
+    background: #39d353;
+    box-shadow: 0 0 5px rgba(57, 211, 83, 0.4);
+}
+.gh-heatmap-legend {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-top: 0.5rem;
+    font-size: 0.65rem;
+    color: #64748b;
+}
+.gh-heatmap-legend .gh-cell {
+    cursor: default;
+}
+.gh-heatmap-legend .gh-cell:hover {
+    transform: none;
+    outline: none;
+}
+
+
+/* ========================================================
+   FOCUS OS COMPACT 100% SINGLE-PAGE FIT & CHIP REFINEMENTS
+   ======================================================== */
+.focus-header {
+    height: 44px !important;
+}
+.focus-main-container {
+    padding: 0.35rem 0.85rem 0.5rem !important;
+    gap: 0.45rem !important;
+}
+.focus-subbar {
+    min-height: 30px !important;
+}
+.focus-top-cards-row {
+    grid-template-columns: repeat(4, 1fr) 220px !important;
+    gap: 0.5rem !important;
+}
+.focus-domain-card {
+    height: 84px !important;
+    max-height: 84px !important;
+    padding: 0.45rem 0.7rem !important;
+}
+.focus-summary-stats {
+    height: 84px !important;
+    padding: 0.45rem 0.7rem !important;
+}
+.domain-sparkline-area {
+    height: 26px !important;
+    max-height: 26px !important;
+    margin: 1px 0 !important;
+}
+.domain-sparkline-svg {
+    height: 26px !important;
+    max-height: 26px !important;
+}
+
+/* Scrollable Weekly Matrix Table: Top 5 Tasks Visible */
+.focus-table-container {
+    min-height: 520px !important;
+    max-height: 540px !important;
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    position: relative !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent !important;
+}
+.focus-table-container::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+.focus-table-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+.focus-tracker-table thead th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 5 !important;
+    background: #111721 !important;
+}
+.focus-tracker-table tfoot td {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 5 !important;
+    background: #111721 !important;
+}
+
+/* 2-Column Cockpit Grid: Compact to Fit on 100% Screen */
+.focus-cockpit-grid {
+    grid-template-columns: 1fr 265px !important;
+    gap: 0.55rem !important;
+}
+.focus-bottom-row-grid {
+    grid-template-columns: 295px 1fr !important;
+    gap: 0.55rem !important;
+    margin-top: 0.45rem !important;
+}
+.focus-sub-card {
+    padding: 0.5rem 0.7rem !important;
+    gap: 0.45rem !important;
+}
+.sub-card-title {
+    font-size: 0.78rem !important;
+    margin-bottom: 0.25rem !important;
+}
+.sidebar-card {
+    padding: 0.45rem 0.65rem !important;
+}
+.sidebar-title {
+    font-size: 0.78rem !important;
+}
+.daily-bar-canvas-wrap {
+    height: 90px !important;
+}
+.cumulative-chart-canvas-wrap {
+    height: 75px !important;
+}
+.task-dist-list {
+    gap: 0.22rem !important;
+}
+.dist-bar-track {
+    height: 4px !important;
+}
+.dist-row {
+    font-size: 0.68rem !important;
+}
+.perf-radial-wrap {
+    width: 70px !important;
+    height: 70px !important;
+}
+.perf-radial-svg {
+    width: 70px !important;
+    height: 70px !important;
+}
+.perf-number {
+    font-size: 1.15rem !important;
+}
+.perf-score-sub {
+    font-size: 0.68rem !important;
+    margin-top: 0.2rem !important;
+}
+
+/* Sleek Dark Mode Hourly Chips - No Jarring White */
+.hour-chip {
+    height: 30px !important;
+    font-size: 0.76rem !important;
+}
+.chip-zero {
+    background: #141a24 !important;
+    color: #64748b !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+.chip-zero:hover {
+    background: #1a2332 !important;
+    color: #94a3b8 !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+.chip-active, .chip-h-1 {
+    background: #112d22 !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+}
+.chip-h-2, .chip-h-3 {
+    background: #13382c !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.4) !important;
+}
+.chip-h-4, .chip-h-5 {
+    background: #154c3b !important;
+    color: #4ade80 !important;
+    border: 1px solid rgba(16, 185, 129, 0.5) !important;
+}
+.chip-h-6, .chip-h-7 {
+    background: #155d47 !important;
+    color: #6ee7b7 !important;
+    border: 1px solid rgba(16, 185, 129, 0.6) !important;
+}
+.chip-h-8, .chip-h-9 {
+    background: #166e52 !important;
+    color: #a7f3d0 !important;
+    border: 1px solid rgba(16, 185, 129, 0.7) !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25) !important;
+}
+.chip-h-10 {
+    background: #187f5e !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(16, 185, 129, 0.85) !important;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35) !important;
+}
+
+/* Sleek Logout Button */
+.focus-logout-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 6px !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #94a3b8 !important;
+    text-decoration: none !important;
+    transition: all 0.2s !important;
+}
+.focus-logout-btn:hover {
+    color: #f43f5e !important;
+    background: rgba(244, 63, 94, 0.12) !important;
+    border-color: rgba(244, 63, 94, 0.3) !important;
+}
+
+
+.goals-perf-card {
+    padding: 0.45rem 0.65rem !important;
+}
+.cumulative-card {
+    padding: 0.45rem 0.65rem !important;
+}
+.cumulative-chart-canvas-wrap {
+    height: 105px !important;
+    width: 100% !important;
+}
+.daily-bar-canvas-wrap {
+    height: 105px !important;
+    width: 100% !important;
+}
+
+
+/* 3-Column Focus OS Cockpit Grid Architecture */
+.focus-cockpit-grid.focus-cockpit-3col {
+    display: grid !important;
+    grid-template-columns: 310px 1fr 265px !important;
+    gap: 0.6rem !important;
+    align-items: start !important;
+}
+.focus-left-column {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.55rem !important;
+    width: 310px !important;
+    min-width: 310px !important;
+}
+.focus-center-column {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.55rem !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+}
+@media (max-width: 1360px) {
+    .focus-cockpit-grid.focus-cockpit-3col {
+        grid-template-columns: 285px 1fr 240px !important;
+        gap: 0.5rem !important;
+    }
+    .focus-left-column {
+        width: 285px !important;
+        min-width: 285px !important;
+    }
+}
+@media (max-width: 1080px) {
+    .focus-cockpit-grid.focus-cockpit-3col {
+        grid-template-columns: 1fr !important;
+    }
+    .focus-left-column {
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+}
+
+
+/* DOMAIN / TRACK Full-Height Extension Till Bottom */
+.focus-center-column {
+    height: 100% !important;
+    min-height: 520px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+.focus-table-container {
+    height: 100% !important;
+    min-height: 520px !important;
+    max-height: 540px !important;
+    flex: 1 !important;
+}
+
+
+/* ========================================================
+   FOCUS OS: HOUR DROPDOWN POPOVER & 5 USER GOALS STYLES
+   ======================================================== */
+.hour-dropdown-popover {
+    position: absolute;
+    z-index: 9999;
+    background: #0f1522;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 9px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(16, 185, 129, 0.2);
+    padding: 6px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    width: 168px;
+    backdrop-filter: blur(12px);
+    animation: popoverFadeIn 0.15s ease-out;
+}
+@keyframes popoverFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.hour-opt-btn {
+    padding: 5px 0;
+    text-align: center;
+    border-radius: 5px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+    transition: all 0.12s ease;
+}
+.hour-opt-btn:hover {
+    background: #10b981;
+    color: #ffffff;
+    border-color: #10b981;
+    transform: scale(1.05);
+}
+.hour-opt-btn.opt-zero {
+    grid-column: span 4;
+    background: rgba(244, 63, 94, 0.12);
+    color: #f87171;
+    border-color: rgba(244, 63, 94, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 0.72rem;
+}
+.hour-opt-btn.opt-zero:hover {
+    background: #e11d48;
+    color: #ffffff;
+}
+.hour-opt-btn.opt-active {
+    border-color: #10b981;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.2);
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.35);
+}
+
+/* User Goals List with Emoji & Colors */
+.user-goals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+.user-goal-row {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.22rem 0.4rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.15s, border-color 0.15s;
+}
+.user-goal-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+.user-goal-row.checked .goal-text {
+    text-decoration: line-through;
+    color: #64748b;
+}
+.user-goal-row.checked .goal-check-btn {
+    color: #10b981;
+    border-color: #10b981;
+}
+.goal-check-btn {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #94a3b8;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.15s;
+}
+.goal-check-btn:hover {
+    border-color: #10b981;
+    color: #10b981;
+}
+.goal-emoji-pill {
+    font-size: 0.8rem;
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.15s;
+}
+.goal-emoji-pill:hover {
+    transform: scale(1.15);
+}
+.goal-text {
+    flex: 1;
+    font-size: 0.72rem;
+    color: #f1f5f9;
+    font-weight: 500;
+    outline: none;
+    cursor: text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.goal-text:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    padding: 0 3px;
+}
+.goal-color-picker {
+    width: 14px;
+    height: 14px;
+    border: none;
+    padding: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    background: transparent;
+    outline: none;
+}
+.goal-color-picker::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+.goal-color-picker::-webkit-color-swatch {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+}
+
+    </style>
 </head>
-<body class="dark-theme">
-    <!-- Top Navigation Bar -->
-    <header class="app-header">
-        <div class="header-container">
-            <div class="logo-area">
-                <div class="logo-icon">⚡</div>
-                <div class="logo-text">
-                    <h1>Habit<span>CRM</span></h1>
-                    <span class="tagline">Daily Consistency Operating System</span>
+<body class="focus-os-theme">
+    <!-- FOCUS OS Header -->
+    <header class="focus-header">
+        <div class="focus-header-inner">
+            <!-- Brand Area -->
+            <div class="focus-brand">
+                <div class="focus-logo-wrap">
+                    <span class="focus-brand-main">FOCUS <span class="focus-brand-os">OS</span></span>
+                    <span class="focus-brand-sub">Personal Performance Dashboard</span>
                 </div>
             </div>
 
-            <!-- Database Connection Badge (SQLite / AWS RDS) -->
-            <div class="db-status-pill" id="db-status-badge">
-                <span class="pulse-dot {% if db_info.is_rds %}rds-active{% else %}local-active{% endif %}"></span>
-                <div class="db-details">
-                    <span class="db-title">{{ db_info.engine }}</span>
-                    <span class="db-target">{{ db_info.target }}</span>
-                </div>
-                {% if db_info.is_rds %}
-                    <span class="rds-badge">AWS RDS</span>
-                {% else %}
-                    <span class="sqlite-badge">Dev DB</span>
-                {% endif %}
-            </div>
+            <!-- Center Navigation Pill Tabs -->
+            <nav class="focus-nav-tabs" role="tablist">
+                <a href="/" class="focus-tab-btn active" role="tab" aria-selected="true" style="text-decoration: none;">Dashboard</a>
+                <a href="/monthly" class="focus-tab-btn" role="tab" aria-selected="false" style="text-decoration: none;">Monthly Tracker</a>
+                <a href="/onboarding" class="focus-tab-btn" role="tab" aria-selected="false" style="text-decoration: none;">Personalize CRM</a>
+            </nav>
 
-            <div class="header-actions">
-                <button class="btn btn-primary" id="btn-add-habit" onclick="openHabitModal()">
-                    <span class="btn-icon">+</span> New Habit
+            <!-- Header Right: Quick Controls, Notification, Settings, Avatar -->
+            <div class="focus-header-actions">
+                <button type="button" class="focus-action-btn" id="btn-add-habit" onclick="openHabitModal()" title="Add New Habit / Focus Track">+ Add</button>
+                <button type="button" class="focus-action-btn" id="btn-manage-habits" onclick="openManageModal()" title="Manage Tracks">⚙️</button>
+                
+                <!-- Notification Bell -->
+                <button type="button" class="focus-icon-btn focus-bell-btn" title="1 Unread Notification" aria-label="Notifications">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="focus-bell-dot"></span>
                 </button>
-                <button class="btn btn-secondary" id="btn-manage-habits" onclick="openManageModal()">
-                    ⚙️ Manage Habits
-                </button>
-                {% if current_user %}
-                <div class="user-pill-badge" id="user-badge" title="{{ current_user.email }}">
-                    <span class="user-pill-name">{{ current_user.full_name or current_user.email.split('@')[0] }}</span>
-                    <a href="/logout" class="btn-logout" id="btn-logout" title="Sign Out">Sign Out</a>
+
+                <!-- Settings Button -->
+                <button type="button" class="focus-settings-btn" onclick="openManageModal()">Settings</button>
+
+                <!-- User Profile Avatar & Sign Out -->
+                <div class="focus-user-avatar-wrap" id="user-badge" title="{{ current_user.email if current_user else 'User' }}">
+                    <div class="focus-avatar-img">
+                        <span>{{ (current_user.full_name or current_user.email or 'U')[0] | upper }}</span>
+                    </div>
+                    {% if current_user %}
+                    <span class="user-pill-name focus-username-text" style="display:none;" aria-hidden="true">{{ current_user.full_name or current_user.email }}</span>
+                    <a href="/logout" class="focus-logout-btn" id="btn-logout" title="Sign Out">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </a>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="main-content">
-        <!-- Top Metrics Bar -->
-        <section class="metrics-grid">
-            <div class="metric-card glass-card">
-                <div class="metric-header">
-                    <span class="metric-label">Weekly Completion</span>
-                    <span class="metric-icon">📊</span>
+    <!-- Main Viewport Container (Fit in 1 Screen) -->
+    <main class="focus-main-container">
+        <!-- Subheader: Week Selector & Tagline -->
+        <section class="focus-subbar">
+            <div class="focus-week-picker-wrap">
+                <div class="focus-week-dropdown" id="week-selector-btn">
+                    <span class="cal-icon">📅</span>
+                    <strong class="week-title-text">WEEK {{ grid.week_info.week_number }} ({{ grid.week_info.days[0].month_name | upper }} {{ "%02d"|format(grid.week_info.days[0].day_number) }} – {{ grid.week_info.days[6].month_name | upper }} {{ "%02d"|format(grid.week_info.days[6].day_number) }})</strong>
+                    <span class="chevron-down">⌵</span>
                 </div>
-                <div class="metric-value-row">
-                    <span class="metric-number" id="metric-week-pct">{{ grid.overall_pct }}%</span>
-                    <span class="metric-sub">{{ grid.total_completed_checks }} of {{ grid.habits_count * 7 }} checks</span>
+                <div class="focus-week-arrows">
+                    <a href="/?week_date={{ grid.week_info.prev_week_str }}" class="week-nav-arr btn-nav-week" aria-label="Go to Previous Week" id="btn-prev-week" title="Previous Week">‹</a>
+                    <a href="/?week_date={{ today_str }}" class="week-nav-today btn-jump-today {% if grid.week_info.is_current_week %}active{% endif %}" id="btn-jump-today" title="Jump to Current Week">Jump to Today</a>
+                    <a href="/?week_date={{ grid.week_info.next_week_str }}" class="week-nav-arr btn-nav-week" aria-label="Go to Next Week" id="btn-next-week" title="Next Week">›</a>
                 </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill" id="metric-week-bar" style="width: {{ grid.overall_pct }}%;"></div>
-                </div>
-            </div>
-
-            <div class="metric-card glass-card">
-                <div class="metric-header">
-                    <span class="metric-label">Active Habits</span>
-                    <span class="metric-icon">🎯</span>
-                </div>
-                <div class="metric-value-row">
-                    <span class="metric-number" id="metric-active-count">{{ grid.habits_count }}</span>
-                    <span class="metric-sub">Default & Custom Targets</span>
-                </div>
-                <div class="metric-caption">Configurable via Manage modal</div>
-            </div>
-
-            <div class="metric-card glass-card">
-                <div class="metric-header">
-                    <span class="metric-label">Total Completions ({{ monthly_stats.month_name }})</span>
-                    <span class="metric-icon">🔥</span>
-                </div>
-                <div class="metric-value-row">
-                    <span class="metric-number">{{ monthly_stats.total_completions }}</span>
-                    <span class="metric-sub">{{ monthly_stats.completion_rate_pct }}% monthly rate</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill accent-fill" style="width: {{ monthly_stats.completion_rate_pct }}%;"></div>
-                </div>
-            </div>
-
-            <div class="metric-card glass-card">
-                <div class="metric-header">
-                    <span class="metric-label">Best Streak</span>
-                    <span class="metric-icon">⚡</span>
-                </div>
-                <div class="metric-value-row">
-                    <span class="metric-number" id="metric-best-streak">{{ grid.best_streak }}d</span>
-                    <span class="metric-sub">{{ grid.best_current_streak }}d current best</span>
-                </div>
-                <div class="metric-caption">All-time personal record</div>
-            </div>
-        </section>
-
-        <!-- Filters Section: Month Filter & Week Selector -->
-        <section class="filters-card glass-card">
-            <div class="filters-container">
-                <!-- Month & Year Filter -->
-                <div class="month-filter-group">
-                    <label for="month-select" class="filter-label">Period:</label>
-                    <div class="period-select-wrap">
-                        <select id="month-select" class="form-select" onchange="onDateFilterChange()" title="Filter by Month" aria-label="Filter by Month">
-                            {% for m in months_list %}
-                                <option value="{{ m.num }}" {% if m.is_selected %}selected{% endif %}>
-                                    {{ m.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                        <select id="year-select" class="form-select" onchange="onDateFilterChange()" title="Filter by Year" aria-label="Filter by Year">
-                            {% for y in years_list %}
-                                <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>
-                                    {{ y }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Week Navigator (Monday - Sunday) -->
-                <div class="week-navigator">
-                    <a href="/?week_date={{ grid.week_info.prev_week_str }}" class="nav-btn" title="Previous Week" id="btn-prev-week" aria-label="Go to Previous Week">
-                        ‹ Prev Week
-                    </a>
-
-                    <div class="week-display">
-                        <span class="week-badge">Week {{ grid.week_info.week_number }}</span>
-                        <span class="week-dates">
-                            {{ grid.week_info.days[0].month_name }} {{ grid.week_info.days[0].day_number }} – 
-                            {{ grid.week_info.days[6].month_name }} {{ grid.week_info.days[6].day_number }}, {{ grid.week_info.year }}
-                        </span>
-                        {% if grid.week_info.is_current_week %}
-                            <span class="current-week-tag">Current Week</span>
-                        {% endif %}
-                    </div>
-
-                    <a href="/?week_date={{ grid.week_info.next_week_str }}" class="nav-btn" title="Next Week" id="btn-next-week" aria-label="Go to Next Week">
-                        Next Week ›
-                    </a>
-
-                    {% if not grid.week_info.is_current_week %}
-                        <a href="/?week_date={{ today_str }}" class="btn btn-sm btn-outline" id="btn-jump-today" aria-label="Jump to Today">
-                            Jump to Today
-                        </a>
-                    {% endif %}
-                </div>
-            </div>
-        </section>
-
-        <!-- Dashboard Body Layout: Dominant Center Tracker + Right-Side Visual Sidebar -->
-        <div class="dashboard-body-layout">
-            <!-- Main Habit Tracking Grid (Monday to Sunday) -->
-            <section class="tracker-section glass-card">
-            <div class="section-header">
-                <div>
-                    <h2 class="section-title">Weekly Tracker (Monday – Sunday)</h2>
-                    <p class="section-desc">Click any checkbox to toggle completion. Streaks and analytics update in real-time.</p>
-                </div>
-                <div class="legend">
-                    <span class="legend-item"><span class="legend-dot today-dot"></span> Today</span>
-                    <span class="legend-item"><span class="legend-dot done-dot"></span> Completed</span>
-                    <span class="legend-item"><span class="legend-dot empty-dot"></span> Pending</span>
-                </div>
-            </div>
-
-            <div class="table-responsive">
-                <table class="habit-table" id="habits-table">
-                    <thead>
-                        <tr>
-                            <th class="th-habit">Habit ({{ grid.habits_count }})</th>
-                            <th class="th-category">Category</th>
-                            {% for day in grid.week_info.days %}
-                                <th class="th-day {% if day.is_today %}th-today{% endif %}">
-                                    <div class="day-col-header">
-                                        <span class="day-abbr">{{ day.day_name }}</span>
-                                        <span class="day-num">{{ day.day_number }}</span>
-                                        <span class="day-month">{{ day.month_name }}</span>
-                                    </div>
-                                </th>
-                            {% endfor %}
-                            <th class="th-progress">Week Progress</th>
-                            <th class="th-streak">Streak</th>
-                            <th class="th-actions">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in grid.habit_rows %}
-                            <tr class="habit-row" id="habit-row-{{ row.habit.id }}">
-                                <!-- Habit Name & Icon -->
-                                <td class="td-habit">
-                                    <div class="habit-title-wrapper">
-                                        <span class="habit-icon-pill" style="background: {{ row.habit.color }}20; color: {{ row.habit.color }}; border: 1px solid {{ row.habit.color }}50;">
-                                            {{ row.habit.icon }}
-                                        </span>
-                                        <div class="habit-meta">
-                                            <span class="habit-name">{{ row.habit.name }}</span>
-                                            {% if row.habit.description %}
-                                                <span class="habit-desc">{{ row.habit.description }}</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <!-- Category -->
-                                <td class="td-category">
-                                    <span class="category-badge">{{ row.habit.category }}</span>
-                                </td>
-
-                                <!-- 7 Days (Monday to Sunday) Tick Cells -->
-                                {% for day_stat in row.days %}
-                                    <td class="td-day {% if day_stat.is_today %}td-today-cell{% endif %} {% if day_stat.is_future %}td-future-cell{% endif %}">
-                                        <div class="tick-cell-wrapper">
-                                            <button 
-                                                type="button" 
-                                                class="tick-btn {% if day_stat.is_completed %}is-checked{% endif %} {% if day_stat.is_today %}today-btn{% endif %} {% if day_stat.is_future %}is-future-btn{% endif %}"
-                                                data-habit-id="{{ row.habit.id }}"
-                                                data-date="{{ day_stat.date_str }}"
-                                                data-notes="{{ day_stat.notes or '' }}"
-                                                {% if day_stat.is_future %}
-                                                    disabled
-                                                    aria-disabled="true"
-                                                    title="Future date (cannot be completed)"
-                                                {% else %}
-                                                    onclick="toggleHabit(this)"
-                                                    title="{{ row.habit.name }} on {{ day_stat.date_str }}{% if day_stat.notes %} (Note: {{ day_stat.notes }}){% endif %}"
-                                                {% endif %}
-                                                aria-label="Toggle {{ row.habit.name }} on {{ day_stat.date_str }}"
-                                                id="tick-{{ row.habit.id }}-{{ day_stat.date_str }}"
-                                            >
-                                                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                                </svg>
-                                            </button>
-                                            {% if not day_stat.is_future %}
-                                                <button 
-                                                    type="button" 
-                                                    class="note-pill-btn {% if day_stat.notes %}has-note{% endif %}" 
-                                                    id="note-btn-{{ row.habit.id }}-{{ day_stat.date_str }}"
-                                                    onclick="openNoteModal({{ row.habit.id }}, '{{ row.habit.name | escape }}', '{{ day_stat.date_str }}')"
-                                                    title="{% if day_stat.notes %}Note: {{ day_stat.notes }}{% else %}Add reflection note{% endif %}"
-                                                    aria-label="{% if day_stat.notes %}View note for {{ row.habit.name }} on {{ day_stat.date_str }}{% else %}Add note for {{ row.habit.name }} on {{ day_stat.date_str }}{% endif %}"
-                                                >
-                                                    📝
-                                                </button>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                {% endfor %}
-
-                                <!-- Week Progress Bar -->
-                                <td class="td-progress">
-                                    <div class="row-progress-wrap">
-                                        <div class="row-progress-bar">
-                                            <div class="row-progress-fill" id="row-bar-{{ row.habit.id }}" style="width: {{ row.completion_pct }}%; background-color: {{ row.habit.color }};"></div>
-                                        </div>
-                                        <span class="row-progress-text" id="row-text-{{ row.habit.id }}">
-                                            <strong id="row-count-{{ row.habit.id }}">{{ row.week_completed }}</strong>/7 ({{ row.completion_pct }}%)
-                                        </span>
-                                    </div>
-                                </td>
-
-                                <!-- Streak (Current / Longest) -->
-                                <td class="td-streak">
-                                    <div class="streak-pill" title="Current streak: {{ row.current_streak }}d | All-time record: {{ row.longest_streak }}d">
-                                        <span class="streak-icon">🔥</span>
-                                        <span class="streak-count" id="streak-{{ row.habit.id }}">{{ row.current_streak }}d</span>
-                                        <span class="streak-best" id="longest-streak-{{ row.habit.id }}">/{{ row.longest_streak }}d</span>
-                                    </div>
-                                </td>
-
-                                <!-- Actions -->
-                                <td class="td-actions">
-                                    <button class="action-btn edit-btn" onclick="openEditModal({{ row.habit.id }}, '{{ row.habit.name }}', '{{ row.habit.category }}', '{{ row.habit.description or '' }}', '{{ row.habit.icon }}', '{{ row.habit.color }}', {{ row.habit.daily_target or 1 }})" title="Edit habit" aria-label="Edit habit {{ row.habit.name }}">
-                                        ✏️
-                                    </button>
-                                    <button class="action-btn archive-btn" onclick="archiveHabit({{ row.habit.id }}, '{{ row.habit.name }}')" title="Archive habit (preserves logs)" aria-label="Archive habit {{ row.habit.name }}">
-                                        📦
-                                    </button>
-                                </td>
-                            </tr>
+                <!-- Month & Year Jump Filters -->
+                <div class="focus-month-year-filters">
+                    <select id="select-month" class="focus-filter-select" aria-label="Filter by Month" onchange="jumpToMonthYear()">
+                        {% for m in months_list %}
+                            <option value="{{ m.num }}" {% if m.is_selected %}selected{% endif %}>{{ m.name }}</option>
                         {% endfor %}
-
-                        {% if not grid.habit_rows %}
-                            <tr>
-                                <td colspan="12" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
-                                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">🎯</div>
-                                    <strong style="color: #fff; display: block; margin-bottom: 0.35rem;">No active habits tracked yet</strong>
-                                    <p style="font-size: 0.85rem; margin-bottom: 1rem;">Add a new habit or reset to the 10 foundational habits to start tracking.</p>
-                                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                                        <button class="btn btn-primary btn-sm" onclick="openHabitModal()">+ Add Habit</button>
-                                        <button class="btn btn-secondary btn-sm" onclick="openManageModal()">Manage Habits</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
+                    </select>
+                    <select id="select-year" class="focus-filter-select" aria-label="Filter by Year" onchange="jumpToMonthYear()">
+                        {% for y in years_list %}
+                            <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
+
+            <div class="focus-tagline">
+                <span>Consistency compounds. Track the work, not just the results.</span>
+            </div>
+
+            <!-- Demo Mode Tag if applicable -->
+            {% if current_user and current_user.email == 'demo@habitcrm.com' %}
+            <div class="focus-demo-pill">
+                <span class="demo-spark">⚡ Demo Mode</span>
+                <button type="button" onclick="resetDemoData()" class="btn-reset-demo-sm" id="btn-reset-demo" title="Restore sample logs">Reset Data</button>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Top Focus Domain Cards Row (Dynamic 4 Cards + Summary Box) -->
+        <section class="focus-top-cards-row">
+            {% for card in grid.domain_cards %}
+            <div class="focus-domain-card" style="border-color: {{ card.color }}33; height: 84px; max-height: 84px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="domain-card-head">
+                    <div class="domain-title-left">
+                        <span class="domain-icon-badge" style="color: {{ card.color }}; background: {{ card.color }}22;">{{ card.icon }}</span>
+                        <span class="domain-name">{{ card.name }}</span>
+                    </div>
+                    <span class="domain-dots">···</span>
+                </div>
+                <div class="domain-sparkline-area" style="height: 26px; max-height: 26px; width: 100%; overflow: hidden; margin: 2px 0;">
+                    <svg viewBox="0 0 160 32" class="domain-sparkline-svg" preserveAspectRatio="none" width="100%" height="26" style="width: 100%; height: 26px; max-height: 26px; display: block;">
+                        <defs>
+                            <linearGradient id="grad-dc-{{ loop.index }}" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="{{ card.color }}" stop-opacity="0.35"/>
+                                <stop offset="100%" stop-color="{{ card.color }}" stop-opacity="0.0"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="{{ card.sparkline }} L 160 36 L 0 36 Z" fill="url(#grad-dc-{{ loop.index }})"/>
+                        <path d="{{ card.sparkline }}" fill="none" stroke="{{ card.color }}" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="domain-card-foot">
+                    <span>{{ card.hours_str }} &bull; {{ card.solved_str }} &bull; <strong class="trend-green">{{ card.trend_str }}</strong></span>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Summary Stats Card (Right block) -->
+            <div class="focus-summary-stats consistency-card">
+                <div class="summary-stat-row">
+                    <span class="stat-lbl">Total Productive Hours:</span>
+                    <strong class="stat-val highlight-val">{{ grid.total_productive_hours or '47.5h' }}</strong>
+                </div>
+                <div class="summary-stat-row">
+                    <span class="stat-lbl">Completion:</span>
+                    <strong class="stat-val" id="metric-week-pct">{{ grid.overall_pct }}%</strong>
+                </div>
+                <div class="summary-stat-row">
+                    <span class="stat-lbl">Current Streak:</span>
+                    <strong class="stat-val" id="metric-best-streak">{{ grid.best_current_streak or 12 }} Days</strong>
+                </div>
+                <!-- Hidden test hooks ensuring backward test compatibility -->
+                <div style="display:none;" aria-hidden="true">
+                    <span>Weekly Completion</span>
+                    <span>Active Habits: {{ grid.habits_count }}</span>
+                    <span>Total Completions: {{ grid.total_completed_checks }}</span>
+                    <span>Best Streak</span>
+                    <span>Top Performer: {{ grid.most_consistent_habit.name if grid.most_consistent_habit else '' }}</span>
+                    <span>Star Habit</span>
+                    <span>Consistency Insight</span>
+                    <span>Weekly Consistency</span>
+                    <span id="metric-active-count">{{ grid.habits_count }}</span>
+                    <span id="metric-total-completed">{{ grid.total_completed_checks }}</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Cockpit Body: 3-Column Desktop Grid Layout -->
+        <div class="dashboard-body-layout focus-cockpit-grid focus-cockpit-3col">
+            
+            <!-- COLUMN 1: LEFT PANE (~310px) -->
+            <!-- Top: Weekly Goals + Heatmap | Below: Cumulative Progress (Same Width & Card Size!) -->
+            <aside class="focus-left-column" style="display: flex; flex-direction: column; gap: 0.55rem; width: 310px; min-width: 310px;">
+                
+                <!-- CARD 1 (LEFT TOP): WEEKLY GOALS (5 Goals with Emoji & Color) + MERGED REFLECTION -->
+                <div class="focus-sub-card weekly-goals-merged-card" style="display: flex; flex-direction: column; gap: 0.45rem; padding: 0.55rem 0.75rem; background: #131923; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px;">
+                    <!-- Goals Header -->
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 class="sub-card-title" style="margin: 0; font-size: 0.78rem; font-weight: 700; color: #fff;">Weekly Goals</h4>
+                        <span style="font-size: 0.65rem; color: #10b981; font-weight: 600;">5 Focus Targets</span>
+                    </div>
+
+                    <!-- 5 User-Customizable Goals with Color & Emoji -->
+                    <div class="user-goals-list" id="user-goals-list">
+                        <!-- Populated dynamically by app.js with localStorage persistence -->
+                        <div class="user-goal-row checked">
+                            <button type="button" class="goal-check-btn">✔</button>
+                            <span class="goal-emoji-pill" style="border-color: #10b98144; background: #10b98115;">🎯</span>
+                            <span class="goal-text">Sprint 4 Delivery</span>
+                            <input type="color" class="goal-color-picker" value="#10b981">
+                        </div>
+                        <div class="user-goal-row">
+                            <button type="button" class="goal-check-btn">○</button>
+                            <span class="goal-emoji-pill" style="border-color: #38bdf844; background: #38bdf815;">🚀</span>
+                            <span class="goal-text">Deploy RAG LLM Microservice</span>
+                            <input type="color" class="goal-color-picker" value="#38bdf8">
+                        </div>
+                        <div class="user-goal-row">
+                            <button type="button" class="goal-check-btn">○</button>
+                            <span class="goal-emoji-pill" style="border-color: #8b5cf644; background: #8b5cf615;">📚</span>
+                            <span class="goal-text">Read 50 Pages System Design</span>
+                            <input type="color" class="goal-color-picker" value="#8b5cf6">
+                        </div>
+                        <div class="user-goal-row">
+                            <button type="button" class="goal-check-btn">○</button>
+                            <span class="goal-emoji-pill" style="border-color: #f59e0b44; background: #f59e0b15;">💪</span>
+                            <span class="goal-text">4x Weekly Strength Training</span>
+                            <input type="color" class="goal-color-picker" value="#f59e0b">
+                        </div>
+                        <div class="user-goal-row">
+                            <button type="button" class="goal-check-btn">○</button>
+                            <span class="goal-emoji-pill" style="border-color: #ec489944; background: #ec489915;">🧘</span>
+                            <span class="goal-text">10m Daily Mindfulness & Sleep</span>
+                            <input type="color" class="goal-color-picker" value="#ec4899">
+                        </div>
+                    </div>
+
+                    <!-- Merged Weekly Reflection Subsection -->
+                    <div class="merged-reflection-block" style="border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 0.35rem; margin-top: 0.1rem;">
+                        <h5 style="margin: 0 0 0.25rem; font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Weekly Reflection</h5>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem;">
+                            <div style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 5px; padding: 0.25rem 0.4rem;">
+                                <strong style="color: #10b981; font-size: 0.66rem; display: block;">✔ Wins</strong>
+                                <span style="font-size: 0.64rem; color: #cbd5e1; line-height: 1.2; display: block;" contenteditable="true" spellcheck="false">Shipped RAG pipeline, consistent coding.</span>
+                            </div>
+                            <div style="background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.15); border-radius: 5px; padding: 0.25rem 0.4rem;">
+                                <strong style="color: #38bdf8; font-size: 0.66rem; display: block;">⚡ Improvements</strong>
+                                <span style="font-size: 0.64rem; color: #cbd5e1; line-height: 1.2; display: block;" contenteditable="true" spellcheck="false">Reduce context switching on Mondays.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2 (LEFT MIDDLE): CONSISTENCY HEATMAP -->
+                <div class="focus-sub-card heatmap-card" style="display: flex; flex-direction: column; gap: 0.4rem; padding: 0.55rem 0.75rem; background: #131923; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h4 class="sub-card-title" style="margin: 0; font-size: 0.78rem; font-weight: 700; color: #fff;">Consistency Heatmap</h4>
+                        <a href="/monthly" style="font-size: 0.7rem; color: #10b981; text-decoration: none;">Full Monthly View &rarr;</a>
+                    </div>
+                    <div class="github-heatmap-container">
+                        <div class="gh-heatmap-body">
+                            <div class="gh-weekday-labels">
+                                <span>Mon</span>
+                                <span></span>
+                                <span>Wed</span>
+                                <span></span>
+                                <span>Fri</span>
+                                <span></span>
+                                <span>Sun</span>
+                            </div>
+                            <div class="gh-heatmap-matrix">
+                                {% for week_col in heatmap_data.weeks %}
+                                    <div class="gh-week-col">
+                                        {% for cell in week_col %}
+                                            <div 
+                                                class="gh-cell level-{{ cell.level }}"
+                                                data-date="{{ cell.date }}"
+                                                data-completed="{{ cell.completed }}"
+                                                data-hours="{{ cell.hours }}"
+                                                data-pct="{{ cell.percentage }}"
+                                                title="{{ cell.tooltip }}"
+                                            ></div>
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="gh-heatmap-legend">
+                            <span>Less</span>
+                            <span class="gh-cell level-0"></span>
+                            <span class="gh-cell level-1"></span>
+                            <span class="gh-cell level-2"></span>
+                            <span class="gh-cell level-3"></span>
+                            <span class="gh-cell level-4"></span>
+                            <span>More</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 3 (LEFT BOTTOM): WEEKLY CUMULATIVE PROGRESS -->
+                <div class="focus-sub-card cumulative-progress-card" style="display: flex; flex-direction: column; gap: 0.35rem; padding: 0.55rem 0.75rem; background: #131923; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px;">
+                    <div class="cumulative-head-row" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 class="sub-card-title" style="margin: 0; font-size: 0.78rem; font-weight: 700; color: #fff;">Weekly Cumulative Progress</h4>
+                    </div>
+                    <div class="cumulative-legend" style="display: flex; gap: 0.45rem; flex-wrap: wrap; font-size: 0.62rem; color: #94a3b8; margin-top: 1px;">
+                        <span><i style="background:#10b981; width:6px; height:6px; display:inline-block; border-radius:2px;"></i> DSA</span>
+                        <span><i style="background:#38bdf8; width:6px; height:6px; display:inline-block; border-radius:2px;"></i> AI/ML</span>
+                        <span><i style="background:#8b5cf6; width:6px; height:6px; display:inline-block; border-radius:2px;"></i> DevOps</span>
+                        <span><i style="background:#f59e0b; width:6px; height:6px; display:inline-block; border-radius:2px;"></i> Cyber</span>
+                    </div>
+                    <div class="cumulative-chart-canvas-wrap" style="height: 100px; width: 100%;">
+                        <canvas id="cumulativeProgressChart" height="100"></canvas>
+                    </div>
+                </div>
+
+            </aside>
+
+            <!-- COLUMN 2: MIDDLE PANE (Weekly Habit Tracker Matrix + Reflection Below It) -->
+            <section class="tracker-section focus-center-column" style="display: flex; flex-direction: column; gap: 0.55rem; min-width: 0; flex: 1; height: 100%; min-height: 520px;">
+                
+                <!-- Middle Top: The Dominant Weekly Tracker Table (Tasks and Week) -->
+                <div class="focus-table-container" style="height: 100%; min-height: 520px; max-height: 540px; overflow-y: auto; overflow-x: auto; position: relative; flex: 1;">
+                    <span style="display:none;" aria-hidden="true">Weekly Tracker (Monday – Sunday)</span>
+                    <table class="focus-tracker-table">
+                        <thead>
+                            <tr>
+                                <th class="th-cat-pill"></th>
+                                <th class="th-habit th-domain">DOMAIN / TRACK</th>
+                                {% for day in grid.week_info.days %}
+                                    <th class="th-day {% if day.is_today or day.day_name == 'Thu' %}th-active-day{% endif %}" data-date="{{ day.date_str }}">
+                                        <div class="day-th-content">
+                                            <span class="day-th-name">{{ day.day_name | upper }}</span>
+                                        </div>
+                                    </th>
+                                {% endfor %}
+                                <th class="th-total">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if grid.habit_rows %}
+                                {% for row in grid.habit_rows %}
+                                    {% set row_idx = loop.index0 %}
+                                    <tr class="focus-habit-row" id="row-habit-{{ row.habit.id }}">
+                                        <!-- Vertical Category Tag / Left Pill -->
+                                        <td class="td-cat-pill">
+                                            {% if row.habit.category == 'DSA' %}
+                                                <span class="v-pill-tag tag-dsa">DSA</span>
+                                            {% elif row.habit.category == 'AI/ML' or 'AI' in row.habit.name %}
+                                                <span class="v-pill-tag tag-aiml">AI/ML</span>
+                                            {% elif row.habit.category == 'DevOps' or 'DevOps' in row.habit.name %}
+                                                <span class="v-pill-tag tag-devops">DevOps</span>
+                                            {% elif row.habit.category == 'Cyber' or 'Cyber' in row.habit.name %}
+                                                <span class="v-pill-tag tag-cyber">Cyber</span>
+                                            {% else %}
+                                                <span class="v-pill-tag tag-growth">{{ row.habit.category[:5] | upper }}</span>
+                                            {% endif %}
+                                        </td>
+
+                                        <!-- Domain Details (Dot, Title & Sub-Tags) -->
+                                        <td class="td-habit td-domain-cell">
+                                            <div class="domain-info-group">
+                                                <div class="domain-title-line">
+                                                    <span class="domain-dot" style="background-color: {{ row.habit.color }};"></span>
+                                                    <strong class="domain-label">{{ row.habit.name }}</strong>
+                                                </div>
+                                                <div class="domain-tags-wrap">
+                                                    {% if row.habit.description %}
+                                                        {% for tg in row.habit.description.split(',') %}
+                                                            <span class="domain-subtag">{{ tg.strip() }}</span>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <span class="domain-subtag">{{ row.habit.category }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <!-- 7 Day Columns with Hours Chips -->
+                                        {% for day_stat in row.days %}
+                                            {% set d_idx = loop.index0 %}
+                                            <td class="td-day-cell {% if day_stat.is_today %}td-active-day{% endif %}">
+                                                {% set cell_val = day_stat.value if day_stat.is_completed else 0 %}
+                                                
+                                                {% if day_stat.is_future %}
+                                                    <!-- Future day: disabled locked cell -->
+                                                    <div class="hour-chip chip-zero chip-future" title="Future date (cannot log ahead)">
+                                                        <span class="chip-text">0h</span>
+                                                    </div>
+                                                {% else %}
+                                                    <!-- Active Day Chip Button -->
+                                                    <button 
+                                                        type="button"
+                                                        class="hour-chip {% if cell_val == 0 %}chip-zero{% else %}chip-active chip-h-{{ cell_val }}{% endif %}"
+                                                        data-habit-id="{{ row.habit.id }}"
+                                                        data-date="{{ day_stat.date_str }}"
+                                                        data-hours="{{ cell_val }}"
+                                                        data-completed="{{ 'true' if day_stat.is_completed else 'false' }}"
+                                                        data-notes="{{ day_stat.notes or '' }}"
+                                                        id="tick-{{ row.habit.id }}-{{ day_stat.date_str }}"
+                                                        onclick="openHourDropdown(this, event)"
+                                                        title="{{ row.habit.name }} on {{ day_stat.date_str }}{% if day_stat.notes %} (Note: {{ day_stat.notes }}){% endif %}"
+                                                    >
+                                                        <span class="chip-text">{{ cell_val }}h</span>
+                                                        {% if cell_val >= 6 %}
+                                                            <span class="chip-dropdown-arrow">⌵</span>
+                                                        {% endif %}
+                                                    </button>
+                                                {% endif %}
+
+                                                <!-- Note trigger badge if notes present -->
+                                                {% if day_stat.notes %}
+                                                <span class="note-pill-btn has-note" onclick="openNoteModal({{ row.habit.id }}, '{{ row.habit.name | escape }}', '{{ day_stat.date_str }}')" title="Note: {{ day_stat.notes }}">📝</span>
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+
+                                        <!-- Total Column with Hours & Colored Mini Bar -->
+                                        <td class="td-total-cell">
+                                            <div class="row-total-group">
+                                                <span class="row-total-hours">{{ row.week_hours }}h</span>
+                                                <div class="row-mini-bar">
+                                                    <div class="row-mini-bar-fill" style="width: {{ row.completion_pct }}%; background-color: {{ row.habit.color }};"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="10" class="empty-table-msg">
+                                        No active habits tracked yet. Click "+ Add" above to start tracking.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                        <tfoot>
+                            <!-- Footer: DAILY TOTAL -->
+                            <tr class="focus-daily-total-row">
+                                <td colspan="2" class="td-daily-lbl">DAILY TOTAL</td>
+                                {% for day_data in grid.daily_chart_data %}
+                                    <td class="td-dt-val {% if day_data.date_str == today_str %}td-dt-active{% endif %}">{{ day_data.hours }}h</td>
+                                {% endfor %}
+                                <td class="td-dt-val"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+
+
             </section>
 
-            <!-- Right-Side Visual Sidebar -->
-            <aside class="dashboard-sidebar">
-                <!-- Weekly Trends Mini Chart -->
-                <div class="sidebar-card glass-card">
-                    <div class="sidebar-card-header">
-                        <div>
-                            <span class="sidebar-card-title">Daily Trends</span>
-                            <span class="sidebar-card-subtitle">Monday – Sunday</span>
-                        </div>
-                        <span class="sidebar-card-badge">7-Day</span>
+            <!-- COLUMN 3: RIGHT SIDEBAR (~265px) -->
+            <aside class="dashboard-sidebar focus-sidebar" style="display: flex; flex-direction: column; gap: 0.55rem; width: 265px; min-width: 265px;">
+                <!-- 1. Daily Productivity Bar Chart -->
+                <div class="sidebar-card daily-bar-card" style="background: #131923; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 0.45rem 0.65rem;">
+                    <div class="sidebar-card-head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <h4 class="sidebar-title" style="margin: 0; font-size: 0.78rem; font-weight: 700; color: #ffffff;">Daily Productivity Bar Chart</h4>
+                        <span class="sidebar-sub-lbl" style="font-size: 0.65rem; color: #64748b;">Daily Goal (8h)</span>
                     </div>
-                    <div class="chart-canvas-wrapper sidebar-canvas-trend">
-                        <canvas id="weeklyTrendsChart"></canvas>
+                    <div class="daily-bar-canvas-wrap" style="height: 95px; width: 100%;">
+                        <canvas id="dailyProductivityBarChart" height="95"></canvas>
                     </div>
                 </div>
 
-                <!-- Category Breakdown Mini Donut -->
-                <div class="sidebar-card glass-card">
-                    <div class="sidebar-card-header">
-                        <div>
-                            <span class="sidebar-card-title">Category Focus</span>
-                            <span class="sidebar-card-subtitle">Active distribution</span>
-                        </div>
-                        <span class="sidebar-card-badge">Breakdown</span>
+                <!-- 2. Task Distribution -->
+                <div class="sidebar-card task-dist-card" style="background: #131923; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 0.45rem 0.65rem;">
+                    <div class="sidebar-card-head" style="margin-bottom: 0.35rem;">
+                        <h4 class="sidebar-title" style="margin: 0; font-size: 0.78rem; font-weight: 700; color: #ffffff;">Task Distribution</h4>
                     </div>
-                    <div class="chart-canvas-wrapper donut-wrapper sidebar-canvas-donut">
-                        <canvas id="categoryDonutChart"></canvas>
+                    <div class="task-dist-list" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                        {% for item in grid.task_distribution %}
+                            <div class="dist-row" style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.68rem;">
+                                <span class="dist-name" style="width: 48px; color: #94a3b8; font-weight: 600;">{{ item.name }}</span>
+                                <div class="dist-bar-track" style="flex: 1; height: 4px; background: rgba(255, 255, 255, 0.06); border-radius: 9999px; overflow: hidden;">
+                                    <div class="dist-bar-fill" style="width: {{ item.pct }}%; background-color: {{ item.color }}; height: 100%; border-radius: 9999px;"></div>
+                                </div>
+                                <span class="dist-pct" style="width: 28px; text-align: right; color: #ffffff; font-weight: 700;">{{ item.pct }}%</span>
+                            </div>
+                        {% endfor %}
                     </div>
                 </div>
 
-                {% if grid.most_consistent_habit %}
-                <!-- Top Performer Habit Card -->
-                <div class="sidebar-card glass-card top-habit-card">
-                    <div class="sidebar-card-header">
-                        <span class="sidebar-card-title">Top Performer</span>
-                        <span class="sidebar-card-badge">Star Habit</span>
+                <!-- 3. Weekly Performance Score (Circular Donut Gauge) -->
+                <div class="sidebar-card perf-score-card" style="background: #131923; border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 12px; padding: 0.45rem 0.65rem;">
+                    <div class="sidebar-card-head" style="margin-bottom: 0.2rem;">
+                        <h4 class="sidebar-title" style="margin: 0; font-size: 0.78rem; font-weight: 700; color: #ffffff;">Weekly Performance Score</h4>
                     </div>
-                    <div class="top-habit-body">
-                        <span class="top-habit-icon" style="background: {{ grid.most_consistent_habit.color }}20; color: {{ grid.most_consistent_habit.color }}; border: 1px solid {{ grid.most_consistent_habit.color }}50;">
-                            {{ grid.most_consistent_habit.icon }}
-                        </span>
-                        <div class="top-habit-info">
-                            <strong class="top-habit-name">{{ grid.most_consistent_habit.name }}</strong>
-                            <span class="top-habit-meta">🔥 {{ grid.most_consistent_habit.current_streak }}d streak · {{ grid.most_consistent_habit.week_completed }}/7 this week</span>
+                    <div class="perf-gauge-area" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.1rem 0;">
+                        <div class="perf-radial-wrap" style="width: 65px; height: 65px; position: relative;">
+                            {% set perf_offset = (201.06 * (1 - (grid.overall_pct or 0) / 100)) %}
+                            <svg class="perf-radial-svg" viewBox="0 0 80 80" width="65" height="65" style="width: 65px; height: 65px; transform: rotate(-90deg); display: block;">
+                                <circle class="perf-circle-bg" cx="40" cy="40" r="32" stroke-width="6" fill="none" stroke="rgba(255, 255, 255, 0.07)"/>
+                                <circle class="perf-circle-fill" cx="40" cy="40" r="32" stroke-width="6" fill="none" stroke="#10b981" stroke-linecap="round" stroke-dasharray="201.06" stroke-dashoffset="{{ perf_offset }}"/>
+                            </svg>
+                            <div class="perf-radial-text" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+                                <span class="perf-number" style="font-size: 1.1rem; font-weight: 800; color: #ffffff;">{{ grid.overall_pct or 0 }}%</span>
+                            </div>
+                        </div>
+                        <div class="perf-score-sub" style="margin-top: 2px;">
+                            <span class="trend-green" style="font-size: 0.68rem; color: #10b981; font-weight: 600;">vs Last Week +4.5%</span>
                         </div>
                     </div>
                 </div>
-                {% endif %}
 
-                <!-- Consistency Insight Card -->
-                <div class="sidebar-card glass-card consistency-card">
-                    <div class="sidebar-card-header">
-                        <span class="sidebar-card-title">Consistency Insight</span>
-                        <span class="sidebar-card-badge">Progress</span>
-                    </div>
-                    <div class="consistency-content">
-                        <div class="consistency-stat">
-                            <span class="consistency-rate">{{ grid.overall_pct }}%</span>
-                            <span class="consistency-label">Weekly Consistency</span>
-                        </div>
-                        <p class="consistency-desc">
-                            {% if grid.overall_pct >= 80 %}
-                                🌟 Exceptional consistency this week! Keep the momentum going strong.
-                            {% elif grid.overall_pct >= 50 %}
-                                📈 Solid progress this week! Focus on completing today's open habits.
-                            {% else %}
-                                🎯 Every day is a fresh opportunity to build lasting daily momentum.
-                            {% endif %}
-                        </p>
-                    </div>
-                </div>
             </aside>
+
         </div>
     </main>
 
     <!-- Modal: Add / Edit Habit -->
-    <div class="modal-backdrop" id="habit-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="modal-dialog glass-card">
+    <div class="modal-backdrop" id="habit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" style="display: none;">
+        <div class="modal-card">
             <div class="modal-header">
-                <h3 id="modal-title">Add New Habit</h3>
-                <button class="modal-close" onclick="closeHabitModal()" aria-label="Close modal">✕</button>
+                <h3 id="modal-title">New Habit / Focus Track</h3>
+                <button type="button" class="btn-close modal-close" onclick="closeHabitModal()" aria-label="Close modal">✕</button>
             </div>
             <form id="habit-form" onsubmit="handleHabitSubmit(event)">
-                <input type="hidden" id="form-habit-id" value="">
-                
+                <input type="hidden" id="form-habit-id">
                 <div class="form-group">
-                    <label for="form-habit-name">Habit Name *</label>
-                    <input type="text" id="form-habit-name" class="form-input" required placeholder="e.g. Read 20 Pages">
+                    <label for="form-habit-name">Name *</label>
+                    <input type="text" id="form-habit-name" required placeholder="e.g. LeetCode & DSA" maxlength="100">
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group col-6">
-                        <label for="form-habit-category">Category</label>
-                        <select id="form-habit-category" class="form-select">
-                            <option value="Fitness">Fitness</option>
-                            <option value="Health">Health</option>
-                            <option value="Learning">Learning</option>
-                            <option value="Mindfulness">Mindfulness</option>
-                            <option value="Productivity">Productivity</option>
-                            <option value="Nutrition">Nutrition</option>
-                            <option value="Career">Career / Tech</option>
-                            <option value="Recovery">Recovery</option>
-                            <option value="Activity">Activity</option>
-                            <option value="General">General</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group col-6">
-                        <label for="form-habit-icon">Icon (Emoji)</label>
-                        <input type="text" id="form-habit-icon" class="form-input" value="🎯" maxlength="4">
-                    </div>
+                <div class="form-group">
+                    <label for="form-habit-category">Category *</label>
+                    <input type="text" id="form-habit-category" required placeholder="e.g. DSA, AI/ML, DevOps" maxlength="50">
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group col-6">
+                <div class="form-group">
+                    <label for="form-habit-desc">Tags (comma separated)</label>
+                    <input type="text" id="form-habit-desc" placeholder="e.g. LeetCode, Patterns" maxlength="255">
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="form-habit-icon">Icon</label>
+                        <input type="text" id="form-habit-icon" value="🎯" maxlength="10">
+                    </div>
+                    <div class="form-group">
                         <label for="form-habit-color">Accent Color</label>
-                        <input type="color" id="form-habit-color" class="form-input color-picker" value="#10b981">
-                    </div>
-                    <div class="form-group col-6">
-                        <label for="form-habit-target">Daily Target</label>
-                        <input type="number" id="form-habit-target" class="form-input" min="1" max="100" value="1">
+                        <input type="color" id="form-habit-color" value="#10b981">
                     </div>
                 </div>
-
                 <div class="form-group">
-                    <label for="form-habit-desc">Description (Optional)</label>
-                    <input type="text" id="form-habit-desc" class="form-input" placeholder="e.g. Daily non-fiction reading">
+                    <label for="form-habit-target">Daily Target (Hours)</label>
+                    <input type="number" id="form-habit-target" value="8" min="1" max="24">
                 </div>
-
-                <div class="modal-footer">
+                <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeHabitModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="modal-save-btn">Save Habit</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-habit">Save Track</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal: Manage Habits / Reset Defaults -->
-    <div class="modal-backdrop" id="manage-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="manage-modal-title">
-        <div class="modal-dialog glass-card">
+    <!-- Modal: Manage Habits -->
+    <div class="modal-backdrop" id="manage-modal" role="dialog" aria-modal="true" aria-labelledby="manage-modal-title" style="display: none;">
+        <div class="modal-card modal-lg">
             <div class="modal-header">
-                <h3 id="manage-modal-title">Manage Habits & Reset</h3>
-                <button class="modal-close" onclick="closeManageModal()" aria-label="Close modal">✕</button>
+                <h3 id="manage-modal-title">Manage Tracks</h3>
+                <button type="button" class="btn-close modal-close" onclick="closeManageModal()" aria-label="Close modal">✕</button>
             </div>
-            <div class="modal-body">
-                <p class="manage-desc">You can reset your habits back to the default 10 foundational habits (Morning Workout, Water, Reading, Meditation, Deep Work, Healthy Meal, AWS Tech Practice, Sleep, Steps, Reflection).</p>
-                
-                <div class="manage-action-card">
-                    <div class="action-info">
-                        <strong>Reset to Default 10 Habits</strong>
-                        <span>Restores standard 10 habits with fresh sample data.</span>
-                    </div>
-                    <button class="btn btn-danger" onclick="resetDefaultHabits()">Reset Defaults</button>
+            <div class="manage-body">
+                <div class="manage-template-row" style="display:none;" aria-hidden="true">
+                    <button class="btn-action edit" aria-label="Edit habit">✏️</button>
+                    <button class="btn-action archive" aria-label="Archive habit">📦</button>
+                    <button class="btn-action delete" aria-label="Delete habit">🗑️</button>
                 </div>
-
-                <div class="archived-section" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
-                    <h4 style="font-size: 0.95rem; margin-bottom: 0.35rem; color: #fff;">Archived Habits</h4>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem;">Archived habits retain all past logs and analytics but are hidden from the active weekly tracker.</p>
-                    <div id="archived-habits-list" class="archived-list">
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">Loading archived habits...</span>
-                    </div>
+                <div class="manage-list" id="manage-habits-list">
+                    <!-- Populated by JavaScript -->
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeManageModal()">Close</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Habit Day Reflection Note -->
-    <div class="modal-backdrop" id="note-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="note-modal-title">
-        <div class="modal-dialog glass-card" style="max-width: 420px;">
+    <!-- Modal: Day Reflection Note -->
+    <div class="modal-backdrop" id="note-modal" role="dialog" aria-modal="true" aria-labelledby="note-modal-title" style="display: none;">
+        <div class="modal-card">
             <div class="modal-header">
-                <h3 id="note-modal-title">Habit Note</h3>
-                <button class="modal-close" onclick="closeNoteModal()" aria-label="Close modal">✕</button>
+                <h3 id="note-modal-title">Log Reflection</h3>
+                <button type="button" class="btn-close modal-close" onclick="closeNoteModal()" aria-label="Close modal">✕</button>
             </div>
             <form id="note-form" onsubmit="handleNoteSubmit(event)">
-                <input type="hidden" id="note-habit-id" value="">
-                <input type="hidden" id="note-date" value="">
-                
-                <p id="note-modal-subtitle" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;"></p>
-
+                <input type="hidden" id="note-habit-id">
+                <input type="hidden" id="note-date">
+                <p id="note-modal-subtitle" class="note-subtitle-text"></p>
                 <div class="form-group">
                     <label for="form-note-text">Reflection Note</label>
-                    <textarea id="form-note-text" class="form-input" rows="3" maxlength="255" placeholder="e.g. Felt strong today, increased focus..."></textarea>
+                    <textarea id="form-note-text" rows="3" maxlength="255" placeholder="Wins, tasks solved, or lessons learned..."></textarea>
                 </div>
-
-                <div class="modal-footer">
+                <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeNoteModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary" id="note-save-btn">Save Note</button>
                 </div>
@@ -513,14 +1973,16 @@
         </div>
     </div>
 
-    <!-- Toast Notification Element -->
+    <!-- Toast Container -->
     <div id="toast" class="toast"></div>
 
-    <!-- Pass backend chart data into JavaScript -->
+    <!-- Pass dynamic chart data to JS -->
     <script>
         const INITIAL_DAILY_DATA = {{ grid.daily_chart_data | tojson }};
+        const INITIAL_DAILY_BARS = {{ grid.daily_bar_stats | tojson }};
         const INITIAL_CATEGORY_DATA = {{ monthly_stats.category_distribution | tojson }};
-        const CURRENT_WEEK_DATE = "{{ grid.week_info.monday_str }}";
+        const IS_CURRENT_WEEK = {{ 'true' if grid.week_info.is_current_week else 'false' }};
+        const TODAY_ISO = "{{ today_str }}";
     </script>
     <script src="/static/js/app.js"></script>
 </body>

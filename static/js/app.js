@@ -630,6 +630,31 @@ async function handleNoteSubmit(event) {
     }
 }
 
+// ========================================================
+// 7. Demo Account Management
+// ========================================================
+async function resetDemoData() {
+    const btn = document.getElementById("btn-reset-demo");
+    const originalText = btn ? btn.textContent : "🔄 Reset Demo Data";
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Resetting...";
+    }
+    try {
+        const res = await fetch("/api/auth/reset-demo", { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Reset failed");
+        showToast("Demo data refreshed to showcase state! ⚡");
+        setTimeout(() => window.location.reload(), 700);
+    } catch (err) {
+        showToast("Error: " + err.message);
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    }
+}
+
 // Global modal listeners: Escape key to close, click backdrop to close
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
@@ -643,4 +668,492 @@ document.addEventListener("click", (e) => {
     if (e.target && e.target.classList.contains("modal-backdrop")) {
         e.target.style.display = "none";
     }
+});
+
+
+// ========================================================
+// 8. FOCUS OS Visual Charts & Interactive Handlers
+// ========================================================
+let dailyProdChart = null;
+let cumulativeChart = null;
+
+function initFocusOSCharts() {
+    initDailyProductivityChart();
+    initCumulativeChart();
+}
+
+function initDailyProductivityChart() {
+    const ctx = document.getElementById("dailyProductivityBarChart");
+    if (!ctx) return;
+
+    if (dailyProdChart) {
+        dailyProdChart.destroy();
+    }
+
+    let labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    let values = [0, 0, 0, 0, 0, 0, 0];
+
+    if (typeof INITIAL_DAILY_BARS !== "undefined" && Array.isArray(INITIAL_DAILY_BARS) && INITIAL_DAILY_BARS.length > 0) {
+        labels = INITIAL_DAILY_BARS.map(d => d.day);
+        values = INITIAL_DAILY_BARS.map(d => d.val);
+    } else if (typeof INITIAL_DAILY_DATA !== "undefined" && Array.isArray(INITIAL_DAILY_DATA) && INITIAL_DAILY_DATA.length > 0) {
+        labels = INITIAL_DAILY_DATA.map(d => d.day_name);
+        values = INITIAL_DAILY_DATA.map(d => d.hours !== undefined ? d.hours : d.completed_count);
+    }
+
+    dailyProdChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: function(context) {
+                    const chart = context.chart;
+                    const {ctx, chartArea} = chart;
+                    if (!chartArea) return '#10b981';
+                    const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                    gradient.addColorStop(0, '#06b6d4');
+                    gradient.addColorStop(1, '#10b981');
+                    return gradient;
+                },
+                borderRadius: 5,
+                borderSkipped: false,
+                barPercentage: 0.52
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => `${ctx.raw}h logged`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#64748b', font: { family: 'Inter', size: 10 } }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                    ticks: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function initCumulativeChart() {
+    const ctx = document.getElementById("cumulativeProgressChart");
+    if (!ctx) return;
+
+    if (cumulativeChart) {
+        cumulativeChart.destroy();
+    }
+
+    const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const rows = document.querySelectorAll(".focus-habit-row, .focus-habit-tr");
+    const datasets = [];
+    const defaultColors = ['#10b981', '#38bdf8', '#8b5cf6', '#f59e0b', '#84cc16', '#ec4899'];
+
+    rows.forEach((row, rIdx) => {
+        if (rIdx >= 5) return;
+        const nameEl = row.querySelector(".domain-label");
+        const name = nameEl ? nameEl.textContent.trim() : `Habit ${rIdx + 1}`;
+        const chips = row.querySelectorAll(".hour-chip");
+        let sum = 0;
+        const cumData = [];
+        chips.forEach(chip => {
+            const hrs = parseFloat(chip.getAttribute("data-hours")) || 0;
+            sum += hrs;
+            cumData.push(parseFloat(sum.toFixed(1)));
+        });
+
+        const dot = row.querySelector(".domain-dot");
+        const color = (dot && dot.style.backgroundColor) ? dot.style.backgroundColor : defaultColors[rIdx % defaultColors.length];
+
+        datasets.push({
+            label: name,
+            data: cumData.length === 7 ? cumData : [0, 0, 0, 0, 0, 0, 0],
+            borderColor: color,
+            borderWidth: 2,
+            tension: 0.35,
+            pointRadius: 0
+        });
+    });
+
+    if (datasets.length === 0) {
+        datasets.push({
+            label: 'No Habits',
+            data: [0, 0, 0, 0, 0, 0, 0],
+            borderColor: '#10b981',
+            borderWidth: 2
+        });
+    }
+
+    cumulativeChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                    ticks: { color: '#64748b', font: { family: 'Inter', size: 9 } }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.04)' },
+                    ticks: { color: '#64748b', font: { family: 'Inter', size: 9 }, stepSize: 2 }
+                }
+            }
+        }
+    });
+}
+
+function setFocusTab(btn, tab) {
+    document.querySelectorAll(".focus-tab-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    showToast(`Switched to ${btn.textContent} view ⚡`);
+}
+
+function toggleGoalItem(el) {
+    el.classList.toggle("checked");
+    const circle = el.querySelector(".goal-circle");
+    if (el.classList.contains("checked")) {
+        circle.textContent = "✔";
+        showToast("Goal marked complete!");
+    } else {
+        circle.textContent = "○";
+    }
+}
+
+async function updateHeatmapCell(dateStr) {
+    try {
+        const res = await fetch("/api/analytics/heatmap?weeks=32");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data || !data.weeks) return;
+        for (const week of data.weeks) {
+            for (const cell of week) {
+                if (cell.date === dateStr) {
+                    const el = document.querySelector(`.gh-cell[data-date="${dateStr}"]`);
+                    if (el) {
+                        el.className = `gh-cell level-${cell.level}`;
+                        el.setAttribute("title", cell.tooltip);
+                        el.setAttribute("data-completed", cell.completed);
+                        el.setAttribute("data-hours", cell.hours);
+                        el.setAttribute("data-pct", cell.percentage);
+                    }
+                    return;
+                }
+            }
+        }
+    } catch (e) {
+        console.warn("Heatmap update", e);
+    }
+}
+
+async function toggleFocusCell(btn, event) {
+    if (event) { openHourDropdown(btn, event); return; }
+    const habitId = btn.getAttribute("data-habit-id");
+    const dateStr = btn.getAttribute("data-date");
+    let currentHours = parseInt(btn.getAttribute("data-hours")) || 0;
+    
+    // Cycle hours: 0 -> 2 -> 4 -> 6 -> 8 -> 10 -> 0 (cleanly handling any starting value)
+    const sequence = [0, 2, 4, 6, 8, 10];
+    let nextIdx = 1;
+    let foundIdx = sequence.indexOf(currentHours);
+    if (foundIdx !== -1) {
+        nextIdx = (foundIdx + 1) % sequence.length;
+    } else {
+        nextIdx = sequence.findIndex(h => h > currentHours);
+        if (nextIdx === -1) nextIdx = 0;
+    }
+    let newHours = sequence[nextIdx];
+
+    btn.setAttribute("data-hours", newHours);
+    const chipText = btn.querySelector(".chip-text");
+    if (chipText) chipText.textContent = `${newHours}h`;
+
+    btn.className = `hour-chip ${newHours === 0 ? 'chip-zero' : 'chip-active chip-h-' + newHours}`;
+
+    try {
+        const res = await fetch("/api/habits/toggle", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                habit_id: parseInt(habitId),
+                date: dateStr,
+                value: newHours
+            })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Sync failed");
+
+        btn.setAttribute("data-completed", data.completed ? "true" : "false");
+        btn.setAttribute("data-hours", data.value);
+        if (chipText) chipText.textContent = `${data.value}h`;
+        btn.className = `hour-chip ${data.value === 0 ? 'chip-zero' : 'chip-active chip-h-' + data.value}`;
+
+        const pctEl = document.getElementById("metric-week-pct");
+        if (pctEl && data.overall_week_pct !== undefined) {
+            pctEl.textContent = `${data.overall_week_pct}%`;
+        }
+        const streakEl = document.getElementById("metric-best-streak");
+        if (streakEl && data.current_streak !== undefined) {
+            streakEl.textContent = `${data.current_streak} Days`;
+        }
+
+        // Live update heatmap cell and cumulative chart
+        updateHeatmapCell(dateStr);
+        initCumulativeChart();
+
+        showToast(newHours > 0 ? `Logged ${newHours}h for ${dateStr}!` : "Cleared day logs");
+    } catch (err) {
+        showToast("Sync error: " + err.message);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    initFocusOSCharts();
+});
+
+
+// ========================================================
+// FOCUS OS: HOUR SELECTION DROPDOWN (0 - 10h) & USER GOALS
+// ========================================================
+let activeHourPopover = null;
+
+function closeHourDropdown() {
+    if (activeHourPopover) {
+        activeHourPopover.remove();
+        activeHourPopover = null;
+    }
+}
+
+document.addEventListener("click", function(e) {
+    if (!e.target.closest(".hour-dropdown-popover") && !e.target.closest(".hour-chip")) {
+        closeHourDropdown();
+    }
+});
+
+document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") closeHourDropdown();
+});
+
+function openHourDropdown(btn, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    // Toggle close if clicking same active button
+    if (activeHourPopover && activeHourPopover._targetBtn === btn) {
+        closeHourDropdown();
+        return;
+    }
+    closeHourDropdown();
+
+    const currentHours = parseInt(btn.getAttribute("data-hours")) || 0;
+    
+    const popover = document.createElement("div");
+    popover.className = "hour-dropdown-popover";
+    popover._targetBtn = btn;
+    
+    // Clear / 0h option
+    const zeroBtn = document.createElement("button");
+    zeroBtn.type = "button";
+    zeroBtn.className = "hour-opt-btn opt-zero" + (currentHours === 0 ? " opt-active" : "");
+    zeroBtn.innerHTML = "<span>✕</span> Clear (0h)";
+    zeroBtn.onclick = (e) => {
+        e.stopPropagation();
+        selectHourValue(btn, 0);
+        closeHourDropdown();
+    };
+    popover.appendChild(zeroBtn);
+
+    // 1h to 10h options
+    for (let h = 1; h <= 10; h++) {
+        const optBtn = document.createElement("button");
+        optBtn.type = "button";
+        optBtn.className = "hour-opt-btn" + (currentHours === h ? " opt-active" : "");
+        optBtn.textContent = `${h}h`;
+        optBtn.onclick = (e) => {
+            e.stopPropagation();
+            selectHourValue(btn, h);
+            closeHourDropdown();
+        };
+        popover.appendChild(optBtn);
+    }
+
+    document.body.appendChild(popover);
+    activeHourPopover = popover;
+
+    // Position popover relative to button
+    const rect = btn.getBoundingClientRect();
+    const popHeight = 150;
+    const popWidth = 168;
+    
+    let top = rect.bottom + window.scrollY + 4;
+    let left = rect.left + window.scrollX + (rect.width / 2) - (popWidth / 2);
+
+    if (rect.bottom + popHeight > window.innerHeight) {
+        top = rect.top + window.scrollY - popHeight - 4;
+    }
+    if (left + popWidth > window.innerWidth - 10) {
+        left = window.innerWidth - popWidth - 10;
+    }
+    if (left < 10) left = 10;
+
+    popover.style.top = `${top}px`;
+    popover.style.left = `${left}px`;
+}
+
+async function selectHourValue(btn, newHours) {
+    const habitId = btn.getAttribute("data-habit-id");
+    const dateStr = btn.getAttribute("data-date");
+
+    btn.setAttribute("data-hours", newHours);
+    const chipText = btn.querySelector(".chip-text");
+    if (chipText) chipText.textContent = `${newHours}h`;
+
+    btn.className = `hour-chip ${newHours === 0 ? 'chip-zero' : 'chip-active chip-h-' + newHours}`;
+
+    try {
+        const res = await fetch("/api/habits/toggle", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                habit_id: parseInt(habitId),
+                date: dateStr,
+                value: newHours
+            })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Sync failed");
+
+        btn.setAttribute("data-completed", data.completed ? "true" : "false");
+        btn.setAttribute("data-hours", data.value);
+        if (chipText) chipText.textContent = `${data.value}h`;
+        btn.className = `hour-chip ${data.value === 0 ? 'chip-zero' : 'chip-active chip-h-' + data.value}`;
+
+        const pctEl = document.getElementById("metric-week-pct");
+        if (pctEl && data.overall_week_pct !== undefined) {
+            pctEl.textContent = `${data.overall_week_pct}%`;
+        }
+        const streakEl = document.getElementById("metric-best-streak");
+        if (streakEl && data.current_streak !== undefined) {
+            streakEl.textContent = `${data.current_streak} Days`;
+        }
+
+        updateHeatmapCell(dateStr);
+        initCumulativeChart();
+
+        showToast(newHours > 0 ? `Logged ${newHours}h for ${dateStr}!` : `Cleared logs for ${dateStr}`);
+    } catch (err) {
+        showToast("Sync error: " + err.message);
+    }
+}
+
+// User-Customizable 5 Goals with Emoji & Color
+const DEFAULT_USER_GOALS = [
+    { id: 1, emoji: "🎯", color: "#10b981", text: "Sprint 4 Delivery", checked: true },
+    { id: 2, emoji: "🚀", color: "#38bdf8", text: "Deploy RAG LLM Microservice", checked: false },
+    { id: 3, emoji: "📚", color: "#8b5cf6", text: "Read 50 Pages System Design", checked: false },
+    { id: 4, emoji: "💪", color: "#f59e0b", text: "4x Weekly Strength Training", checked: false },
+    { id: 5, emoji: "🧘", color: "#ec4899", text: "10m Daily Mindfulness & Sleep", checked: false }
+];
+
+function loadUserGoals() {
+    try {
+        const saved = localStorage.getItem("focus_os_user_goals_v2");
+        return saved ? JSON.parse(saved) : DEFAULT_USER_GOALS;
+    } catch (e) {
+        return DEFAULT_USER_GOALS;
+    }
+}
+
+function saveUserGoalsList(goals) {
+    try {
+        localStorage.setItem("focus_os_user_goals_v2", JSON.stringify(goals));
+    } catch (e) {}
+}
+
+function renderUserGoals() {
+    const container = document.getElementById("user-goals-list");
+    if (!container) return;
+    const goals = loadUserGoals();
+    container.innerHTML = "";
+
+    goals.forEach(g => {
+        const row = document.createElement("div");
+        row.className = "user-goal-row" + (g.checked ? " checked" : "");
+        row.innerHTML = `
+            <button type="button" class="goal-check-btn" onclick="toggleUserGoalCheck(${g.id})">${g.checked ? "✔" : "○"}</button>
+            <span class="goal-emoji-pill" style="border-color: ${g.color}44; background: ${g.color}15;" onclick="promptEditGoalEmoji(${g.id})">${g.emoji}</span>
+            <span class="goal-text" contenteditable="true" spellcheck="false" onblur="updateGoalText(${g.id}, this)">${g.text}</span>
+            <input type="color" class="goal-color-picker" value="${g.color}" onchange="updateGoalColor(${g.id}, this.value)" title="Change color">
+        `;
+        container.appendChild(row);
+    });
+}
+
+function toggleUserGoalCheck(id) {
+    const goals = loadUserGoals();
+    const g = goals.find(x => x.id === id);
+    if (g) {
+        g.checked = !g.checked;
+        saveUserGoalsList(goals);
+        renderUserGoals();
+        showToast(g.checked ? `Completed: ${g.text} 🎯` : `Pending: ${g.text}`);
+    }
+}
+
+function updateGoalText(id, el) {
+    const goals = loadUserGoals();
+    const g = goals.find(x => x.id === id);
+    if (g) {
+        g.text = el.textContent.trim() || `Goal ${id}`;
+        saveUserGoalsList(goals);
+        showToast("Goal saved!");
+    }
+}
+
+function updateGoalColor(id, newColor) {
+    const goals = loadUserGoals();
+    const g = goals.find(x => x.id === id);
+    if (g) {
+        g.color = newColor;
+        saveUserGoalsList(goals);
+        renderUserGoals();
+    }
+}
+
+function promptEditGoalEmoji(id) {
+    const goals = loadUserGoals();
+    const g = goals.find(x => x.id === id);
+    if (g) {
+        const nextEmojis = ["🎯", "🚀", "📚", "💪", "🧘", "⚡", "🔥", "🏆", "🧠", "💼"];
+        const currIdx = nextEmojis.indexOf(g.emoji);
+        g.emoji = nextEmojis[(currIdx + 1) % nextEmojis.length];
+        saveUserGoalsList(goals);
+        renderUserGoals();
+    }
+}
+
+// Ensure goals render on load
+document.addEventListener("DOMContentLoaded", function() {
+    renderUserGoals();
 });

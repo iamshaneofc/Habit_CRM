@@ -25,8 +25,10 @@ def test_step13_visual_elements():
 
         # 1. Verify services returns most_consistent_habit
         from models import User
+        from seed_data import seed_default_habits
         db = database.SessionLocal()
         user = db.query(User).filter(User.email == user_email).first()
+        seed_default_habits(db, force=True, seed_sample_logs=True, user_id=user.id)
         grid = get_weekly_grid(db, user_id=user.id)
         db.close()
 

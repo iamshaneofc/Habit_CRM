@@ -20,6 +20,7 @@ import auth
 from auth import get_current_user, get_current_user_optional, SESSION_COOKIE_NAME, check_rate_limit
 from seed_data import seed_default_habits
 import services
+from catalog import CATALOG_CATEGORIES, DOMAIN_CATALOG
 
 # Setup database on startup
 @asynccontextmanager
@@ -103,6 +104,20 @@ class ToggleRequest(BaseModel):
     habit_id: int
     date: str  # YYYY-MM-DD
     notes: Optional[str] = None
+    value: Optional[int] = None
+
+class SelectedDomainItem(BaseModel):
+    name: str
+    category: str
+    icon: Optional[str] = "🎯"
+    color: Optional[str] = "#10b981"
+    subtopics: List[str] = Field(default_factory=list)
+
+class OnboardingCompleteRequest(BaseModel):
+    display_name: str
+    profession: Optional[str] = None
+    bio: Optional[str] = None
+    domains: List[SelectedDomainItem] = Field(..., min_length=1, max_length=10)
 
 class HabitLogNoteRequest(BaseModel):
     habit_id: int
@@ -131,6 +146,11 @@ class HabitUpdateRequest(BaseModel):
 # ========================================================
 # Web Pages
 # ========================================================
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for platform monitoring."""
+    return {"status": "healthy", "service": "Focus OS", "version": "1.0.0"}
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request, current_user: Optional[User] = Depends(get_current_user_optional)):
     if current_user:
@@ -148,6 +168,72 @@ async def logout_redirect():
     response = RedirectResponse(url="/login", status_code=303)
     response.delete_cookie(SESSION_COOKIE_NAME)
     return response
+
+@app.get("/onboarding", response_class=HTMLResponse)
+async def onboarding_page(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    """Interactive 4-step onboarding wizard for Focus OS."""
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=303)
+    return templates.TemplateResponse("onboarding.html", {
+        "request": request,
+        "current_user": current_user,
+        "categories": CATALOG_CATEGORIES,
+        "domains": DOMAIN_CATALOG
+    })
+
+@app.get("/monthly", response_class=HTMLResponse)
+async def monthly_page(
+    request: Request,
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    """Dedicated Monthly Tracker Page with calendar grid, breakdown, and monthly analytics."""
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    today = date.today()
+    y = year or today.year
+    m = month or today.month
+
+    # Auto-seed default habits for fresh user accounts
+    user_habit_count = db.query(Habit).filter(Habit.user_id == current_user.id).count()
+    if user_habit_count == 0:
+        seed_default_habits(db, force=False, seed_sample_logs=True, user_id=current_user.id)
+
+    monthly_data = services.get_monthly_tracker_data(db, user_id=current_user.id, year=y, month=m)
+
+    prev_m = 12 if m == 1 else m - 1
+    prev_y = y - 1 if m == 1 else y
+    next_m = 1 if m == 12 else m + 1
+    next_y = y + 1 if m == 12 else y
+
+    months_list = [
+        {"num": i, "name": datetime(2000, i, 1).strftime("%B"), "is_selected": i == m}
+        for i in range(1, 13)
+    ]
+    years_list = list(range(today.year - 2, today.year + 3))
+
+    return templates.TemplateResponse("monthly.html", {
+        "request": request,
+        "current_user": current_user,
+        "data": monthly_data,
+        "current_year": y,
+        "current_month": m,
+        "month_name": datetime(2000, m, 1).strftime("%B"),
+        "prev_year": prev_y,
+        "prev_month": prev_m,
+        "next_year": next_y,
+        "next_month": next_m,
+        "months_list": months_list,
+        "years_list": years_list,
+        "today_str": today.isoformat()
+    })
 
 @app.get("/", response_class=HTMLResponse)
 async def dashboard_page(
@@ -190,6 +276,7 @@ async def dashboard_page(
 
     grid = services.get_weekly_grid(db, target_dt, user_id=current_user.id)
     monthly_stats = services.get_monthly_summary(db, current_year, current_month, user_id=current_user.id)
+    heatmap_data = services.get_heatmap_data(db, user_id=current_user.id, num_weeks=32)
     db_info = config.get_display_info()
 
     # List of months for filter dropdown
@@ -205,6 +292,7 @@ async def dashboard_page(
         "current_user": current_user,
         "grid": grid,
         "monthly_stats": monthly_stats,
+        "heatmap_data": heatmap_data,
         "db_info": db_info,
         "today_str": today.isoformat(),
         "selected_month": current_month,
@@ -297,6 +385,59 @@ async def get_me(current_user: User = Depends(get_current_user)):
     """Returns details for the currently authenticated user."""
     return {"success": True, "user": current_user.to_dict()}
 
+@app.post("/api/auth/demo-login")
+async def demo_login_api(request: Request, db: Session = Depends(get_db)):
+    """
+    Authenticates into the rich showcase demo account with full features.
+    Issues an HTTP-only session cookie and JWT.
+    """
+    check_rate_limit(request, action="demo_login", max_attempts=30, window_seconds=60)
+    from seed_data import ensure_demo_user_seeded
+    demo_user = ensure_demo_user_seeded(db)
+
+    token = auth.create_access_token({"sub": str(demo_user.id), "email": demo_user.email})
+    response = JSONResponse({
+        "success": True,
+        "message": "Demo mode activated with full account features.",
+        "token": token,
+        "user": demo_user.to_dict()
+    })
+    response.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=token,
+        httponly=True,
+        samesite="lax",
+        secure=config.is_production(),
+        max_age=7 * 24 * 3600
+    )
+    return response
+
+@app.get("/demo-login")
+async def demo_login_get(request: Request, db: Session = Depends(get_db)):
+    """Direct URL access to instantly activate demo session and redirect to dashboard."""
+    from seed_data import ensure_demo_user_seeded
+    demo_user = ensure_demo_user_seeded(db)
+    token = auth.create_access_token({"sub": str(demo_user.id), "email": demo_user.email})
+    response = RedirectResponse(url="/", status_code=303)
+    response.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=token,
+        httponly=True,
+        samesite="lax",
+        secure=config.is_production(),
+        max_age=7 * 24 * 3600
+    )
+    return response
+
+@app.post("/api/auth/reset-demo")
+async def reset_demo_api(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Resets the demo account's sample logs and streaks back to the pristine showcase state."""
+    if current_user.email != "demo@habitcrm.com":
+        raise HTTPException(status_code=403, detail="Reset is only available for demo account.")
+    from seed_data import ensure_demo_user_seeded
+    ensure_demo_user_seeded(db, force_refresh_logs=True)
+    return JSONResponse({"success": True, "message": "Demo data reset successfully to pristine state."})
+
 # ========================================================
 # REST API Endpoints: Habits
 # ========================================================
@@ -330,20 +471,25 @@ async def toggle_habit_day(
         HabitLog.date == log_date
     ).first()
 
+    if payload.value is not None:
+        new_state = payload.value > 0
+        new_val = payload.value
+    else:
+        new_state = not log.completed if log else True
+        new_val = (habit.daily_target or 1) if new_state else 0
+
     if log:
-        log.completed = not log.completed
-        log.value = 1 if log.completed else 0
+        log.completed = new_state
+        log.value = new_val
         if payload.notes is not None:
             log.notes = payload.notes.strip() if payload.notes else None
-        new_state = log.completed
     else:
-        new_state = True
         log = HabitLog(
             user_id=current_user.id,
             habit_id=payload.habit_id,
             date=log_date,
-            completed=True,
-            value=1,
+            completed=new_state,
+            value=new_val,
             notes=payload.notes.strip() if payload.notes else None
         )
         db.add(log)
@@ -359,11 +505,16 @@ async def toggle_habit_day(
             HabitLog.date == log_date
         ).first()
         if log:
-            log.completed = not log.completed
-            log.value = 1 if log.completed else 0
+            if payload.value is not None:
+                new_state = payload.value > 0
+                new_val = payload.value
+            else:
+                new_state = not log.completed
+                new_val = (habit.daily_target or 1) if new_state else 0
+            log.completed = new_state
+            log.value = new_val
             if payload.notes is not None:
                 log.notes = payload.notes.strip() if payload.notes else None
-            new_state = log.completed
             db.commit()
 
     streak_info = services.calculate_habit_streak(payload.habit_id, db, user_id=current_user.id)
@@ -385,6 +536,7 @@ async def toggle_habit_day(
         "habit_id": payload.habit_id,
         "date": payload.date,
         "completed": new_state,
+        "value": log.value if log else 0,
         "notes": log.notes if log else None,
         "current_streak": streak_info["current_streak"],
         "longest_streak": streak_info["longest_streak"],
@@ -462,15 +614,18 @@ async def create_habit(
     db: Session = Depends(get_db)
 ):
     """Add a new custom habit for the authenticated user."""
+    desc = payload.description.strip() if payload.description else None
     habit = Habit(
         user_id=current_user.id,
         name=payload.name.strip(),
         category=payload.category.strip() or "General",
-        description=payload.description.strip() if payload.description else None,
+        description=desc,
+        subtopics=desc,
         icon=payload.icon or "🎯",
         color=payload.color or "#10b981",
         daily_target=payload.daily_target or 1,
         display_order=payload.display_order or 0,
+        activation_date=date.today(),
         is_active=True
     )
     db.add(habit)
@@ -496,6 +651,7 @@ async def update_habit(
         habit.category = payload.category.strip()
     if payload.description is not None:
         habit.description = payload.description.strip() if payload.description else None
+        habit.subtopics = habit.description
     if payload.icon is not None:
         habit.icon = payload.icon
     if payload.color is not None:
@@ -637,6 +793,89 @@ async def database_status():
         "info": config.get_display_info(),
         "is_fallback": getattr(config, "_active_fallback", False)
     }
+
+# ========================================================
+# REST API Endpoints: Focus OS Onboarding & Analytics
+# ========================================================
+@app.get("/api/catalog")
+async def get_catalog_api():
+    """Returns the full 44-domain catalog across 5 categories with subtopics."""
+    return {
+        "categories": CATALOG_CATEGORIES,
+        "domains": DOMAIN_CATALOG
+    }
+
+@app.post("/api/onboarding/complete")
+async def complete_onboarding_api(
+    payload: OnboardingCompleteRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Saves user onboarding profile, configures custom habits from selected domains (max 10)
+    and subtopics (max 5 per habit), and activates personal CRM.
+    """
+    current_user.display_name = payload.display_name.strip()
+    if payload.profession:
+        current_user.profession = payload.profession.strip()
+    if payload.bio:
+        current_user.bio = payload.bio.strip()
+    current_user.onboarding_completed = True
+    current_user.tracking_start_date = date.today()
+
+    # Clear prior default habits and logs for fresh personalized start
+    db.query(HabitLog).filter(HabitLog.user_id == current_user.id).delete(synchronize_session=False)
+    db.query(Habit).filter(Habit.user_id == current_user.id).delete(synchronize_session=False)
+
+    for idx, domain_item in enumerate(payload.domains[:10]):
+        chosen_subtopics = domain_item.subtopics[:5]
+        subtopics_str = ", ".join(chosen_subtopics) if chosen_subtopics else domain_item.category
+        h = Habit(
+            user_id=current_user.id,
+            name=domain_item.name.strip(),
+            category=domain_item.category.strip() or "General",
+            description=subtopics_str,
+            subtopics=subtopics_str,
+            icon=domain_item.icon or "🎯",
+            color=domain_item.color or "#10b981",
+            daily_target=1,
+            display_order=idx,
+            activation_date=date.today(),
+            is_active=True
+        )
+        db.add(h)
+
+    db.commit()
+    db.refresh(current_user)
+
+    return {
+        "success": True,
+        "message": "Focus OS profile and habits activated!",
+        "redirect": "/"
+    }
+
+@app.get("/api/analytics/heatmap")
+async def get_heatmap_api(
+    weeks: int = 52,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Returns GitHub-style consistency heatmap data with real completions and hours."""
+    data = services.get_heatmap_data(db, user_id=current_user.id, num_weeks=weeks)
+    return data
+
+@app.get("/api/analytics/monthly")
+async def get_monthly_analytics_api(
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Returns comprehensive monthly analytics data for the authenticated user."""
+    today = date.today()
+    y = year or today.year
+    m = month or today.month
+    return services.get_monthly_tracker_data(db, user_id=current_user.id, year=y, month=m)
 
 if __name__ == "__main__":
     import uvicorn

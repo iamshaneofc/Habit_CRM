@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalize Your Focus OS — Onboarding</title>
+    <meta name="description" content="Personalize your Focus OS Habit CRM: profile, habit domains, and subtopic trees.">
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css?v=20261107_v5">
+    <style>
+        .onboarding-page {
+            min-height: 100vh;
+            background: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.08) 0%, transparent 60%), #0b0f17;
+            color: #f8fafc;
+            font-family: 'Inter', -apple-system, sans-serif;
+            padding-bottom: 3rem;
+        }
+        .ob-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(11, 15, 23, 0.85);
+            backdrop-filter: blur(16px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .ob-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .ob-logo-badge {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.03em;
+            color: #f8fafc;
+        }
+        .ob-logo-badge span {
+            color: #10b981;
+        }
+        .ob-steps-tracker {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .step-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.82rem;
+            color: #64748b;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .step-pill.active {
+            color: #f8fafc;
+        }
+        .step-pill.done {
+            color: #10b981;
+        }
+        .step-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .step-pill.active .step-num {
+            background: #10b981;
+            color: #0b0f17;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        }
+        .step-pill.done .step-num {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        .ob-container {
+            max-width: 980px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        .ob-card {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 2.25rem;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+        .ob-step-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: #f8fafc;
+            margin-bottom: 0.4rem;
+        }
+        .ob-step-desc {
+            color: #94a3b8;
+            font-size: 0.92rem;
+            margin-bottom: 1.75rem;
+            line-height: 1.5;
+        }
+        .ob-form-group {
+            margin-bottom: 1.5rem;
+        }
+        .ob-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 0.5rem;
+        }
+        .ob-input, .ob-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.6);
+            color: #f8fafc;
+            font-size: 0.92rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .ob-input:focus, .ob-textarea:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+        .preset-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.6rem;
+        }
+        .preset-chip {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            color: #94a3b8;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .preset-chip:hover {
+            border-color: #10b981;
+            color: #f8fafc;
+        }
+        .preset-chip.active {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: #10b981;
+            color: #34d399;
+            font-weight: 600;
+        }
+
+        /* Step 2: Catalog Grid */
+        .catalog-controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .cat-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+        .cat-tab {
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: transparent;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .cat-tab.active {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: #10b981;
+            color: #10b981;
+            font-weight: 600;
+        }
+        .cat-counter-pill {
+            padding: 0.35rem 0.8rem;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+        .domain-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.85rem;
+            max-height: 480px;
+            overflow-y: auto;
+            padding-right: 0.4rem;
+        }
+        .domain-select-card {
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 0.85rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+        .domain-select-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        .domain-select-card.selected {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.06);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+        }
+        .domain-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+        }
+        .domain-icon-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .domain-card-icon {
+            font-size: 1.15rem;
+        }
+        .domain-card-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #f8fafc;
+        }
+        .domain-check-box {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: transparent;
+            transition: all 0.2s;
+        }
+        .domain-select-card.selected .domain-check-box {
+            background: #10b981;
+            border-color: #10b981;
+            color: #0b0f17;
+            font-weight: 800;
+        }
+        .domain-card-subpreview {
+            font-size: 0.75rem;
+            color: #64748b;
+            line-height: 1.35;
+        }
+
+        /* Step 3: Subtopics Configuration */
+        .subtopics-domain-block {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+        }
+        .subtopics-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+        .subtopics-header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .subtopics-pill-count {
+            font-size: 0.78rem;
+            color: #94a3b8;
+        }
+        .subtopic-tags-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+        .subtopic-tag-btn {
+            padding: 0.35rem 0.7rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.03);
+            color: #cbd5e1;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .subtopic-tag-btn:hover {
+            border-color: #10b981;
+            color: #f8fafc;
+        }
+        .subtopic-tag-btn.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #34d399;
+            font-weight: 600;
+        }
+        .custom-subtopic-input {
+            margin-top: 0.6rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .custom-subtopic-input input {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(11, 15, 23, 0.6);
+            color: #f8fafc;
+            flex: 1;
+        }
+
+        /* Step 4: Review */
+        .review-profile-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .review-habits-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+        .review-habit-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Buttons Footer */
+        .ob-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .btn-ob {
+            padding: 0.75rem 1.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .btn-ob-prev {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #94a3b8;
+        }
+        .btn-ob-prev:hover {
+            color: #f8fafc;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .btn-ob-next {
+            background: #10b981;
+            color: #0b0f17;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .btn-ob-next:hover {
+            background: #34d399;
+            transform: translateY(-1px);
+        }
+        .btn-ob-next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body class="onboarding-page">
+    <!-- Header -->
+    <header class="ob-header">
+        <div class="ob-brand">
+            <span class="ob-logo-badge">FOCUS <span>OS</span></span>
+            <span style="font-size: 0.8rem; color: #64748b; margin-left: 0.5rem;">Onboarding &amp; Setup</span>
+        </div>
+        <div class="ob-steps-tracker">
+            <div class="step-pill active" id="pill-step-1">
+                <span class="step-num">1</span>
+                <span>Profile</span>
+            </div>
+            <div class="step-pill" id="pill-step-2">
+                <span class="step-num">2</span>
+                <span>Domains</span>
+            </div>
+            <div class="step-pill" id="pill-step-3">
+                <span class="step-num">3</span>
+                <span>Subtopics</span>
+            </div>
+            <div class="step-pill" id="pill-step-4">
+                <span class="step-num">4</span>
+                <span>Activate</span>
+            </div>
+        </div>
+        <div>
+            <a href="/" style="font-size: 0.8rem; color: #94a3b8; text-decoration: none;">Skip to CRM &rarr;</a>
+        </div>
+    </header>
+
+    <main class="ob-container">
+        <!-- ============================================== -->
+        <!-- STEP 1: Personal Profile                       -->
+        <!-- ============================================== -->
+        <div class="ob-card" id="step-1-card">
+            <h2 class="ob-step-title">Welcome to Focus OS</h2>
+            <p class="ob-step-desc">Let's personalize your personal performance workspace. Tell us a bit about who you are and what you're working toward.</p>
+
+            <div class="ob-form-group">
+                <label for="ob-display-name" class="ob-label">Full Name or Preferred Display Name *</label>
+                <input type="text" id="ob-display-name" class="ob-input" value="{{ current_user.display_name or current_user.full_name or '' }}" placeholder="e.g. Alex Morgan">
+            </div>
+
+            <div class="ob-form-group">
+                <label for="ob-profession" class="ob-label">Profession / Current Role</label>
+                <input type="text" id="ob-profession" class="ob-input" value="{{ current_user.profession or '' }}" placeholder="e.g. Software Engineer, AI Researcher, Student">
+                <div class="preset-chips">
+                    <span class="preset-chip" onclick="selectProfession('Software Engineer')">Software Engineer</span>
+                    <span class="preset-chip" onclick="selectProfession('AI / ML Engineer')">AI / ML Engineer</span>
+                    <span class="preset-chip" onclick="selectProfession('Data Scientist')">Data Scientist</span>
+                    <span class="preset-chip" onclick="selectProfession('Student')">Student</span>
+                    <span class="preset-chip" onclick="selectProfession('Entrepreneur')">Entrepreneur</span>
+                    <span class="preset-chip" onclick="selectProfession('Product Manager')">Product Manager</span>
+                    <span class="preset-chip" onclick="selectProfession('Cybersecurity Analyst')">Cybersecurity Analyst</span>
+                </div>
+            </div>
+
+            <div class="ob-form-group">
+                <label for="ob-bio" class="ob-label">What are you working toward? (Optional)</label>
+                <textarea id="ob-bio" class="ob-textarea" rows="3" placeholder="e.g. Cracking AI/ML interviews, mastering system architecture, and maintaining daily consistency.">{{ current_user.bio or '' }}</textarea>
+            </div>
+
+            <div class="ob-actions" style="justify-content: flex-end;">
+                <button type="button" class="btn-ob btn-ob-next" onclick="goToStep(2)">Continue to Domains &rarr;</button>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- STEP 2: Domain Selection (Max 10)              -->
+        <!-- ============================================== -->
+        <div class="ob-card" id="step-2-card" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h2 class="ob-step-title">Select Your Habit Domains</h2>
+                    <p class="ob-step-desc">Choose up to 10 core focus tracks that will form your weekly Monday-Sunday Habit CRM matrix.</p>
+                </div>
+                <div class="cat-counter-pill" id="selected-counter">Selected: 0 / 10</div>
+            </div>
+
+            <div class="catalog-controls">
+                <div class="cat-tabs">
+                    <button type="button" class="cat-tab active" onclick="filterCatalog('all', this)">All ({{ domains|length }})</button>
+                    {% for cat in categories %}
+                        <button type="button" class="cat-tab" onclick="filterCatalog('{{ cat }}', this)">{{ cat }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="domain-grid" id="catalog-domain-grid">
+                {% for d in domains %}
+                    <div class="domain-select-card" data-domain-id="{{ d.id }}" data-category="{{ d.category }}" data-name="{{ d.name }}" data-icon="{{ d.icon }}" data-color="{{ d.color }}" onclick="toggleDomainCard(this)">
+                        <div class="domain-card-top">
+                            <div class="domain-icon-title">
+                                <span class="domain-card-icon">{{ d.icon }}</span>
+                                <span class="domain-card-name">{{ d.name }}</span>
+                            </div>
+                            <div class="domain-check-box">✔</div>
+                        </div>
+                        <div class="domain-card-subpreview">
+                            {{ d.subtopics[:4]|join(', ') }}{% if d.subtopics|length > 4 %}...{% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="ob-actions">
+                <button type="button" class="btn-ob btn-ob-prev" onclick="goToStep(1)">&larr; Back to Profile</button>
+                <button type="button" class="btn-ob btn-ob-next" id="btn-to-subtopics" onclick="goToStep(3)" disabled>Continue to Subtopics &rarr;</button>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- STEP 3: Subtopics Configuration                -->
+        <!-- ============================================== -->
+        <div class="ob-card" id="step-3-card" style="display: none;">
+            <h2 class="ob-step-title">Configure Focus Subtopics</h2>
+            <p class="ob-step-desc">Pick up to 5 subtopic tags for each selected habit. These will appear as active tags under each domain row in your CRM.</p>
+
+            <div id="subtopics-container">
+                <!-- Dynamically populated based on chosen domains -->
+            </div>
+
+            <div class="ob-actions">
+                <button type="button" class="btn-ob btn-ob-prev" onclick="goToStep(2)">&larr; Back to Domains</button>
+                <button type="button" class="btn-ob btn-ob-next" onclick="goToStep(4)">Review &amp; Activate &rarr;</button>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- STEP 4: Review & Activate                      -->
+        <!-- ============================================== -->
+        <div class="ob-card" id="step-4-card" style="display: none;">
+            <h2 class="ob-step-title">Review &amp; Activate Your CRM</h2>
+            <p class="ob-step-desc">Confirm your profile and selected habit domains. Once activated, your Habit CRM will begin tracking your consistency from today.</p>
+
+            <div class="review-profile-card">
+                <div>
+                    <h3 id="rev-name" style="font-size: 1.15rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.2rem;"></h3>
+                    <p id="rev-profession" style="color: #10b981; font-size: 0.88rem; font-weight: 600; margin-bottom: 0.2rem;"></p>
+                    <p id="rev-bio" style="color: #94a3b8; font-size: 0.82rem; font-style: italic;"></p>
+                </div>
+                <div>
+                    <span style="font-size: 0.82rem; color: #64748b;">Start Tracking: <strong>Today</strong></span>
+                </div>
+            </div>
+
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: #cbd5e1; margin-bottom: 0.75rem;">Selected Habits (<span id="rev-habits-count">0</span>)</h4>
+            <div class="review-habits-list" id="review-habits-list">
+                <!-- Rendered dynamically -->
+            </div>
+
+            <div class="ob-actions">
+                <button type="button" class="btn-ob btn-ob-prev" onclick="goToStep(3)">&larr; Back to Subtopics</button>
+                <button type="button" class="btn-ob btn-ob-next" id="btn-activate-crm" onclick="submitOnboarding()">⚡ Activate Focus OS CRM</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Raw catalog JSON data for script access -->
+    <script>
+        const FULL_CATALOG = {{ domains|tojson }};
+        const CATALOG_MAP = {};
+        FULL_CATALOG.forEach(d => { CATALOG_MAP[d.id] = d; });
+
+        let currentStep = 1;
+        const selectedDomainIds = [];
+        const domainSubtopics = {}; // domainId -> Array of selected subtopic strings
+
+        function selectProfession(role) {
+            document.getElementById("ob-profession").value = role;
+            document.querySelectorAll(".preset-chip").forEach(c => {
+                c.classList.toggle("active", c.textContent.trim() === role);
+            });
+        }
+
+        function filterCatalog(category, btn) {
+            document.querySelectorAll(".cat-tab").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            const cards = document.querySelectorAll(".domain-select-card");
+            cards.forEach(c => {
+                if (category === 'all' || c.getAttribute("data-category") === category) {
+                    c.style.display = "flex";
+                } else {
+                    c.style.display = "none";
+                }
+            });
+        }
+
+        function toggleDomainCard(card) {
+            const domainId = card.getAttribute("data-domain-id");
+            const idx = selectedDomainIds.indexOf(domainId);
+
+            if (idx > -1) {
+                // Deselect
+                selectedDomainIds.splice(idx, 1);
+                card.classList.remove("selected");
+                delete domainSubtopics[domainId];
+            } else {
+                // Select (enforce max 10)
+                if (selectedDomainIds.length >= 10) {
+                    alert("You can select up to 10 habit domains for your Habit CRM.");
+                    return;
+                }
+                selectedDomainIds.push(domainId);
+                card.classList.add("selected");
+                // Pre-select first 3 subtopics as defaults
+                const domData = CATALOG_MAP[domainId];
+                domainSubtopics[domainId] = (domData && domData.subtopics) ? domData.subtopics.slice(0, 3) : [];
+            }
+
+            updateCatalogCounter();
+        }
+
+        function updateCatalogCounter() {
+            const count = selectedDomainIds.length;
+            const counter = document.getElementById("selected-counter");
+            counter.textContent = `Selected: ${count} / 10`;
+
+            const btnNext = document.getElementById("btn-to-subtopics");
+            btnNext.disabled = count === 0;
+        }
+
+        function goToStep(step) {
+            if (step === 2) {
+                const name = document.getElementById("ob-display-name").value.trim();
+                if (!name) {
+                    alert("Please enter your display name.");
+                    document.getElementById("ob-display-name").focus();
+                    return;
+                }
+            } else if (step === 3) {
+                if (selectedDomainIds.length === 0) {
+                    alert("Please select at least 1 habit domain.");
+                    return;
+                }
+                renderSubtopicsStep();
+            } else if (step === 4) {
+                renderReviewStep();
+            }
+
+            // Hide all steps
+            for (let i = 1; i <= 4; i++) {
+                const card = document.getElementById(`step-${i}-card`);
+                const pill = document.getElementById(`pill-step-${i}`);
+                if (card) card.style.display = (i === step) ? "block" : "none";
+                if (pill) {
+                    pill.classList.remove("active", "done");
+                    if (i === step) pill.classList.add("active");
+                    else if (i < step) pill.classList.add("done");
+                }
+            }
+
+            currentStep = step;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderSubtopicsStep() {
+            const container = document.getElementById("subtopics-container");
+            container.innerHTML = "";
+
+            selectedDomainIds.forEach(dId => {
+                const domain = CATALOG_MAP[dId];
+                if (!domain) return;
+
+                const block = document.createElement("div");
+                block.className = "subtopics-domain-block";
+                block.id = `subtopics-block-${dId}`;
+
+                const chosen = domainSubtopics[dId] || [];
+
+                block.innerHTML = `
+                    <div class="subtopics-header">
+                        <div class="subtopics-header-title">
+                            <span>${domain.icon}</span>
+                            <span>${domain.name}</span>
+                            <span style="font-size: 0.75rem; color: #64748b; font-weight: normal;">(${domain.category})</span>
+                        </div>
+                        <span class="subtopics-pill-count" id="count-sub-${dId}">${chosen.length} / 5 selected</span>
+                    </div>
+                    <div class="subtopic-tags-grid" id="tags-grid-${dId}">
+                        ${domain.subtopics.map(st => `
+                            <button type="button" class="subtopic-tag-btn ${chosen.includes(st) ? 'active' : ''}" onclick="toggleSubtopic('${dId}', '${st.replace(/'/g, "\\'")}', this)">${st}</button>
+                        `).join("")}
+                    </div>
+                    <div class="custom-subtopic-input">
+                        <input type="text" placeholder="+ Add custom subtopic..." id="custom-input-${dId}" onkeydown="if(event.key === 'Enter') { addCustomSubtopic('${dId}'); event.preventDefault(); }">
+                        <button type="button" class="cat-tab" onclick="addCustomSubtopic('${dId}')">Add</button>
+                    </div>
+                `;
+                container.appendChild(block);
+            });
+        }
+
+        function toggleSubtopic(domainId, subtopic, btn) {
+            if (!domainSubtopics[domainId]) domainSubtopics[domainId] = [];
+            const list = domainSubtopics[domainId];
+            const idx = list.indexOf(subtopic);
+
+            if (idx > -1) {
+                list.splice(idx, 1);
+                btn.classList.remove("active");
+            } else {
+                if (list.length >= 5) {
+                    alert("Maximum 5 subtopics per habit.");
+                    return;
+                }
+                list.push(subtopic);
+                btn.classList.add("active");
+            }
+
+            const countEl = document.getElementById(`count-sub-${domainId}`);
+            if (countEl) countEl.textContent = `${list.length} / 5 selected`;
+        }
+
+        function addCustomSubtopic(domainId) {
+            const input = document.getElementById(`custom-input-${domainId}`);
+            const val = input.value.trim();
+            if (!val) return;
+
+            if (!domainSubtopics[domainId]) domainSubtopics[domainId] = [];
+            const list = domainSubtopics[domainId];
+            if (list.length >= 5) {
+                alert("Maximum 5 subtopics per habit.");
+                return;
+            }
+
+            if (!list.includes(val)) {
+                list.push(val);
+                const grid = document.getElementById(`tags-grid-${domainId}`);
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "subtopic-tag-btn active";
+                btn.textContent = val;
+                btn.onclick = () => toggleSubtopic(domainId, val, btn);
+                grid.appendChild(btn);
+
+                const countEl = document.getElementById(`count-sub-${domainId}`);
+                if (countEl) countEl.textContent = `${list.length} / 5 selected`;
+            }
+
+            input.value = "";
+        }
+
+        function renderReviewStep() {
+            const name = document.getElementById("ob-display-name").value.trim();
+            const profession = document.getElementById("ob-profession").value.trim();
+            const bio = document.getElementById("ob-bio").value.trim();
+
+            document.getElementById("rev-name").textContent = name;
+            document.getElementById("rev-profession").textContent = profession || "Focus OS Operator";
+            document.getElementById("rev-bio").textContent = bio ? `"${bio}"` : "";
+            document.getElementById("rev-habits-count").textContent = selectedDomainIds.length;
+
+            const listEl = document.getElementById("review-habits-list");
+            listEl.innerHTML = "";
+
+            selectedDomainIds.forEach(dId => {
+                const domain = CATALOG_MAP[dId];
+                if (!domain) return;
+                const subs = domainSubtopics[dId] || [];
+
+                const item = document.createElement("div");
+                item.className = "review-habit-item";
+                item.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-size: 1.25rem;">${domain.icon}</span>
+                        <div>
+                            <strong style="font-size: 0.92rem; color: #f8fafc;">${domain.name}</strong>
+                            <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.25rem;">
+                                ${subs.map(s => `<span class="preset-chip" style="font-size: 0.72rem; padding: 0.15rem 0.5rem; pointer-events: none;">${s}</span>`).join("")}
+                            </div>
+                        </div>
+                    </div>
+                    <span style="font-size: 0.78rem; color: #64748b;">${domain.category}</span>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        async function submitOnboarding() {
+            const btn = document.getElementById("btn-activate-crm");
+            btn.disabled = true;
+            btn.textContent = "Activating Focus OS...";
+
+            const displayName = document.getElementById("ob-display-name").value.trim();
+            const profession = document.getElementById("ob-profession").value.trim();
+            const bio = document.getElementById("ob-bio").value.trim();
+
+            const domainsPayload = selectedDomainIds.map(dId => {
+                const domain = CATALOG_MAP[dId];
+                return {
+                    name: domain.name,
+                    category: domain.category,
+                    icon: domain.icon,
+                    color: domain.color,
+                    subtopics: domainSubtopics[dId] || []
+                };
+            });
+
+            try {
+                const res = await fetch("/api/onboarding/complete", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        display_name: displayName,
+                        profession: profession,
+                        bio: bio,
+                        domains: domainsPayload
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || "Activation failed");
+
+                window.location.href = data.redirect || "/";
+            } catch (err) {
+                alert("Error activating: " + err.message);
+                btn.disabled = false;
+                btn.textContent = "⚡ Activate Focus OS CRM";
+            }
+        }
+    </script>
+</body>
+</html>
