@@ -27,25 +27,24 @@ from catalog import CATALOG_CATEGORIES, DOMAIN_CATALOG
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Verify and stabilize connection before creating tables
-    ok, status = check_and_stabilize_db()
-    if not ok:
-        print(f"[CRITICAL] Database connection failed: {status}")
-        if config.is_production():
-            raise RuntimeError(f"Database unavailable: {status}")
-    else:
-        try:
-            # Ensure tables exist
-            Base.metadata.create_all(bind=database.engine)
-            # Seed default 10 habits if table is empty
-            db = database.SessionLocal()
+    try:
+        ok, status = check_and_stabilize_db()
+        if not ok:
+            print(f"[WARNING] Database connection failed on startup: {status}")
+        else:
             try:
-                seed_default_habits(db, force=False, seed_sample_logs=True)
-            finally:
-                db.close()
-        except Exception as e:
-            print(f"[ERROR] Database initialization failed: {e}")
-            if config.is_production():
-                raise
+                # Ensure tables exist
+                Base.metadata.create_all(bind=database.engine)
+                # Seed default 10 habits if table is empty
+                db = database.SessionLocal()
+                try:
+                    seed_default_habits(db, force=False, seed_sample_logs=True)
+                finally:
+                    db.close()
+            except Exception as e:
+                print(f"[ERROR] Database initialization failed: {e}")
+    except Exception as e:
+        print(f"[ERROR] Lifespan database setup encountered an error: {e}")
     yield
 
 app = FastAPI(
@@ -86,8 +85,9 @@ try:
 except OSError:
     pass
 
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-templates = Jinja2Templates(directory=TEMPLATES_DIR)
+if os.path.exists(STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+templates = Jinja2Templates(directory=TEMPLATES_DIR if os.path.exists(TEMPLATES_DIR) else "templates")
 
 # ========================================================
 # Pydantic Schemas for API Requests
