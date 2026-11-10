@@ -29,22 +29,28 @@ def test_dns_and_socket(host: str, port: int) -> bool:
     print(f"\n[1/4] Checking DNS Resolution & Network Reachability:")
     print(f"      Target: {host}:{port}")
     
-    # 1. DNS Resolution
+    # 1. DNS Resolution (supports both IPv4 and IPv6)
     try:
-        ip = socket.gethostbyname(host)
-        print(f"      [OK] DNS resolved successfully -> {ip}")
+        addr_info = socket.getaddrinfo(host, port, socket.AF_UNSPEC, socket.SOCK_STREAM)
+        if not addr_info:
+            print(f"      [FAILED] No address records found for '{host}'.")
+            return False
+        family, socktype, proto, canonname, sockaddr = addr_info[0]
+        ip = sockaddr[0]
+        ip_ver = "IPv6" if family == socket.AF_INET6 else "IPv4"
+        print(f"      [OK] DNS resolved successfully -> {ip} ({ip_ver})")
     except socket.gaierror as e:
         print(f"      [FAILED] Cannot resolve hostname '{host}'.")
         print(f"      Details: {e}")
-        print("      Troubleshooting tip: Check for typos in your RDS endpoint string.")
+        print("      Troubleshooting tip: Check for typos in your database endpoint string.")
         return False
 
     # 2. TCP Port Connection
     try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock = socket.socket(family, socket.SOCK_STREAM)
         sock.settimeout(5.0)
         start_time = time.time()
-        result = sock.connect_ex((host, port))
+        result = sock.connect_ex(sockaddr)
         latency = round((time.time() - start_time) * 1000, 2)
         sock.close()
 
@@ -101,12 +107,19 @@ def main():
         print(f"[OK] Local SQLite is working cleanly. Total habits: {count}")
         return
 
-    # For AWS RDS PostgreSQL or MySQL:
-    host = config.RDS_HOSTNAME
-    port = config.get_port()
+    # For AWS RDS, Supabase, Neon or PostgreSQL/MySQL:
+    from urllib.parse import urlparse
+    if config.DATABASE_URL:
+        clean_url = config.DATABASE_URL.replace("postgresql+psycopg2://", "postgresql://").replace("mysql+pymysql://", "mysql://")
+        parsed = urlparse(clean_url)
+        host = parsed.hostname
+        port = parsed.port or (3306 if "mysql" in config.DATABASE_URL else 5432)
+    else:
+        host = config.RDS_HOSTNAME
+        port = config.get_port()
 
     if not host:
-        print("[ERROR] RDS_HOSTNAME is missing in .env")
+        print("[ERROR] DATABASE_URL or RDS_HOSTNAME is missing in .env")
         sys.exit(1)
 
     # Step 1: DNS & Socket
