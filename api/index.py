@@ -8,8 +8,26 @@ if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
 try:
-    from main import app
+    from main import app as base_app
+
+    # Normalize Vercel rewritten URL paths (e.g., /api/index.py/login -> /login)
+    class VercelPathCorrection:
+        def __init__(self, inner_app):
+            self.inner_app = inner_app
+
+        async def __call__(self, scope, receive, send):
+            if scope.get("type") in ("http", "websocket"):
+                path = scope.get("path", "/")
+                for prefix in ("/api/index.py", "/api/index"):
+                    if path.startswith(prefix):
+                        stripped = path[len(prefix):]
+                        scope["path"] = stripped if stripped.startswith("/") else ("/" + stripped)
+                        break
+            await self.inner_app(scope, receive, send)
+
+    app = VercelPathCorrection(base_app)
     handler = app
+
 except Exception as e:
     err_tb = traceback.format_exc()
     print("FATAL ERROR ON STARTUP:\n", err_tb)
