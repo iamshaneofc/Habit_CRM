@@ -47,11 +47,30 @@ async def lifespan(app: FastAPI):
         print(f"[ERROR] Lifespan database setup encountered an error: {e}")
     yield
 
+from starlette.middleware import Middleware
+from starlette.types import ASGIApp, Scope, Receive, Send
+
+# ASGI middleware to normalize paths when deployed with Vercel rewrites (e.g., /api/index.py/login -> /login)
+class VercelPathNormalizer:
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        if scope.get("type") in ("http", "websocket"):
+            path = scope.get("path", "/")
+            for prefix in ("/api/index.py", "/api/index"):
+                if path.startswith(prefix):
+                    new_path = path[len(prefix):]
+                    scope["path"] = new_path if new_path.startswith("/") else ("/" + new_path)
+                    break
+        await self.app(scope, receive, send)
+
 app = FastAPI(
     title="Habit CRM - Habit Tracking System",
     description="Python Habit Tracker with AWS RDS support, interactive weekly Monday-Sunday tracking and analytics",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    middleware=[Middleware(VercelPathNormalizer)]
 )
 
 # CORS Middleware (Supports Vercel / external frontends connecting to Render)
