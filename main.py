@@ -905,6 +905,7 @@ async def catchall_debug(request: Request, full_path: str):
         "received_full_path": full_path,
         "scope_path": request.scope.get("path"),
         "url_path": request.url.path,
+        "headers": dict(request.headers),
         "registered_routes": [getattr(r, "path", str(r)) for r in request.app.routes]
     }
 
