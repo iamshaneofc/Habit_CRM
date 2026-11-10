@@ -71,8 +71,6 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["X-Debug-Path"] = request.url.path
-    response.headers["X-Debug-Scope-Path"] = request.scope.get("path", "")
     return response
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -897,17 +895,6 @@ async def get_monthly_analytics_api(
     y = year or today.year
     m = month or today.month
     return services.get_monthly_tracker_data(db, user_id=current_user.id, year=y, month=m)
-
-# Fallback debug route to diagnose routing on serverless platforms
-@app.api_route("/{full_path:path}", methods=["GET", "POST", "HEAD"], include_in_schema=False)
-async def catchall_debug(request: Request, full_path: str):
-    return {
-        "received_full_path": full_path,
-        "scope_path": request.scope.get("path"),
-        "url_path": request.url.path,
-        "headers": dict(request.headers),
-        "registered_routes": [getattr(r, "path", str(r)) for r in request.app.routes]
-    }
 
 if __name__ == "__main__":
     import uvicorn
