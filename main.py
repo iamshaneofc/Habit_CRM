@@ -121,6 +121,14 @@ if os.path.exists(STATIC_DIR):
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATES_DIR if os.path.exists(TEMPLATES_DIR) else "templates")
 
+def render_template(request: Request, name: str, context: Optional[dict] = None, status_code: int = 200) -> HTMLResponse:
+    ctx = context or {}
+    ctx["request"] = request
+    try:
+        return templates.TemplateResponse(request=request, name=name, context=ctx, status_code=status_code)
+    except TypeError:
+        return templates.TemplateResponse(name, ctx, status_code=status_code)
+
 # ========================================================
 # Pydantic Schemas for API Requests
 # ========================================================
@@ -204,13 +212,13 @@ async def health_check():
 async def login_page(request: Request, current_user: Optional[User] = Depends(get_current_user_optional)):
     if current_user:
         return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse("login.html", {"request": request})
+    return render_template(request, "login.html")
 
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request, current_user: Optional[User] = Depends(get_current_user_optional)):
     if current_user:
         return RedirectResponse(url="/", status_code=303)
-    return templates.TemplateResponse("register.html", {"request": request})
+    return render_template(request, "register.html")
 
 @app.get("/logout")
 async def logout_redirect():
@@ -227,8 +235,7 @@ async def onboarding_page(
     """Interactive 4-step onboarding wizard for Focus OS."""
     if not current_user:
         return RedirectResponse(url="/login", status_code=303)
-    return templates.TemplateResponse("onboarding.html", {
-        "request": request,
+    return render_template(request, "onboarding.html", {
         "current_user": current_user,
         "categories": CATALOG_CATEGORIES,
         "domains": DOMAIN_CATALOG
@@ -268,8 +275,7 @@ async def monthly_page(
     ]
     years_list = list(range(today.year - 2, today.year + 3))
 
-    return templates.TemplateResponse("monthly.html", {
-        "request": request,
+    return render_template(request, "monthly.html", {
         "current_user": current_user,
         "data": monthly_data,
         "current_year": y,
@@ -337,8 +343,7 @@ async def dashboard_page(
     current_calendar_year = today.year
     years_list = list(range(current_calendar_year - 2, current_calendar_year + 3))
 
-    return templates.TemplateResponse("index.html", {
-        "request": request,
+    return render_template(request, "index.html", {
         "current_user": current_user,
         "grid": grid,
         "monthly_stats": monthly_stats,
