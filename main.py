@@ -74,13 +74,20 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return response
 
-# Ensure directories exist
-os.makedirs("static/css", exist_ok=True)
-os.makedirs("static/js", exist_ok=True)
-os.makedirs("templates", exist_ok=True)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+# Ensure directories exist
+try:
+    os.makedirs(os.path.join(STATIC_DIR, "css"), exist_ok=True)
+    os.makedirs(os.path.join(STATIC_DIR, "js"), exist_ok=True)
+    os.makedirs(TEMPLATES_DIR, exist_ok=True)
+except OSError:
+    pass
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 # ========================================================
 # Pydantic Schemas for API Requests

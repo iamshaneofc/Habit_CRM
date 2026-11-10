@@ -15,7 +15,7 @@ class DatabaseConfig:
     DB_TYPE: str = os.getenv("DB_TYPE", "sqlite").lower()
 
     # SQLite
-    SQLITE_DB_PATH: str = os.getenv("SQLITE_DB_PATH", "habits.db")
+    SQLITE_DB_PATH: str = os.getenv("SQLITE_DB_PATH", "/tmp/habits.db" if os.getenv("VERCEL") else "habits.db")
 
     # AWS RDS Connection Parameters
     RDS_HOSTNAME: Optional[str] = os.getenv("RDS_HOSTNAME")
@@ -23,8 +23,8 @@ class DatabaseConfig:
     RDS_USERNAME: Optional[str] = os.getenv("RDS_USERNAME")
     RDS_PASSWORD: Optional[str] = os.getenv("RDS_PASSWORD")
 
-    # Direct URL Override
-    DATABASE_URL: Optional[str] = os.getenv("DATABASE_URL")
+    # Direct URL Override (supports DATABASE_URL or Vercel/Neon POSTGRES_URL)
+    DATABASE_URL: Optional[str] = os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL") or os.getenv("POSTGRES_URL_NON_POOLING")
 
     # Fallback to SQLite in development if remote DB is unreachable
     DB_FALLBACK_SQLITE: bool = os.getenv("DB_FALLBACK_SQLITE", "true").lower() in ("true", "1", "yes")
@@ -47,8 +47,9 @@ class DatabaseConfig:
     @classmethod
     def get_database_url(cls) -> str:
         """Returns SQLAlchemy-compatible connection string."""
-        if cls.DATABASE_URL and cls.DATABASE_URL.strip():
-            raw_url = cls.DATABASE_URL.strip()
+        url = cls.DATABASE_URL or os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL") or os.getenv("POSTGRES_URL_NON_POOLING")
+        if url and url.strip():
+            raw_url = url.strip()
             # Render and Heroku supply DATABASE_URL starting with postgres:// which SQLAlchemy 2.x requires as postgresql+psycopg2://
             if raw_url.startswith("postgres://"):
                 raw_url = raw_url.replace("postgres://", "postgresql+psycopg2://", 1)

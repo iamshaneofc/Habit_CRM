@@ -21,3 +21,4 @@ databases:
     databaseName: habit_crm_db
     user: habit_user
     plan: free
+

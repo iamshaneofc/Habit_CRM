@@ -1,6 +1,8 @@
+import os
 import logging
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.pool import NullPool
 from config import config
 
 logger = logging.getLogger("habit_crm.database")
@@ -11,13 +13,22 @@ def create_app_engine(database_url: str):
     if "sqlite" in database_url:
         connect_args = {"check_same_thread": False}
     else:
-        # AWS RDS / PostgreSQL connection pooling settings
-        engine_kwargs = {
-            "pool_size": 10,
-            "max_overflow": 20,
-            "pool_pre_ping": True,     # Detect and reconnect dropped connections
-            "pool_recycle": 1800,      # Recycle connections after 30 minutes
-        }
+        # Check if running in a serverless environment (Vercel, AWS Lambda, etc.)
+        is_serverless = bool(os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME") or os.getenv("SERVERLESS"))
+        if is_serverless:
+            # Serverless functions spin up/down quickly; NullPool prevents connection leaks & pool exhaustion
+            engine_kwargs = {
+                "poolclass": NullPool,
+                "pool_pre_ping": True,
+            }
+        else:
+            # AWS RDS / PostgreSQL connection pooling settings for persistent servers
+            engine_kwargs = {
+                "pool_size": 10,
+                "max_overflow": 20,
+                "pool_pre_ping": True,     # Detect and reconnect dropped connections
+                "pool_recycle": 1800,      # Recycle connections after 30 minutes
+            }
     return create_engine(database_url, connect_args=connect_args, **engine_kwargs)
 
 DATABASE_URL = config.get_database_url()
