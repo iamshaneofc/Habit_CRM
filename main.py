@@ -4,6 +4,7 @@ from typing import Optional, List
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends, Request, HTTPException, Form
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -52,6 +53,15 @@ app = FastAPI(
     description="Python Habit Tracker with AWS RDS support, interactive weekly Monday-Sunday tracking and analytics",
     version="1.0.0",
     lifespan=lifespan
+)
+
+# CORS Middleware (Supports Vercel / external frontends connecting to Render)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"^https?://.*",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Security Headers Middleware
