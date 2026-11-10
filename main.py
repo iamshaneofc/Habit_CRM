@@ -896,6 +896,16 @@ async def get_monthly_analytics_api(
     m = month or today.month
     return services.get_monthly_tracker_data(db, user_id=current_user.id, year=y, month=m)
 
+# Fallback debug route to diagnose routing on serverless platforms
+@app.api_route("/{full_path:path}", methods=["GET", "POST", "HEAD"], include_in_schema=False)
+async def catchall_debug(request: Request, full_path: str):
+    return {
+        "received_full_path": full_path,
+        "scope_path": request.scope.get("path"),
+        "url_path": request.url.path,
+        "registered_routes": [getattr(r, "path", str(r)) for r in request.app.routes]
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host=config.APP_HOST, port=config.APP_PORT, reload=True)
