@@ -48,8 +48,23 @@ class DatabaseConfig:
     def get_database_url(cls) -> str:
         """Returns SQLAlchemy-compatible connection string."""
         url = cls.DATABASE_URL or os.getenv("DATABASE_URL") or os.getenv("POSTGRES_URL") or os.getenv("POSTGRES_URL_NON_POOLING")
+        if not url:
+            # Fallback if user pasted PostgreSQL connection string into SUPABASE_URL
+            s_url = os.getenv("SUPABASE_URL")
+            if s_url and (s_url.startswith("postgres://") or s_url.startswith("postgresql://")):
+                url = s_url
+
         if url and url.strip():
             raw_url = url.strip()
+            # Auto-encode unencoded @ in password if URL has multiple @ signs before host
+            if "://" in raw_url and raw_url.count("@") > 1:
+                scheme, rest = raw_url.split("://", 1)
+                user_pass, host_part = rest.rsplit("@", 1)
+                if ":" in user_pass:
+                    user, pwd = user_pass.split(":", 1)
+                    pwd = pwd.replace("@", "%40")
+                    raw_url = f"{scheme}://{user}:{pwd}@{host_part}"
+
             # Render and Heroku supply DATABASE_URL starting with postgres:// which SQLAlchemy 2.x requires as postgresql+psycopg2://
             if raw_url.startswith("postgres://"):
                 raw_url = raw_url.replace("postgres://", "postgresql+psycopg2://", 1)
