@@ -518,6 +518,15 @@ def get_monthly_tracker_data(db: Session, user_id: int, year: int, month: int) -
     else:
         cur_logs = []
 
+    # Notes count per date for calendar indicator
+    notes_query = db.query(Note.date, func.count(Note.id)).filter(
+        Note.date >= first_date,
+        Note.date <= last_date
+    )
+    if user_id:
+        notes_query = notes_query.filter(Note.user_id == user_id)
+    notes_by_date = dict(notes_query.group_by(Note.date).all())
+
     # Map logs by date and by habit
     date_logs = {}
     habit_month_hours = {h_id: 0.0 for h_id in habit_ids}
@@ -586,6 +595,7 @@ def get_monthly_tracker_data(db: Session, user_id: int, year: int, month: int) -
             "weekday_name": cur_date.strftime("%a"),
             "completed_count": comp_count,
             "hours": round(hours_count, 1),
+            "notes_count": notes_by_date.get(cur_date, 0),
             "intensity": intensity,
             "is_today": cur_date == today,
             "is_future": is_future,
