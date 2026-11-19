@@ -1,6 +1,6 @@
 import os
 from datetime import date, datetime
-from typing import Optional, List
+from typing import Optional, List, Union, Any, Dict
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends, Request, HTTPException, Form
@@ -223,12 +223,13 @@ class SettingsUpdateRequest(BaseModel):
     profession: Optional[str] = Field(None, max_length=100)
     bio: Optional[str] = Field(None, max_length=255)
     timezone: Optional[str] = Field(None, max_length=50)
-    daily_hour_target: Optional[int] = Field(None, ge=1, le=24)
+    daily_hour_target: Optional[Union[int, float]] = Field(None, ge=1, le=24)
     theme_preference: Optional[str] = Field(None, max_length=20)
     notifications_enabled: Optional[bool] = None
 
 class WeeklyGoalsUpdateRequest(BaseModel):
-    goals: List[str] = Field(..., min_length=1, max_length=5)
+    goals: Optional[List[Any]] = None
+    weekly_goals: Optional[List[Any]] = None
 
 # ========================================================
 # Web Pages
@@ -1187,7 +1188,7 @@ async def get_settings_api(
 ):
     user_id = current_user.id if current_user else None
     settings = services.get_user_settings(db, user_id=user_id)
-    return {"settings": settings}
+    return {"success": True, "settings": settings}
 
 @app.put("/api/settings")
 async def update_settings_api(
@@ -1216,7 +1217,7 @@ async def get_weekly_goals_api(
 ):
     user_id = current_user.id if current_user else None
     goals = services.get_weekly_goals(db, user_id=user_id)
-    return {"goals": goals}
+    return {"success": True, "goals": goals, "weekly_goals": goals}
 
 @app.put("/api/settings/weekly-goals")
 async def update_weekly_goals_api(
@@ -1225,8 +1226,9 @@ async def update_weekly_goals_api(
     db: Session = Depends(get_db)
 ):
     user_id = current_user.id if current_user else None
-    goals = services.update_weekly_goals(db, user_id=user_id, goals=data.goals)
-    return {"success": True, "goals": goals, "message": "Weekly goals updated successfully"}
+    goals_list = data.weekly_goals if data.weekly_goals is not None else (data.goals or [])
+    goals = services.update_weekly_goals(db, user_id=user_id, goals=goals_list)
+    return {"success": True, "goals": goals, "weekly_goals": goals, "message": "Weekly goals updated successfully"}
 
 @app.get("/api/settings/export")
 async def export_data_api(

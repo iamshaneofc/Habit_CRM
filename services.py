@@ -953,7 +953,7 @@ DEFAULT_WEEKLY_GOALS = [
     "10m Daily Mindfulness & Sleep"
 ]
 
-def get_weekly_goals(db: Session, user_id: Optional[int]) -> List[str]:
+def get_weekly_goals(db: Session, user_id: Optional[int]) -> List[Any]:
     """Returns the list of 5 weekly focus targets for the user."""
     user = None
     if user_id:
@@ -966,15 +966,22 @@ def get_weekly_goals(db: Session, user_id: Optional[int]) -> List[str]:
             import json
             goals = json.loads(user.weekly_goals)
             if isinstance(goals, list) and goals:
-                return [str(g).strip() for g in goals if str(g).strip()][:5]
+                return goals[:5]
         except Exception:
             pass
     return list(DEFAULT_WEEKLY_GOALS)
 
-def update_weekly_goals(db: Session, user_id: Optional[int], goals: List[str]) -> List[str]:
+def update_weekly_goals(db: Session, user_id: Optional[int], goals: List[Any]) -> List[Any]:
     """Saves the user's custom 5 weekly focus goals."""
     import json
-    cleaned = [str(g).strip() for g in goals if str(g).strip()][:5]
+    cleaned = []
+    for g in goals:
+        if isinstance(g, dict) and g:
+            cleaned.append(g)
+        elif isinstance(g, str) and g.strip():
+            cleaned.append(g.strip())
+        if len(cleaned) == 5:
+            break
     if not cleaned:
         cleaned = list(DEFAULT_WEEKLY_GOALS)
 
@@ -1081,6 +1088,7 @@ def export_user_data(db: Session, user_id: Optional[int]) -> dict:
         "export_version": "1.0.0",
         "exported_at": utc_now().isoformat(),
         "user_profile": settings,
+        "weekly_goals": settings.get("weekly_goals", []),
         "habits": [h.to_dict() for h in habits],
         "habit_logs": [l.to_dict() for l in logs],
         "notes": [n.to_dict() for n in notes]
