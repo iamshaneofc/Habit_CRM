@@ -321,6 +321,48 @@ async def monthly_page(
         "today_display_str": today.strftime("%a, %b %d, %Y")
     })
 
+@app.get("/notes", response_class=HTMLResponse)
+async def notes_page(
+    request: Request,
+    date: Optional[str] = None,
+    tag: Optional[str] = None,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    """Dedicated Focus Notes & Reflection Page with date filtering and task domain tagging."""
+    user_id = current_user.id if current_user else None
+    today = datetime.now().date()
+
+    parsed_date = None
+    if date:
+        try:
+            parsed_date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+
+    notes = services.get_notes(db, user_id=user_id, note_date=parsed_date, tag=tag, limit=200)
+    meta = services.get_notes_tags_and_categories(db, user_id=user_id)
+
+    # Get user's active habits for the tag-to-task dropdown
+    habit_query = db.query(Habit).filter(Habit.is_active == True)
+    if user_id is not None:
+        habit_query = habit_query.filter(Habit.user_id == user_id)
+    else:
+        habit_query = habit_query.filter(Habit.user_id.is_(None))
+    habits = habit_query.order_by(Habit.display_order).all()
+
+    return render_template(request, "notes.html", {
+        "current_user": current_user,
+        "notes": [n.to_dict() for n in notes],
+        "habits": [h.to_dict() for h in habits],
+        "tags": meta["tags"],
+        "categories": meta["categories"],
+        "selected_date": date or "",
+        "selected_tag": tag or "",
+        "today_str": today.isoformat(),
+        "today_display_str": today.strftime("%a, %b %d, %Y")
+    })
+
 @app.get("/", response_class=HTMLResponse)
 async def dashboard_page(
     request: Request,

@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Notes & Daily Reflections — FOCUS OS</title>
+    <meta name="description" content="Capture daily reflections, engineering insights, algorithms notes, and link them to your habits and focus tracks.">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css?v=20261107_v5">
+    <style>
+/* ========================================================
+   FOCUS OS - DEDICATED NOTES & REFLECTIONS SYSTEM
+   ======================================================== */
+
+body.focus-notes-page {
+    background-color: #0b0f17 !important;
+    color: #f1f5f9 !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.45;
+}
+
+/* Header */
+.focus-header {
+    background: #0f141d;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    height: 50px;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.focus-header-inner {
+    max-width: 1680px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+.focus-brand-main {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #10b981;
+    letter-spacing: -0.02em;
+    display: block;
+    line-height: 1;
+}
+.focus-brand-os {
+    color: #ffffff;
+}
+.focus-brand-sub {
+    font-size: 0.65rem;
+    color: #64748b;
+    font-weight: 400;
+    display: block;
+    margin-top: 2px;
+}
+
+/* Nav Tabs */
+.focus-nav-tabs {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 3px 4px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.focus-tab-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.3rem 0.85rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.focus-tab-btn:hover {
+    color: #ffffff;
+    text-decoration: none;
+}
+.focus-tab-btn.active {
+    background: #1e2638;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    text-decoration: none;
+}
+
+/* Header Right Actions */
+.focus-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.btn-primary-glow {
+    background: #10b981;
+    color: #0b0f17;
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 7px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+    transition: all 0.2s;
+}
+.btn-primary-glow:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+}
+.focus-theme-toggle-btn {
+    background: #161e2e;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #cbd5e1;
+    font-size: 0.8rem;
+    padding: 0.32rem 0.55rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.focus-theme-toggle-btn:hover {
+    background: #1e293b;
+    border-color: #10b981;
+}
+.focus-user-avatar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.focus-avatar-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid #10b981;
+    background: #142436;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+.focus-logout-btn {
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.focus-logout-btn:hover {
+    color: #f43f5e;
+}
+
+/* Notes Container */
+.notes-container {
+    max-width: 1680px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 1rem 1.25rem 2.5rem;
+    box-sizing: border-box;
+    flex: 1;
+}
+
+/* Hero & KPI Strip */
+.notes-kpi-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr) 260px;
+    gap: 0.75rem;
+    margin-bottom: 1.2rem;
+}
+.notes-kpi-card {
+    background: #131923;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.notes-kpi-info {
+    display: flex;
+    flex-direction: column;
+}
+.notes-kpi-lbl {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 600;
+}
+.notes-kpi-val {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-top: 2px;
+}
+.notes-kpi-icon {
+    font-size: 1.3rem;
+    opacity: 0.85;
+}
+
+/* Filter Toolbar */
+.notes-filter-bar {
+    background: #131923;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.filter-left-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+.date-quick-chips {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 2px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.date-chip-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.74rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.date-chip-btn:hover {
+    color: #ffffff;
+}
+.date-chip-btn.active {
+    background: #1e2638;
+    color: #10b981;
+    font-weight: 600;
+}
+.filter-date-input {
+    background: #0b0f17;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f1f5f9;
+    padding: 0.32rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    font-family: inherit;
+    outline: none;
+}
+.filter-date-input:focus {
+    border-color: #10b981;
+}
+.filter-select {
+    background: #0b0f17;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f1f5f9;
+    padding: 0.32rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+}
+.filter-select:focus {
+    border-color: #10b981;
+}
+.filter-search-wrap {
+    position: relative;
+    min-width: 240px;
+    flex: 1;
+    max-width: 340px;
+}
+.filter-search-input {
+    width: 100%;
+    background: #0b0f17;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f1f5f9;
+    padding: 0.35rem 0.75rem 0.35rem 2rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    outline: none;
+    box-sizing: border-box;
+}
+.filter-search-input:focus {
+    border-color: #10b981;
+}
+.filter-search-icon {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    pointer-events: none;
+}
+.btn-toggle-pinned {
+    background: #182234;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    padding: 0.32rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s;
+}
+.btn-toggle-pinned.active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+/* Section Titles */
+.notes-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1.25rem 0 0.75rem;
+}
+.notes-section-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* Notes Cards Grid */
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 0.9rem;
+}
+.note-card {
+    background: #131923;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+.note-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.note-card.pinned {
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    background: linear-gradient(180deg, rgba(16, 185, 129, 0.04) 0%, #131923 100%);
+    box-shadow: 0 4px 18px rgba(16, 185, 129, 0.08);
+}
+.note-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.note-meta-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+}
+.note-date-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 7px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.note-tag-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 5px;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.note-habit-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.note-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.note-action-btn {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    padding: 3px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.note-action-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+}
+.note-action-btn.pin-active {
+    color: #10b981;
+}
+.note-action-btn.delete:hover {
+    color: #f43f5e;
+}
+.note-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0.2rem 0 0.5rem;
+    line-height: 1.35;
+}
+.note-body {
+    font-size: 0.82rem;
+    color: #cbd5e1;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+    flex: 1;
+    max-height: 180px;
+    overflow-y: auto;
+    margin-bottom: 0.75rem;
+}
+.note-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #64748b;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 0.5rem;
+    margin-top: auto;
+}
+
+/* Empty State */
+.notes-empty-state {
+    background: #131923;
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    margin: 1.5rem 0;
+}
+.notes-empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+}
+.notes-empty-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.3rem;
+}
+.notes-empty-sub {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    max-width: 440px;
+    margin: 0 auto 1.25rem;
+}
+
+/* Modals */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal-card {
+    background: #161e2e;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    width: 92%;
+    max-width: 580px;
+    padding: 1.25rem;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5);
+    color: #f1f5f9;
+}
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+}
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+.btn-close {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.btn-close:hover {
+    color: #ffffff;
+}
+.form-group {
+    margin-bottom: 0.85rem;
+}
+.form-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 0.3rem;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    background: #0f141d;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    padding: 0.45rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-family: inherit;
+    box-sizing: border-box;
+    outline: none;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #10b981;
+}
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+.modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+}
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.45rem 0.9rem;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+.btn-primary {
+    background: #10b981;
+    border: none;
+    color: #0b0f17;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.45rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.btn-primary:hover {
+    background: #059669;
+}
+
+/* Toast */
+.toast-notice {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #10b981;
+    color: #0b0f17;
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    z-index: 2000;
+    display: none;
+    transition: opacity 0.3s;
+}
+
+/* Light Theme Support */
+[data-theme="light"] body.focus-notes-page {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+}
+[data-theme="light"] .focus-header {
+    background: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+[data-theme="light"] .focus-brand-os {
+    color: #0f172a !important;
+}
+[data-theme="light"] .focus-nav-tabs {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+}
+[data-theme="light"] .focus-tab-btn {
+    color: #64748b !important;
+}
+[data-theme="light"] .focus-tab-btn.active {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+}
+[data-theme="light"] .notes-kpi-card,
+[data-theme="light"] .notes-filter-bar,
+[data-theme="light"] .note-card,
+[data-theme="light"] .notes-empty-state {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
+}
+[data-theme="light"] .notes-kpi-val,
+[data-theme="light"] .note-title,
+[data-theme="light"] .notes-empty-title {
+    color: #0f172a !important;
+}
+[data-theme="light"] .note-body {
+    color: #334155 !important;
+}
+[data-theme="light"] .filter-search-input,
+[data-theme="light"] .filter-date-input,
+[data-theme="light"] .filter-select {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+[data-theme="light"] .modal-card {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+[data-theme="light"] .modal-header h3 {
+    color: #0f172a !important;
+}
+[data-theme="light"] .form-group input,
+[data-theme="light"] .form-group select,
+[data-theme="light"] .form-group textarea {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+@media (max-width: 900px) {
+    .notes-kpi-bar {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .filter-left-group {
+        width: 100%;
+    }
+    .filter-search-wrap {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+    </style>
+</head>
+<body class="focus-notes-page">
+
+    <!-- Top Focus Header -->
+    <header class="focus-header">
+        <div class="focus-header-inner">
+            <!-- Brand -->
+            <div class="focus-brand">
+                <a href="/" style="text-decoration: none;">
+                    <span class="focus-brand-main">FOCUS <span class="focus-brand-os">OS</span></span>
+                    <span class="focus-brand-sub">Daily Engineering & Focus Notes</span>
+                </a>
+            </div>
+
+            <!-- Pill Navigation -->
+            <nav class="focus-nav-tabs" role="tablist">
+                <a href="/" class="focus-tab-btn" role="tab">Dashboard</a>
+                <a href="/monthly" class="focus-tab-btn" role="tab">Monthly Tracker</a>
+                <a href="/notes" class="focus-tab-btn active" role="tab">Notes</a>
+                <a href="/onboarding" class="focus-tab-btn" role="tab">Personalize CRM</a>
+            </nav>
+
+            <!-- Header Right Actions -->
+            <div class="focus-header-actions">
+                <button type="button" class="btn-primary-glow" onclick="openNewNoteModal()" title="Add New Focus Note">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>+ New Note</span>
+                </button>
+                <button type="button" class="focus-theme-toggle-btn" id="notes-theme-btn" onclick="toggleNotesTheme()" title="Toggle Light / Dark Mode">
+                    <span id="theme-icon">☀️</span>
+                </button>
+                <div class="focus-user-avatar-wrap" title="{{ current_user.email if current_user else 'Demo User' }}">
+                    <div class="focus-avatar-img">
+                        <span>{{ (current_user.full_name or current_user.email or 'U')[0] | upper if current_user else 'D' }}</span>
+                    </div>
+                    {% if current_user %}
+                    <a href="/logout" class="focus-logout-btn" title="Sign Out">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="notes-container">
+
+        <!-- KPI Strip -->
+        <section class="notes-kpi-bar" aria-label="Notes Metrics">
+            <div class="notes-kpi-card">
+                <div class="notes-kpi-info">
+                    <span class="notes-kpi-lbl">Total Notes</span>
+                    <span class="notes-kpi-val" id="kpi-total-notes">{{ notes | length }}</span>
+                </div>
+                <span class="notes-kpi-icon">📝</span>
+            </div>
+            <div class="notes-kpi-card">
+                <div class="notes-kpi-info">
+                    <span class="notes-kpi-lbl">Pinned Focus</span>
+                    <span class="notes-kpi-val" id="kpi-pinned-notes">{{ notes | selectattr('is_pinned') | list | length }}</span>
+                </div>
+                <span class="notes-kpi-icon">📌</span>
+            </div>
+            <div class="notes-kpi-card">
+                <div class="notes-kpi-info">
+                    <span class="notes-kpi-lbl">Active Tracks</span>
+                    <span class="notes-kpi-val">{{ habits | length }}</span>
+                </div>
+                <span class="notes-kpi-icon">🎯</span>
+            </div>
+            <div class="notes-kpi-card">
+                <div class="notes-kpi-info">
+                    <span class="notes-kpi-lbl">Unique Tags</span>
+                    <span class="notes-kpi-val">{{ tags | length }}</span>
+                </div>
+                <span class="notes-kpi-icon">🏷️</span>
+            </div>
+            <div class="notes-kpi-card" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.25);">
+                <div class="notes-kpi-info">
+                    <span class="notes-kpi-lbl" style="color: #10b981;">Today's Date</span>
+                    <span class="notes-kpi-val" style="font-size: 0.95rem; color: #10b981;">{{ today_display_str }}</span>
+                </div>
+                <span class="notes-kpi-icon">⚡</span>
+            </div>
+        </section>
+
+        <!-- Filter Bar -->
+        <section class="notes-filter-bar" aria-label="Notes Filters">
+            <div class="filter-left-group">
+                <!-- Date Quick Chips -->
+                <div class="date-quick-chips" role="group" aria-label="Quick Date Filters">
+                    <button type="button" class="date-chip-btn {% if not selected_date %}active{% endif %}" onclick="filterByDateRange('all')">All</button>
+                    <button type="button" class="date-chip-btn {% if selected_date == today_str %}active{% endif %}" onclick="filterByDateRange('today')">Today</button>
+                    <button type="button" class="date-chip-btn" onclick="filterByDateRange('week')">This Week</button>
+                    <button type="button" class="date-chip-btn" onclick="filterByDateRange('month')">This Month</button>
+                </div>
+
+                <!-- Date Picker Input -->
+                <input type="date" id="notes-date-picker" class="filter-date-input" value="{{ selected_date }}" title="Filter by exact date" onchange="applyCustomDate(this.value)">
+
+                <!-- Habit Track Dropdown Filter -->
+                <select id="notes-habit-filter" class="filter-select" onchange="applyFilters()">
+                    <option value="">All Tasks / Habits</option>
+                    {% for h in habits %}
+                    <option value="{{ h.name }}">{{ h.icon }} {{ h.name }} ({{ h.category }})</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Tag / Category Dropdown -->
+                <select id="notes-tag-filter" class="filter-select" onchange="applyFilters()">
+                    <option value="">All Tags</option>
+                    {% for t in tags %}
+                    <option value="{{ t }}" {% if selected_tag == t %}selected{% endif %}>#{{ t }}</option>
+                    {% endfor %}
+                </select>
+
+                <!-- Pinned Filter Toggle -->
+                <button type="button" id="btn-pinned-filter" class="btn-toggle-pinned" onclick="togglePinnedOnly()">
+                    <span>📌 Pinned Only</span>
+                </button>
+            </div>
+
+            <!-- Search Field -->
+            <div class="filter-search-wrap">
+                <svg class="filter-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="notes-search-input" class="filter-search-input" placeholder="Search notes, insights, tags..." oninput="handleSearch(this.value)">
+            </div>
+        </section>
+
+        <!-- Pinned Notes Section -->
+        <div id="pinned-section-container" style="{% if not (notes | selectattr('is_pinned') | list) %}display: none;{% endif %}">
+            <div class="notes-section-head">
+                <span class="notes-section-title">📌 Pinned Focus Notes</span>
+            </div>
+            <div class="notes-grid" id="pinned-notes-grid">
+                {% for n in notes %}
+                {% if n.is_pinned %}
+                <article class="note-card pinned" id="note-card-{{ n.id }}" data-id="{{ n.id }}" data-date="{{ n.date }}" data-tag="{{ n.tag or '' }}" data-habit="{{ n.habit_name or '' }}" data-pinned="true">
+                    <div class="note-card-header">
+                        <div class="note-meta-badges">
+                            <span class="note-date-badge">{{ n.date }}</span>
+                            {% if n.tag %}
+                            <span class="note-tag-badge">#{{ n.tag }}</span>
+                            {% endif %}
+                            {% if n.habit_name %}
+                            <span class="note-habit-badge">🎯 {{ n.habit_name }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="note-actions">
+                            <button type="button" class="note-action-btn pin-active" onclick="togglePin({{ n.id }})" title="Unpin note">📌</button>
+                            <button type="button" class="note-action-btn" onclick="openEditNoteModal({{ n.id }})" title="Edit note">✏️</button>
+                            <button type="button" class="note-action-btn delete" onclick="deleteNote({{ n.id }})" title="Delete note">🗑️</button>
+                        </div>
+                    </div>
+                    <h4 class="note-title">{{ n.title }}</h4>
+                    <div class="note-body">{{ n.content }}</div>
+                    <div class="note-footer">
+                        <span>{{ n.category or 'General' }}</span>
+                        <span>{{ n.created_at[:10] if n.created_at else '' }}</span>
+                    </div>
+                </article>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- All Notes Grid Section -->
+        <div class="notes-section-head">
+            <span class="notes-section-title">📝 All Notes & Reflections (<span id="all-notes-count">{{ notes | length }}</span>)</span>
+        </div>
+
+        <div class="notes-grid" id="all-notes-grid">
+            {% for n in notes %}
+            <article class="note-card {% if n.is_pinned %}pinned{% endif %}" id="note-card-{{ n.id }}" data-id="{{ n.id }}" data-date="{{ n.date }}" data-tag="{{ n.tag or '' }}" data-habit="{{ n.habit_name or '' }}" data-pinned="{{ 'true' if n.is_pinned else 'false' }}">
+                <div class="note-card-header">
+                    <div class="note-meta-badges">
+                        <span class="note-date-badge">{{ n.date }}</span>
+                        {% if n.tag %}
+                        <span class="note-tag-badge">#{{ n.tag }}</span>
+                        {% endif %}
+                        {% if n.habit_name %}
+                        <span class="note-habit-badge">🎯 {{ n.habit_name }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="note-actions">
+                        <button type="button" class="note-action-btn {% if n.is_pinned %}pin-active{% endif %}" onclick="togglePin({{ n.id }})" title="{% if n.is_pinned %}Unpin note{% else %}Pin note{% endif %}">📌</button>
+                        <button type="button" class="note-action-btn" onclick="openEditNoteModal({{ n.id }})" title="Edit note">✏️</button>
+                        <button type="button" class="note-action-btn delete" onclick="deleteNote({{ n.id }})" title="Delete note">🗑️</button>
+                    </div>
+                </div>
+                <h4 class="note-title">{{ n.title }}</h4>
+                <div class="note-body">{{ n.content }}</div>
+                <div class="note-footer">
+                    <span>{{ n.category or 'General' }}</span>
+                    <span>{{ n.created_at[:10] if n.created_at else '' }}</span>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <!-- Empty State (Hidden when notes exist) -->
+        <div id="notes-empty-state" class="notes-empty-state" style="{% if notes %}display: none;{% endif %}">
+            <div class="notes-empty-icon">📓</div>
+            <h3 class="notes-empty-title">No Notes Found</h3>
+            <p class="notes-empty-sub">Capture technical insights, algorithmic solutions, bug fixes, or day reflections tagged directly to your habits.</p>
+            <button type="button" class="btn-primary-glow" onclick="openNewNoteModal()">+ Create Your First Note</button>
+        </div>
+
+    </main>
+
+    <!-- Modal: Create / Edit Focus Note -->
+    <div class="modal-backdrop" id="note-dialog-modal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="note-dialog-title">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="note-dialog-title">New Focus Note</h3>
+                <button type="button" class="btn-close" onclick="closeNoteDialog()" aria-label="Close modal">✕</button>
+            </div>
+            <form id="note-dialog-form" onsubmit="handleSaveNote(event)">
+                <input type="hidden" id="dialog-note-id">
+                
+                <div class="form-group">
+                    <label for="dialog-note-title">Title *</label>
+                    <input type="text" id="dialog-note-title" required placeholder="e.g. Mastered Monotonic Stack & 2D DP" maxlength="150">
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="dialog-note-date">Date *</label>
+                        <input type="date" id="dialog-note-date" required value="{{ today_str }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="dialog-note-habit">Tag to Task / Habit</label>
+                        <select id="dialog-note-habit">
+                            <option value="">None (General Note)</option>
+                            {% for h in habits %}
+                            <option value="{{ h.id }}">{{ h.icon }} {{ h.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="dialog-note-tag">Tag (e.g. DSA, DevOps)</label>
+                        <input type="text" id="dialog-note-tag" placeholder="e.g. DSA, Bugfix, Architecture" maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="dialog-note-category">Category</label>
+                        <input type="text" id="dialog-note-category" placeholder="e.g. Technology & Engineering" maxlength="50">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="dialog-note-content">Note Content *</label>
+                    <textarea id="dialog-note-content" required rows="5" placeholder="Write key takeaways, code snippets, blockers resolved, or notes for future sprints..."></textarea>
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                    <input type="checkbox" id="dialog-note-pinned" style="width: auto; cursor: pointer;">
+                    <label for="dialog-note-pinned" style="margin: 0; cursor: pointer; color: #f1f5f9; font-size: 0.8rem;">📌 Pin this note to the top of your dashboard</label>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeNoteDialog()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="btn-save-note-dialog">Save Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Banner -->
+    <div id="toast-banner" class="toast-notice"></div>
+
+    <!-- JavaScript logic -->
+    <script>
+        const INITIAL_NOTES = {{ notes | tojson }};
+        let notesData = [...INITIAL_NOTES];
+        let filterPinnedOnlyState = false;
+
+        function showToast(message) {
+            const toast = document.getElementById('toast-banner');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // Theme management
+        function toggleNotesTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('focus_os_theme', newTheme);
+            document.getElementById('theme-icon').textContent = newTheme === 'light' ? '🌙' : '☀️';
+        }
+
+        // Initialize Theme from localStorage
+        (function() {
+            const savedTheme = localStorage.getItem('focus_os_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const icon = document.getElementById('theme-icon');
+            if (icon) icon.textContent = savedTheme === 'light' ? '🌙' : '☀️';
+        })();
+
+        // Modal Open / Close
+        function openNewNoteModal() {
+            document.getElementById('note-dialog-title').textContent = "New Focus Note";
+            document.getElementById('dialog-note-id').value = "";
+            document.getElementById('dialog-note-title').value = "";
+            document.getElementById('dialog-note-date').value = "{{ today_str }}";
+            document.getElementById('dialog-note-habit').value = "";
+            document.getElementById('dialog-note-tag').value = "";
+            document.getElementById('dialog-note-category').value = "";
+            document.getElementById('dialog-note-content').value = "";
+            document.getElementById('dialog-note-pinned').checked = false;
+            document.getElementById('note-dialog-modal').style.display = 'flex';
+        }
+
+        function openEditNoteModal(noteId) {
+            const note = notesData.find(n => n.id === noteId);
+            if (!note) return;
+            document.getElementById('note-dialog-title').textContent = "Edit Focus Note";
+            document.getElementById('dialog-note-id').value = note.id;
+            document.getElementById('dialog-note-title').value = note.title;
+            document.getElementById('dialog-note-date').value = note.date;
+            document.getElementById('dialog-note-habit').value = note.habit_id || "";
+            document.getElementById('dialog-note-tag').value = note.tag || "";
+            document.getElementById('dialog-note-category').value = note.category || "";
+            document.getElementById('dialog-note-content').value = note.content;
+            document.getElementById('dialog-note-pinned').checked = !!note.is_pinned;
+            document.getElementById('note-dialog-modal').style.display = 'flex';
+        }
+
+        function closeNoteDialog() {
+            document.getElementById('note-dialog-modal').style.display = 'none';
+        }
+
+        // Save Note (Create or Update)
+        async function handleSaveNote(e) {
+            e.preventDefault();
+            const noteId = document.getElementById('dialog-note-id').value;
+            const habitIdVal = document.getElementById('dialog-note-habit').value;
+            const payload = {
+                title: document.getElementById('dialog-note-title').value.trim(),
+                date: document.getElementById('dialog-note-date').value,
+                habit_id: habitIdVal ? parseInt(habitIdVal) : null,
+                tag: document.getElementById('dialog-note-tag').value.trim() || null,
+                category: document.getElementById('dialog-note-category').value.trim() || null,
+                content: document.getElementById('dialog-note-content').value.trim(),
+                is_pinned: document.getElementById('dialog-note-pinned').checked
+            };
+
+            const url = noteId ? `/api/notes/${noteId}` : '/api/notes';
+            const method = noteId ? 'PUT' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(noteId ? "Note updated successfully!" : "Note created successfully!");
+                    closeNoteDialog();
+                    setTimeout(() => window.location.reload(), 400);
+                } else {
+                    alert("Error saving note: " + (data.detail || "Please try again."));
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Network error saving note.");
+            }
+        }
+
+        // Pin / Unpin
+        async function togglePin(noteId) {
+            try {
+                const res = await fetch(`/api/notes/${noteId}/pin`, { method: 'POST' });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast(data.is_pinned ? "Note pinned to top!" : "Note unpinned.");
+                    setTimeout(() => window.location.reload(), 400);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Delete Note
+        async function deleteNote(noteId) {
+            if (!confirm("Are you sure you want to delete this note?")) return;
+            try {
+                const res = await fetch(`/api/notes/${noteId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast("Note deleted successfully.");
+                    setTimeout(() => window.location.reload(), 400);
+                } else {
+                    alert("Error deleting note.");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Client-side Filtering
+        function applyFilters() {
+            const query = (document.getElementById('notes-search-input').value || '').toLowerCase();
+            const habitFilter = document.getElementById('notes-habit-filter').value;
+            const tagFilter = document.getElementById('notes-tag-filter').value;
+            const dateFilter = document.getElementById('notes-date-picker').value;
+
+            const cards = document.querySelectorAll('.note-card');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const title = card.querySelector('.note-title')?.textContent.toLowerCase() || '';
+                const body = card.querySelector('.note-body')?.textContent.toLowerCase() || '';
+                const date = card.dataset.date || '';
+                const tag = card.dataset.tag || '';
+                const habit = card.dataset.habit || '';
+                const isPinned = card.dataset.pinned === 'true';
+
+                let matches = true;
+                if (query && !title.includes(query) && !body.includes(query) && !tag.toLowerCase().includes(query)) {
+                    matches = false;
+                }
+                if (habitFilter && habit !== habitFilter) {
+                    matches = false;
+                }
+                if (tagFilter && tag !== tagFilter) {
+                    matches = false;
+                }
+                if (dateFilter && date !== dateFilter) {
+                    matches = false;
+                }
+                if (filterPinnedOnlyState && !isPinned) {
+                    matches = false;
+                }
+
+                card.style.display = matches ? 'flex' : 'none';
+                if (matches) visibleCount++;
+            });
+
+            document.getElementById('all-notes-count').textContent = visibleCount;
+            const emptyState = document.getElementById('notes-empty-state');
+            if (emptyState) {
+                emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        }
+
+        function handleSearch(val) {
+            applyFilters();
+        }
+
+        function applyCustomDate(dateVal) {
+            // Update quick chips
+            document.querySelectorAll('.date-chip-btn').forEach(b => b.classList.remove('active'));
+            applyFilters();
+        }
+
+        function filterByDateRange(range) {
+            const picker = document.getElementById('notes-date-picker');
+            document.querySelectorAll('.date-chip-btn').forEach(b => b.classList.remove('active'));
+
+            if (range === 'all') {
+                picker.value = '';
+                event.target.classList.add('active');
+            } else if (range === 'today') {
+                picker.value = "{{ today_str }}";
+                event.target.classList.add('active');
+            } else if (range === 'week') {
+                // Navigate to current week or filter
+                picker.value = "";
+                event.target.classList.add('active');
+            } else if (range === 'month') {
+                picker.value = "";
+                event.target.classList.add('active');
+            }
+            applyFilters();
+        }
+
+        function togglePinnedOnly() {
+            filterPinnedOnlyState = !filterPinnedOnlyState;
+            const btn = document.getElementById('btn-pinned-filter');
+            if (filterPinnedOnlyState) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+            applyFilters();
+        }
+    </script>
+</body>
+</html>
