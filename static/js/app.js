@@ -651,6 +651,23 @@ async function handleNoteSubmit(event) {
             }
         }
 
+        // Also sync to /api/notes so it appears in the Notes tab
+        if (notes) {
+            try {
+                fetch("/api/notes", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        title: `${document.getElementById("note-modal-title").textContent.replace("Note — ", "")} Reflection`,
+                        content: notes,
+                        date: dateStr,
+                        habit_id: parseInt(habitId) || null,
+                        tag: "Reflection"
+                    })
+                }).catch(() => {});
+            } catch (e) {}
+        }
+
         closeNoteModal();
         showToast(notes ? "Note saved! 📝" : "Note cleared.");
     } catch (err) {
@@ -1030,6 +1047,31 @@ function openHourDropdown(btn, event) {
         };
         popover.appendChild(optBtn);
     }
+
+    // Divider + Note Option
+    const divider = document.createElement("div");
+    divider.style.borderTop = "1px solid rgba(255,255,255,0.08)";
+    divider.style.margin = "4px 0";
+    popover.appendChild(divider);
+
+    const noteBtn = document.createElement("button");
+    noteBtn.type = "button";
+    noteBtn.className = "hour-opt-btn";
+    noteBtn.style.color = "#38bdf8";
+    noteBtn.innerHTML = "<span>📝</span> Log Session Note";
+    noteBtn.onclick = (e) => {
+        e.stopPropagation();
+        closeHourDropdown();
+        const habitId = btn.getAttribute("data-habit-id");
+        const dateStr = btn.getAttribute("data-date");
+        const habitTitle = btn.getAttribute("title") || "Habit";
+        if (typeof openNoteModal === "function") {
+            openNoteModal(habitId, habitTitle, dateStr);
+        } else {
+            window.location.href = `/notes?date=${dateStr}`;
+        }
+    };
+    popover.appendChild(noteBtn);
 
     document.body.appendChild(popover);
     activeHourPopover = popover;
