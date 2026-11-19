@@ -462,45 +462,78 @@ async function deleteHabit(id, name) {
 }
 
 function openManageModal() {
-    document.getElementById("manage-modal").style.display = "flex";
-    loadArchivedHabits();
+    const modal = document.getElementById("manage-modal");
+    if (modal) modal.style.display = "flex";
+    loadManageHabits();
 }
 
 function closeManageModal() {
-    document.getElementById("manage-modal").style.display = "none";
+    const modal = document.getElementById("manage-modal");
+    if (modal) modal.style.display = "none";
 }
 
-async function loadArchivedHabits() {
-    const listEl = document.getElementById("archived-habits-list");
+async function loadManageHabits() {
+    const listEl = document.getElementById("manage-habits-list") || document.getElementById("archived-habits-list");
     if (!listEl) return;
-    listEl.innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">Loading...</span>';
+    listEl.innerHTML = '<span style="font-size: 0.8rem; color: #94a3b8;">Loading focus tracks...</span>';
 
     try {
-        const res = await fetch("/api/habits/archived");
-        const habits = await res.json();
-        if (!res.ok) throw new Error("Failed to load archived habits");
+        const [habitsRes, archivedRes] = await Promise.all([
+            fetch("/api/habits"),
+            fetch("/api/habits/archived")
+        ]);
+        const activeHabits = habitsRes.ok ? await habitsRes.json() : [];
+        const archivedHabits = archivedRes.ok ? await archivedRes.json() : [];
 
-        if (!habits || habits.length === 0) {
-            listEl.innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">No archived habits.</span>';
-            return;
+        let html = '<div style="margin-bottom: 1rem;"><strong style="font-size: 0.8rem; color: #10b981; text-transform: uppercase; letter-spacing: 0.05em;">Active Focus Tracks (' + activeHabits.length + ')</strong></div>';
+
+        if (activeHabits.length === 0) {
+            html += '<p style="font-size: 0.8rem; color: #94a3b8;">No active tracks found.</p>';
+        } else {
+            html += activeHabits.map(h => `
+                <div class="manage-habit-item" style="display: flex; align-items: center; justify-content: space-between; padding: 0.45rem 0.6rem; margin-bottom: 0.35rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.05rem;">${h.icon || '🎯'}</span>
+                        <div>
+                            <strong style="font-size: 0.85rem; color: #fff;">${h.name}</strong>
+                            <div style="font-size: 0.7rem; color: #94a3b8; display: flex; gap: 0.4rem; align-items: center; margin-top: 1px;">
+                                <span style="background: rgba(16,185,129,0.15); color: #10b981; padding: 1px 5px; border-radius: 4px;">${h.category}</span>
+                                <span>Target: ${h.daily_target || 8}h/wk</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.35rem;">
+                        <button type="button" class="btn btn-sm btn-outline" onclick="openEditModal(${h.id}, '${h.name.replace(/'/g, "\\'")}', '${h.category.replace(/'/g, "\\'")}', '${(h.description || '').replace(/'/g, "\\'")}', '${h.icon || '🎯'}', '${h.color || '#10b981'}', ${h.daily_target || 8})" title="Edit Track">✏️ Edit</button>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="archiveHabit(${h.id}, '${h.name.replace(/'/g, "\\'")}')" title="Archive track">📦 Archive</button>
+                    </div>
+                </div>
+            `).join("");
         }
 
-        listEl.innerHTML = habits.map(h => `
-            <div class="archived-item" style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span>${h.icon || '🎯'}</span>
-                    <strong style="font-size: 0.85rem; color: #fff;">${h.name}</strong>
-                    <span style="font-size: 0.7rem; color: var(--text-muted); background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">${h.category}</span>
+        if (archivedHabits.length > 0) {
+            html += '<div style="margin: 1.25rem 0 0.5rem;"><strong style="font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Archived Tracks (' + archivedHabits.length + ')</strong></div>';
+            html += archivedHabits.map(h => `
+                <div class="manage-habit-item" style="display: flex; align-items: center; justify-content: space-between; padding: 0.45rem 0.6rem; margin-bottom: 0.35rem; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="opacity: 0.6;">${h.icon || '🎯'}</span>
+                        <strong style="font-size: 0.85rem; color: #94a3b8;">${h.name}</strong>
+                    </div>
+                    <div style="display: flex; gap: 0.35rem;">
+                        <button type="button" class="btn btn-sm btn-outline" onclick="restoreHabit(${h.id}, '${h.name.replace(/'/g, "\\'")}')" title="Restore Track">↩️ Restore</button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="deletePermanently(${h.id}, '${h.name.replace(/'/g, "\\'")}')" title="Permanently Delete">🗑️ Delete</button>
+                    </div>
                 </div>
-                <div style="display: flex; gap: 0.4rem;">
-                    <button type="button" class="btn btn-sm btn-outline" onclick="restoreHabit(${h.id}, '${h.name}')" title="Restore to active tracker">↩️ Restore</button>
-                    <button type="button" class="btn btn-sm btn-danger" onclick="deletePermanently(${h.id}, '${h.name}')" title="Permanently delete">🗑️ Delete</button>
-                </div>
-            </div>
-        `).join("");
+            `).join("");
+        }
+
+        listEl.innerHTML = html;
     } catch (err) {
         listEl.innerHTML = `<span style="font-size: 0.8rem; color: #ef4444;">Error: ${err.message}</span>`;
     }
+}
+
+async function loadArchivedHabits() {
+    loadManageHabits();
 }
 
 async function restoreHabit(id, name) {
@@ -1324,4 +1357,226 @@ document.addEventListener('DOMContentLoaded', function() {
     initTheme();
     renderUserGoals();
     updateRealTodayDate();
+    initNotificationBell();
+});
+
+// ========================================================
+// FOCUS OS - SETTINGS MODAL & USER PREFERENCES
+// ========================================================
+async function openSettingsModal() {
+    const modal = document.getElementById("settings-modal");
+    if (!modal) return;
+    modal.style.display = "flex";
+
+    try {
+        const res = await fetch("/api/settings");
+        if (res.ok) {
+            const data = await res.json();
+            const s = data.settings;
+            if (s) {
+                const nameInput = document.getElementById("settings-display-name");
+                if (nameInput) nameInput.value = s.display_name || "";
+                const emailBox = document.getElementById("settings-user-email");
+                if (emailBox) emailBox.textContent = s.email || "demo@habitcrm.com";
+                const targetInput = document.getElementById("settings-daily-target");
+                const targetRange = document.getElementById("settings-daily-target-range");
+                const targetVal = document.getElementById("settings-daily-target-val");
+                if (targetInput) targetInput.value = s.daily_hour_target || 8;
+                if (targetRange) targetRange.value = s.daily_hour_target || 8;
+                if (targetVal) targetVal.textContent = (s.daily_hour_target || 8) + " hrs";
+                const themeSelect = document.getElementById("settings-theme-select");
+                if (themeSelect) themeSelect.value = s.theme_preference || "dark";
+                const notifToggle = document.getElementById("settings-notifications-toggle");
+                if (notifToggle) notifToggle.checked = s.notifications_enabled !== false;
+            }
+        }
+    } catch (err) {
+        console.warn("Could not load settings:", err);
+    }
+}
+
+function closeSettingsModal() {
+    const modal = document.getElementById("settings-modal");
+    if (modal) modal.style.display = "none";
+}
+
+async function saveUserSettings() {
+    const saveBtn = document.getElementById("btn-save-settings");
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+    }
+
+    const payload = {
+        display_name: document.getElementById("settings-display-name")?.value.trim() || "User",
+        daily_hour_target: parseFloat(document.getElementById("settings-daily-target")?.value) || 8,
+        theme_preference: document.getElementById("settings-theme-select")?.value || "dark",
+        notifications_enabled: document.getElementById("settings-notifications-toggle")?.checked ?? true
+    };
+
+    try {
+        const res = await fetch("/api/settings", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showToast("Settings saved successfully!");
+            // Update theme if changed
+            if (payload.theme_preference) {
+                setTheme(payload.theme_preference);
+            }
+            closeSettingsModal();
+        } else {
+            showToast("Error saving settings: " + (data.detail || "Please retry"));
+        }
+    } catch (err) {
+        showToast("Network error saving settings");
+    } finally {
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = "Save Settings";
+        }
+    }
+}
+
+async function exportUserData() {
+    const btn = document.getElementById("btn-export-data");
+    if (btn) btn.textContent = "Exporting...";
+
+    try {
+        const res = await fetch("/api/settings/export");
+        if (!res.ok) throw new Error("Export failed");
+        const data = await res.json();
+        const jsonStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const nowStr = new Date().toISOString().slice(0, 10);
+        a.download = `focus_os_backup_${nowStr}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast("Backup exported successfully!");
+    } catch (err) {
+        showToast("Error exporting backup: " + err.message);
+    } finally {
+        if (btn) btn.textContent = "📥 Export Backup (JSON)";
+    }
+}
+
+function resetDemoDataPrompt() {
+    if (!confirm("Reset all habits, logs, and notes back to Focus OS defaults? This cannot be undone.")) return;
+    resetDefaultHabits();
+}
+
+// ========================================================
+// FOCUS OS - NOTIFICATION SYSTEM & BELL DROPDOWN
+// ========================================================
+async function initNotificationBell() {
+    try {
+        const res = await fetch("/api/notifications");
+        if (res.ok) {
+            const data = await res.json();
+            const unreadCount = data.unread_count || 0;
+            const bellDot = document.getElementById("bell-dot");
+            const notifCount = document.getElementById("notif-count");
+            if (bellDot) bellDot.style.display = unreadCount > 0 ? "block" : "none";
+            if (notifCount) notifCount.textContent = data.total || 0;
+        }
+    } catch (e) {}
+}
+
+function toggleNotificationDropdown(event) {
+    if (event) event.stopPropagation();
+    closeProfileDropdown();
+    const dropdown = document.getElementById("notification-dropdown");
+    if (!dropdown) return;
+    const isShowing = dropdown.style.display === "block";
+    dropdown.style.display = isShowing ? "none" : "block";
+    if (!isShowing) {
+        loadNotifications();
+    }
+}
+
+function closeNotificationDropdown() {
+    const dropdown = document.getElementById("notification-dropdown");
+    if (dropdown) dropdown.style.display = "none";
+}
+
+async function loadNotifications() {
+    const listEl = document.getElementById("notification-list");
+    if (!listEl) return;
+    listEl.innerHTML = '<div style="padding: 0.85rem; text-align: center; font-size: 0.75rem; color: #94a3b8;">Loading notifications...</div>';
+
+    try {
+        const res = await fetch("/api/notifications");
+        if (!res.ok) throw new Error("Failed to load notifications");
+        const data = await res.json();
+        const items = data.notifications || [];
+        const notifCount = document.getElementById("notif-count");
+        if (notifCount) notifCount.textContent = items.length;
+
+        if (items.length === 0) {
+            listEl.innerHTML = '<div style="padding: 1.25rem 0.85rem; text-align: center; font-size: 0.75rem; color: #94a3b8;">No notifications right now.<br>Your focus streak is up to date! 🎉</div>';
+            return;
+        }
+
+        listEl.innerHTML = items.map(n => `
+            <div class="focus-notification-item">
+                <span class="notification-icon-box">${n.icon || '🔔'}</span>
+                <div class="notification-text-content">
+                    <div class="notification-item-title">${n.title}</div>
+                    <div class="notification-item-msg">${n.message}</div>
+                    <div class="notification-item-time">${n.timestamp ? n.timestamp.slice(0, 16).replace('T', ' ') : ''}</div>
+                </div>
+            </div>
+        `).join("");
+    } catch (err) {
+        listEl.innerHTML = `<div style="padding: 0.85rem; font-size: 0.75rem; color: #ef4444;">Error loading: ${err.message}</div>`;
+    }
+}
+
+async function clearAllNotifications() {
+    try {
+        const res = await fetch("/api/notifications/clear", { method: "POST" });
+        if (res.ok) {
+            const listEl = document.getElementById("notification-list");
+            if (listEl) {
+                listEl.innerHTML = '<div style="padding: 1.25rem 0.85rem; text-align: center; font-size: 0.75rem; color: #94a3b8;">All notifications cleared! ✨</div>';
+            }
+            const bellDot = document.getElementById("bell-dot");
+            if (bellDot) bellDot.style.display = "none";
+            const notifCount = document.getElementById("notif-count");
+            if (notifCount) notifCount.textContent = "0";
+            showToast("Notifications cleared.");
+        }
+    } catch (e) {}
+}
+
+// ========================================================
+// FOCUS OS - USER PROFILE DROPDOWN
+// ========================================================
+function toggleProfileDropdown(event) {
+    if (event) event.stopPropagation();
+    closeNotificationDropdown();
+    const dropdown = document.getElementById("profile-dropdown");
+    if (!dropdown) return;
+    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+}
+
+function closeProfileDropdown() {
+    const dropdown = document.getElementById("profile-dropdown");
+    if (dropdown) dropdown.style.display = "none";
+}
+
+// Global click listener to close dropdowns
+document.addEventListener("click", function(event) {
+    if (!event.target.closest(".focus-dropdown-wrapper")) {
+        closeNotificationDropdown();
+        closeProfileDropdown();
+    }
 });
