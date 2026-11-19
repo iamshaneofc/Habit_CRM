@@ -579,16 +579,27 @@ async function resetDefaultHabits() {
 // ========================================================
 let toastTimer = null;
 function showToast(message) {
-    const toast = document.getElementById("toast");
-    if (!toast) return;
+    let toast = document.getElementById("toast") || document.getElementById("toast-banner");
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "toast";
+        toast.className = "toast";
+        document.body.appendChild(toast);
+    }
 
     toast.textContent = message;
     toast.classList.add("show");
+    toast.style.display = "block";
 
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
         toast.classList.remove("show");
-    }, 2400);
+        setTimeout(() => {
+            if (!toast.classList.contains("show")) {
+                toast.style.display = "none";
+            }
+        }, 300);
+    }, 2800);
 }
 
 // ========================================================
