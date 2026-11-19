@@ -2,8 +2,8 @@ from datetime import date, datetime, timedelta
 import calendar
 from typing import Dict, List, Optional, Tuple
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_
-from models import Habit, HabitLog, User
+from sqlalchemy import func, and_, or_, desc
+from models import Habit, HabitLog, User, Note, utc_now
 
 def get_week_range(target_date: Optional[date] = None) -> Tuple[date, date]:
     """Returns the Monday and Sunday for the week of the given date."""
@@ -706,4 +706,227 @@ def get_monthly_summary(db: Session, year: int, month: int, user_id: Optional[in
         "completion_rate_pct": month_pct,
         "category_distribution": categories,
         "habits_count": len(habits)
+    }
+
+# ========================================================
+# Notes & Daily Focus Logging Services
+# ========================================================
+
+def create_note(
+    db: Session,
+    user_id: Optional[int],
+    title: str,
+    content: str = "",
+    note_date: Optional[date] = None,
+    habit_id: Optional[int] = None,
+    tag: Optional[str] = None,
+    category: Optional[str] = None,
+    is_pinned: bool = False
+) -> Note:
+    """Creates a new date-anchored note with optional habit/domain tagging."""
+    target_date = note_date or date.today()
+
+    # If habit_id is provided, auto-populate tag or category if not specified
+    if habit_id:
+        habit = db.query(Habit).filter(Habit.id == habit_id).first()
+        if habit:
+            if not tag:
+                tag = habit.name
+            if not category:
+                category = habit.category
+
+    note = Note(
+        user_id=user_id,
+        habit_id=habit_id,
+        title=title.strip() if title else "Untitled Note",
+        content=content.strip() if content else "",
+        date=target_date,
+        tag=tag.strip() if tag else None,
+        category=category.strip() if category else "General",
+        is_pinned=bool(is_pinned)
+    )
+    db.add(note)
+    db.commit()
+    db.refresh(note)
+    return note
+
+def get_notes(
+    db: Session,
+    user_id: Optional[int],
+    note_date: Optional[date] = None,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    habit_id: Optional[int] = None,
+    tag: Optional[str] = None,
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    is_pinned: Optional[bool] = None,
+    limit: int = 100,
+    offset: int = 0
+) -> List[Note]:
+    """Retrieves notes filtered by user, date, date range, habit tag, search query, or pinned status."""
+    query = db.query(Note)
+
+    if user_id is not None:
+        query = query.filter(Note.user_id == user_id)
+    else:
+        query = query.filter(Note.user_id.is_(None))
+
+    if note_date:
+        query = query.filter(Note.date == note_date)
+
+    if start_date:
+        query = query.filter(Note.date >= start_date)
+
+    if end_date:
+        query = query.filter(Note.date <= end_date)
+
+    if habit_id:
+        query = query.filter(Note.habit_id == habit_id)
+
+    if tag:
+        query = query.filter(func.lower(Note.tag) == tag.strip().lower())
+
+    if category:
+        query = query.filter(func.lower(Note.category) == category.strip().lower())
+
+    if is_pinned is not None:
+        query = query.filter(Note.is_pinned == is_pinned)
+
+    if search and search.strip():
+        term = f"%{search.strip().lower()}%"
+        query = query.filter(
+            or_(
+                func.lower(Note.title).like(term),
+                func.lower(Note.content).like(term),
+                func.lower(Note.tag).like(term)
+            )
+        )
+
+    # Order: pinned first, then by date descending, then created_at descending
+    return query.order_by(desc(Note.is_pinned), desc(Note.date), desc(Note.created_at)).offset(offset).limit(limit).all()
+
+def get_note_by_id(db: Session, note_id: int, user_id: Optional[int]) -> Optional[Note]:
+    """Retrieves a single note ensuring user ownership isolation."""
+    query = db.query(Note).filter(Note.id == note_id)
+    if user_id is not None:
+        query = query.filter(Note.user_id == user_id)
+    else:
+        query = query.filter(Note.user_id.is_(None))
+    return query.first()
+
+def update_note(
+    db: Session,
+    note_id: int,
+    user_id: Optional[int],
+    title: Optional[str] = None,
+    content: Optional[str] = None,
+    note_date: Optional[date] = None,
+    habit_id: Optional[int] = None,
+    tag: Optional[str] = None,
+    category: Optional[str] = None,
+    is_pinned: Optional[bool] = None
+) -> Optional[Note]:
+    """Updates an existing note."""
+    note = get_note_by_id(db, note_id, user_id)
+    if not note:
+        return None
+
+    if title is not None:
+        note.title = title.strip()
+    if content is not None:
+        note.content = content.strip()
+    if note_date is not None:
+        note.date = note_date
+    if habit_id is not None:
+        note.habit_id = habit_id if habit_id > 0 else None
+        if note.habit_id:
+            h = db.query(Habit).filter(Habit.id == note.habit_id).first()
+            if h and not tag:
+                note.tag = h.name
+    if tag is not None:
+        note.tag = tag.strip() if tag else None
+    if category is not None:
+        note.category = category.strip() if category else "General"
+    if is_pinned is not None:
+        note.is_pinned = bool(is_pinned)
+
+    note.updated_at = utc_now()
+    db.commit()
+    db.refresh(note)
+    return note
+
+def delete_note(db: Session, note_id: int, user_id: Optional[int]) -> bool:
+    """Deletes a note with ownership validation."""
+    note = get_note_by_id(db, note_id, user_id)
+    if not note:
+        return False
+    db.delete(note)
+    db.commit()
+    return True
+
+def toggle_note_pin(db: Session, note_id: int, user_id: Optional[int]) -> Optional[Note]:
+    """Toggles the pinned state of a note."""
+    note = get_note_by_id(db, note_id, user_id)
+    if not note:
+        return None
+    note.is_pinned = not bool(note.is_pinned)
+    note.updated_at = utc_now()
+    db.commit()
+    db.refresh(note)
+    return note
+
+def get_notes_summary_by_date(db: Session, user_id: Optional[int], year: int, month: int) -> Dict[str, int]:
+    """
+    Returns a mapping of {'YYYY-MM-DD': count} for all notes in the given month.
+    Used for calendar badges in Monthly Tracker.
+    """
+    num_days = calendar.monthrange(year, month)[1]
+    start = date(year, month, 1)
+    end = date(year, month, num_days)
+
+    query = db.query(Note.date, func.count(Note.id)).filter(
+        Note.date >= start,
+        Note.date <= end
+    )
+    if user_id is not None:
+        query = query.filter(Note.user_id == user_id)
+    else:
+        query = query.filter(Note.user_id.is_(None))
+
+    rows = query.group_by(Note.date).all()
+    return {r[0].isoformat(): r[1] for r in rows}
+
+def get_notes_tags_and_categories(db: Session, user_id: Optional[int]) -> dict:
+    """Returns unique tags and categories used by the user for filter pills."""
+    query = db.query(Note)
+    if user_id is not None:
+        query = query.filter(Note.user_id == user_id)
+    else:
+        query = query.filter(Note.user_id.is_(None))
+
+    notes = query.all()
+    tags = set()
+    categories = set()
+    for n in notes:
+        if n.tag:
+            tags.add(n.tag)
+        if n.category:
+            categories.add(n.category)
+
+    # Also add user's active habit names as available tags
+    habit_query = db.query(Habit.name, Habit.category).filter(Habit.is_active == True)
+    if user_id is not None:
+        habit_query = habit_query.filter(Habit.user_id == user_id)
+    else:
+        habit_query = habit_query.filter(Habit.user_id.is_(None))
+
+    for h_name, h_cat in habit_query.all():
+        tags.add(h_name)
+        if h_cat:
+            categories.add(h_cat)
+
+    return {
+        "tags": sorted(list(tags)),
+        "categories": sorted(list(categories))
     }

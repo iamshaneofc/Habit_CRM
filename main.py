@@ -16,7 +16,7 @@ from sqlalchemy.exc import IntegrityError
 from config import config
 import database
 from database import Base, get_db, check_and_stabilize_db
-from models import Habit, HabitLog, User
+from models import Habit, HabitLog, User, Note
 import auth
 from auth import get_current_user, get_current_user_optional, SESSION_COOKIE_NAME, check_rate_limit
 from seed_data import seed_default_habits
@@ -199,6 +199,24 @@ class HabitUpdateRequest(BaseModel):
     daily_target: Optional[int] = Field(None, ge=1, le=100)
     is_active: Optional[bool] = None
     display_order: Optional[int] = None
+
+class NoteCreateRequest(BaseModel):
+    title: str = Field(..., min_length=1, max_length=255)
+    content: Optional[str] = ""
+    date: Optional[str] = None  # YYYY-MM-DD
+    habit_id: Optional[int] = None
+    tag: Optional[str] = None
+    category: Optional[str] = "General"
+    is_pinned: Optional[bool] = False
+
+class NoteUpdateRequest(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=255)
+    content: Optional[str] = None
+    date: Optional[str] = None  # YYYY-MM-DD
+    habit_id: Optional[int] = None
+    tag: Optional[str] = None
+    category: Optional[str] = None
+    is_pinned: Optional[bool] = None
 
 # ========================================================
 # Web Pages
@@ -932,6 +950,178 @@ async def get_monthly_analytics_api(
     y = year or today.year
     m = month or today.month
     return services.get_monthly_tracker_data(db, user_id=current_user.id, year=y, month=m)
+
+# ========================================================
+# Notes & Daily Focus API Endpoints
+# ========================================================
+@app.get("/api/notes")
+async def list_notes_api(
+    date: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    habit_id: Optional[int] = None,
+    tag: Optional[str] = None,
+    category: Optional[str] = None,
+    search: Optional[str] = None,
+    pinned: Optional[bool] = None,
+    limit: int = 100,
+    offset: int = 0,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id if current_user else None
+    parsed_date = None
+    if date:
+        try:
+            parsed_date = datetime.strptime(date, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+
+    parsed_start = None
+    if start_date:
+        try:
+            parsed_start = datetime.strptime(start_date, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+
+    parsed_end = None
+    if end_date:
+        try:
+            parsed_end = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+
+    notes = services.get_notes(
+        db,
+        user_id=user_id,
+        note_date=parsed_date,
+        start_date=parsed_start,
+        end_date=parsed_end,
+        habit_id=habit_id,
+        tag=tag,
+        category=category,
+        search=search,
+        is_pinned=pinned,
+        limit=limit,
+        offset=offset
+    )
+    meta = services.get_notes_tags_and_categories(db, user_id=user_id)
+    return {
+        "notes": [n.to_dict() for n in notes],
+        "total": len(notes),
+        "available_tags": meta["tags"],
+        "available_categories": meta["categories"]
+    }
+
+@app.post("/api/notes")
+async def create_note_api(
+    data: NoteCreateRequest,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id if current_user else None
+    target_date = None
+    if data.date:
+        try:
+            target_date = datetime.strptime(data.date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+    else:
+        target_date = date.today()
+
+    note = services.create_note(
+        db,
+        user_id=user_id,
+        title=data.title,
+        content=data.content or "",
+        note_date=target_date,
+        habit_id=data.habit_id,
+        tag=data.tag,
+        category=data.category or "General",
+        is_pinned=bool(data.is_pinned)
+    )
+    return {"success": True, "note": note.to_dict()}
+
+@app.get("/api/notes/calendar-summary")
+async def get_notes_calendar_summary_api(
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id if current_user else None
+    today = date.today()
+    y = year or today.year
+    m = month or today.month
+    summary = services.get_notes_summary_by_date(db, user_id=user_id, year=y, month=m)
+    return {"year": y, "month": m, "notes_by_date": summary}
+
+@app.get("/api/notes/{note_id}")
+async def get_note_api(
+    note_id: int,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id if current_user else None
+    note = services.get_note_by_id(db, note_id, user_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return {"note": note.to_dict()}
+
+@app.put("/api/notes/{note_id}")
+async def update_note_api(
+    note_id: int,
+    data: NoteUpdateRequest,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id if current_user else None
+    parsed_date = None
+    if data.date:
+        try:
+            parsed_date = datetime.strptime(data.date, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+
+    note = services.update_note(
+        db,
+        note_id=note_id,
+        user_id=user_id,
+        title=data.title,
+        content=data.content,
+        note_date=parsed_date,
+        habit_id=data.habit_id,
+        tag=data.tag,
+        category=data.category,
+        is_pinned=data.is_pinned
+    )
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return {"success": True, "note": note.to_dict()}
+
+@app.delete("/api/notes/{note_id}")
+async def delete_note_api(
+    note_id: int,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id if current_user else None
+    success = services.delete_note(db, note_id, user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return {"success": True, "message": "Note deleted successfully"}
+
+@app.post("/api/notes/{note_id}/pin")
+async def toggle_pin_note_api(
+    note_id: int,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id if current_user else None
+    note = services.toggle_note_pin(db, note_id, user_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return {"success": True, "is_pinned": note.is_pinned, "note": note.to_dict()}
 
 if __name__ == "__main__":
     import uvicorn
