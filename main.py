@@ -218,6 +218,18 @@ class NoteUpdateRequest(BaseModel):
     category: Optional[str] = None
     is_pinned: Optional[bool] = None
 
+class SettingsUpdateRequest(BaseModel):
+    display_name: Optional[str] = Field(None, max_length=100)
+    profession: Optional[str] = Field(None, max_length=100)
+    bio: Optional[str] = Field(None, max_length=255)
+    timezone: Optional[str] = Field(None, max_length=50)
+    daily_hour_target: Optional[int] = Field(None, ge=1, le=24)
+    theme_preference: Optional[str] = Field(None, max_length=20)
+    notifications_enabled: Optional[bool] = None
+
+class WeeklyGoalsUpdateRequest(BaseModel):
+    goals: List[str] = Field(..., min_length=1, max_length=5)
+
 # ========================================================
 # Web Pages
 # ========================================================
@@ -1122,6 +1134,82 @@ async def toggle_pin_note_api(
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
     return {"success": True, "is_pinned": note.is_pinned, "note": note.to_dict()}
+
+# ========================================================
+# User Settings & Notifications API Endpoints
+# ========================================================
+@app.get("/api/settings")
+async def get_settings_api(
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id if current_user else None
+    settings = services.get_user_settings(db, user_id=user_id)
+    return {"settings": settings}
+
+@app.put("/api/settings")
+async def update_settings_api(
+    data: SettingsUpdateRequest,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id if current_user else None
+    updated = services.update_user_settings(
+        db,
+        user_id=user_id,
+        display_name=data.display_name,
+        profession=data.profession,
+        bio=data.bio,
+        timezone_str=data.timezone,
+        daily_hour_target=data.daily_hour_target,
+        theme_preference=data.theme_preference,
+        notifications_enabled=data.notifications_enabled
+    )
+    return {"success": True, "settings": updated}
+
+@app.get("/api/settings/weekly-goals")
+async def get_weekly_goals_api(
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id if current_user else None
+    goals = services.get_weekly_goals(db, user_id=user_id)
+    return {"goals": goals}
+
+@app.put("/api/settings/weekly-goals")
+async def update_weekly_goals_api(
+    data: WeeklyGoalsUpdateRequest,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id if current_user else None
+    goals = services.update_weekly_goals(db, user_id=user_id, goals=data.goals)
+    return {"success": True, "goals": goals, "message": "Weekly goals updated successfully"}
+
+@app.get("/api/settings/export")
+async def export_data_api(
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id if current_user else None
+    export_payload = services.export_user_data(db, user_id=user_id)
+    return JSONResponse(
+        content=export_payload,
+        headers={"Content-Disposition": f"attachment; filename=focus-os-export-{date.today().isoformat()}.json"}
+    )
+
+@app.get("/api/notifications")
+async def get_notifications_api(
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_db)
+):
+    user_id = current_user.id if current_user else None
+    data = services.get_user_notifications(db, user_id=user_id)
+    return data
+
+@app.post("/api/notifications/clear")
+async def clear_notifications_api():
+    return {"success": True, "message": "All notifications marked as read"}
 
 if __name__ == "__main__":
     import uvicorn

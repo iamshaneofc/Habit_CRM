@@ -930,3 +930,243 @@ def get_notes_tags_and_categories(db: Session, user_id: Optional[int]) -> dict:
         "tags": sorted(list(tags)),
         "categories": sorted(list(categories))
     }
+
+# ========================================================
+# User Settings & Notifications Services
+# ========================================================
+
+DEFAULT_WEEKLY_GOALS = [
+    "Sprint 4 Delivery",
+    "Deploy RAG LLM Microservice",
+    "Read 50 Pages System Design",
+    "4x Weekly Strength Training",
+    "10m Daily Mindfulness & Sleep"
+]
+
+def get_weekly_goals(db: Session, user_id: Optional[int]) -> List[str]:
+    """Returns the list of 5 weekly focus targets for the user."""
+    user = None
+    if user_id:
+        user = db.query(User).filter(User.id == user_id).first()
+    else:
+        user = db.query(User).filter(User.email == "demo@habitcrm.com").first()
+
+    if user and user.weekly_goals:
+        try:
+            import json
+            goals = json.loads(user.weekly_goals)
+            if isinstance(goals, list) and goals:
+                return [str(g).strip() for g in goals if str(g).strip()][:5]
+        except Exception:
+            pass
+    return list(DEFAULT_WEEKLY_GOALS)
+
+def update_weekly_goals(db: Session, user_id: Optional[int], goals: List[str]) -> List[str]:
+    """Saves the user's custom 5 weekly focus goals."""
+    import json
+    cleaned = [str(g).strip() for g in goals if str(g).strip()][:5]
+    if not cleaned:
+        cleaned = list(DEFAULT_WEEKLY_GOALS)
+
+    user = None
+    if user_id:
+        user = db.query(User).filter(User.id == user_id).first()
+    else:
+        user = db.query(User).filter(User.email == "demo@habitcrm.com").first()
+
+    if user:
+        user.weekly_goals = json.dumps(cleaned)
+        db.commit()
+    return cleaned
+
+def get_user_settings(db: Session, user_id: Optional[int]) -> dict:
+    """Returns user profile, settings, preferences, and goals."""
+    user = None
+    if user_id:
+        user = db.query(User).filter(User.id == user_id).first()
+    else:
+        user = db.query(User).filter(User.email == "demo@habitcrm.com").first()
+
+    goals = get_weekly_goals(db, user.id if user else None)
+    return {
+        "user_id": user.id if user else None,
+        "email": user.email if user else "demo@habitcrm.com",
+        "full_name": user.full_name if user else "Demo Operator",
+        "display_name": (user.display_name or user.full_name) if user else "Demo Operator",
+        "profession": user.profession if user else "Full-Stack Engineer",
+        "bio": user.bio if user else "Tracking daily consistency and deep work.",
+        "timezone": user.timezone if user else "UTC",
+        "daily_hour_target": getattr(user, "daily_hour_target", 8) or 8,
+        "theme_preference": getattr(user, "theme_preference", "dark") or "dark",
+        "notifications_enabled": bool(getattr(user, "notifications_enabled", True)),
+        "weekly_goals": goals,
+        "tracking_start_date": user.tracking_start_date.isoformat() if user and user.tracking_start_date else None
+    }
+
+def update_user_settings(
+    db: Session,
+    user_id: Optional[int],
+    display_name: Optional[str] = None,
+    profession: Optional[str] = None,
+    bio: Optional[str] = None,
+    timezone_str: Optional[str] = None,
+    daily_hour_target: Optional[int] = None,
+    theme_preference: Optional[str] = None,
+    notifications_enabled: Optional[bool] = None,
+    weekly_goals: Optional[List[str]] = None
+) -> dict:
+    """Updates user preferences and profile settings."""
+    user = None
+    if user_id:
+        user = db.query(User).filter(User.id == user_id).first()
+    else:
+        user = db.query(User).filter(User.email == "demo@habitcrm.com").first()
+
+    if user:
+        if display_name is not None:
+            user.display_name = display_name.strip()
+        if profession is not None:
+            user.profession = profession.strip()
+        if bio is not None:
+            user.bio = bio.strip()
+        if timezone_str is not None:
+            user.timezone = timezone_str.strip()
+        if daily_hour_target is not None:
+            user.daily_hour_target = max(1, min(24, int(daily_hour_target)))
+        if theme_preference is not None:
+            user.theme_preference = "light" if theme_preference.lower() == "light" else "dark"
+        if notifications_enabled is not None:
+            user.notifications_enabled = bool(notifications_enabled)
+        if weekly_goals is not None:
+            import json
+            cleaned = [str(g).strip() for g in weekly_goals if str(g).strip()][:5]
+            user.weekly_goals = json.dumps(cleaned)
+        user.updated_at = utc_now()
+        db.commit()
+        db.refresh(user)
+
+    return get_user_settings(db, user.id if user else None)
+
+def export_user_data(db: Session, user_id: Optional[int]) -> dict:
+    """Generates a complete JSON backup of the user's habits, logs, and notes."""
+    settings = get_user_settings(db, user_id)
+
+    habit_query = db.query(Habit)
+    if user_id is not None:
+        habit_query = habit_query.filter(Habit.user_id == user_id)
+    else:
+        habit_query = habit_query.filter(Habit.user_id.is_(None))
+    habits = habit_query.all()
+
+    log_query = db.query(HabitLog)
+    if user_id is not None:
+        log_query = log_query.filter(HabitLog.user_id == user_id)
+    else:
+        log_query = log_query.filter(HabitLog.user_id.is_(None))
+    logs = log_query.all()
+
+    notes = get_notes(db, user_id=user_id, limit=1000)
+
+    return {
+        "export_version": "1.0.0",
+        "exported_at": utc_now().isoformat(),
+        "user_profile": settings,
+        "habits": [h.to_dict() for h in habits],
+        "habit_logs": [l.to_dict() for l in logs],
+        "notes": [n.to_dict() for n in notes]
+    }
+
+def get_user_notifications(db: Session, user_id: Optional[int]) -> dict:
+    """Generates dynamic real-time notifications from active performance metrics."""
+    today = date.today()
+    monday, sunday = get_week_range(today)
+
+    # Calculate current weekly stats
+    weekly_grid = get_weekly_grid(db, today, user_id=user_id)
+    total_hours = weekly_grid.get("total_hours", 0)
+    consistency_rate = weekly_grid.get("overall_consistency", 0)
+    best_streak = weekly_grid.get("longest_streak", 0)
+
+    # Count notes created this week
+    notes_this_week = get_notes(db, user_id=user_id, start_date=monday, end_date=sunday)
+
+    notifications = []
+
+    # 1. Streak alert
+    if best_streak > 0:
+        notifications.append({
+            "id": "notif_streak",
+            "type": "streak",
+            "icon": "🔥",
+            "title": f"{best_streak}-Day Streak Active!",
+            "message": "Consistency compounds. Keep tracking daily to maintain your momentum.",
+            "timestamp": "Today",
+            "is_read": False,
+            "badge_color": "#10b981"
+        })
+    else:
+        notifications.append({
+            "id": "notif_streak_start",
+            "type": "streak",
+            "icon": "⚡",
+            "title": "Start Your Streak Today",
+            "message": "Log your habits for today to kick off a new consistency streak.",
+            "timestamp": "Today",
+            "is_read": False,
+            "badge_color": "#06b6d4"
+        })
+
+    # 2. Weekly progress alert
+    if total_hours > 0:
+        notifications.append({
+            "id": "notif_weekly_progress",
+            "type": "progress",
+            "icon": "📈",
+            "title": f"Weekly Progress: {total_hours}h Logged",
+            "message": f"You're currently at {consistency_rate}% weekly consistency.",
+            "timestamp": "This Week",
+            "is_read": False,
+            "badge_color": "#8b5cf6"
+        })
+
+    # 3. Notes reminder
+    if len(notes_this_week) > 0:
+        notifications.append({
+            "id": "notif_notes_count",
+            "type": "notes",
+            "icon": "📝",
+            "title": f"{len(notes_this_week)} Daily Notes Recorded",
+            "message": "Great job documenting your daily focus sessions and reflections.",
+            "timestamp": "This Week",
+            "is_read": False,
+            "badge_color": "#f59e0b"
+        })
+    else:
+        notifications.append({
+            "id": "notif_notes_prompt",
+            "type": "notes",
+            "icon": "💡",
+            "title": "Jot Down Today's Learnings",
+            "message": "Use the Notes tab to record insights, problem-solving notes, or blockers.",
+            "timestamp": "Today",
+            "is_read": False,
+            "badge_color": "#f59e0b"
+        })
+
+    # 4. Weekly goals status
+    goals = get_weekly_goals(db, user_id)
+    notifications.append({
+        "id": "notif_weekly_goals",
+        "type": "goals",
+        "icon": "🎯",
+        "title": f"5 Weekly Focus Targets Active",
+        "message": f"Primary target: '{goals[0]}'. Stay disciplined on priority tasks.",
+        "timestamp": "Active",
+        "is_read": False,
+        "badge_color": "#ec4899"
+    })
+
+    return {
+        "notifications": notifications,
+        "unread_count": len([n for n in notifications if not n.get("is_read")])
+    }
