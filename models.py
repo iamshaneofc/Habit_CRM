@@ -1,5 +1,5 @@
 from datetime import datetime, date, timezone
-from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime, ForeignKey, UniqueConstraint, Text
+from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime, ForeignKey, UniqueConstraint, Text, desc
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -19,12 +19,17 @@ class User(Base):
     onboarding_completed = Column(Boolean, default=False)
     tracking_start_date = Column(Date, nullable=True)
     timezone = Column(String(50), default="UTC")
+    daily_hour_target = Column(Integer, default=8)
+    theme_preference = Column(String(20), default="dark")
+    notifications_enabled = Column(Boolean, default=True)
+    weekly_goals = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=utc_now)
     updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     habits = relationship("Habit", back_populates="user", cascade="all, delete-orphan")
+    notes = relationship("Note", back_populates="user", cascade="all, delete-orphan", order_by="desc(Note.created_at)")
 
     def to_dict(self):
         return {
@@ -37,6 +42,10 @@ class User(Base):
             "onboarding_completed": bool(self.onboarding_completed),
             "tracking_start_date": self.tracking_start_date.isoformat() if self.tracking_start_date else None,
             "timezone": self.timezone,
+            "daily_hour_target": self.daily_hour_target or 8,
+            "theme_preference": self.theme_preference or "dark",
+            "notifications_enabled": bool(self.notifications_enabled),
+            "weekly_goals": self.weekly_goals,
             "is_active": self.is_active,
             "created_at": self.created_at.isoformat() if self.created_at else None
         }
@@ -62,6 +71,7 @@ class Habit(Base):
     # Relationships
     user = relationship("User", back_populates="habits")
     logs = relationship("HabitLog", back_populates="habit", cascade="all, delete-orphan", order_by="HabitLog.date")
+    notes = relationship("Note", back_populates="habit")
 
     def get_subtopics_list(self):
         if self.subtopics:
@@ -118,4 +128,41 @@ class HabitLog(Base):
             "completed": self.completed,
             "value": self.value,
             "notes": self.notes
+        }
+
+class Note(Base):
+    __tablename__ = "notes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)
+    habit_id = Column(Integer, ForeignKey("habits.id", ondelete="SET NULL"), nullable=True, index=True)
+    title = Column(String(255), nullable=False)
+    content = Column(Text, nullable=False, default="")
+    date = Column(Date, nullable=False, index=True)
+    tag = Column(String(100), nullable=True)
+    category = Column(String(100), nullable=True, default="General")
+    is_pinned = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
+
+    # Relationships
+    user = relationship("User", back_populates="notes")
+    habit = relationship("Habit", back_populates="notes")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "habit_id": self.habit_id,
+            "habit_name": self.habit.name if self.habit else None,
+            "habit_color": self.habit.color if self.habit else None,
+            "habit_icon": self.habit.icon if self.habit else None,
+            "title": self.title,
+            "content": self.content,
+            "date": self.date.isoformat() if self.date else None,
+            "tag": self.tag or (self.habit.name if self.habit else None),
+            "category": self.category or (self.habit.category if self.habit else "General"),
+            "is_pinned": bool(self.is_pinned),
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }

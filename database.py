@@ -72,14 +72,21 @@ def check_and_stabilize_db():
 def upgrade_schema(eng=None):
     """
     Safely adds any missing columns across SQLite or PostgreSQL tables
-    to guarantee zero data loss and seamless evolution.
+    and ensures all tables (including notes) exist.
     """
     if eng is None:
         eng = engine
     from sqlalchemy import inspect
     try:
+        # Ensure all tables defined in Base exist
+        Base.metadata.create_all(bind=eng)
+
         insp = inspect(eng)
         tables = insp.get_table_names()
+        is_postgres = "postgres" in str(eng.url).lower()
+        bool_true = "TRUE" if is_postgres else "1"
+        bool_false = "FALSE" if is_postgres else "0"
+
         # 1. Users table
         if "users" in tables:
             user_cols = {c["name"] for c in insp.get_columns("users")}
@@ -91,11 +98,19 @@ def upgrade_schema(eng=None):
                 if "bio" not in user_cols:
                     conn.execute(text("ALTER TABLE users ADD COLUMN bio VARCHAR(255);"))
                 if "onboarding_completed" not in user_cols:
-                    conn.execute(text("ALTER TABLE users ADD COLUMN onboarding_completed BOOLEAN DEFAULT 0;"))
+                    conn.execute(text(f"ALTER TABLE users ADD COLUMN onboarding_completed BOOLEAN DEFAULT {bool_false};"))
                 if "tracking_start_date" not in user_cols:
                     conn.execute(text("ALTER TABLE users ADD COLUMN tracking_start_date DATE;"))
                 if "timezone" not in user_cols:
                     conn.execute(text("ALTER TABLE users ADD COLUMN timezone VARCHAR(50) DEFAULT 'UTC';"))
+                if "daily_hour_target" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN daily_hour_target INTEGER DEFAULT 8;"))
+                if "theme_preference" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN theme_preference VARCHAR(20) DEFAULT 'dark';"))
+                if "notifications_enabled" not in user_cols:
+                    conn.execute(text(f"ALTER TABLE users ADD COLUMN notifications_enabled BOOLEAN DEFAULT {bool_true};"))
+                if "weekly_goals" not in user_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN weekly_goals TEXT;"))
                 conn.commit()
 
         # 2. Habits table
@@ -107,7 +122,8 @@ def upgrade_schema(eng=None):
                 if "activation_date" not in habit_cols:
                     conn.execute(text("ALTER TABLE habits ADD COLUMN activation_date DATE;"))
                 if "archived_at" not in habit_cols:
-                    conn.execute(text("ALTER TABLE habits ADD COLUMN archived_at DATETIME;"))
+                    dt_type = "TIMESTAMP" if is_postgres else "DATETIME"
+                    conn.execute(text(f"ALTER TABLE habits ADD COLUMN archived_at {dt_type};"))
                 conn.commit()
     except Exception as e:
         logger.warning(f"Schema upgrade check note: {e}")
