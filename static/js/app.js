@@ -1122,6 +1122,25 @@ function saveUserGoalsList(goals) {
     try {
         localStorage.setItem("focus_os_user_goals_v2", JSON.stringify(goals));
     } catch (e) {}
+    // Background sync to backend API
+    try {
+        fetch("/api/settings/weekly-goals", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ weekly_goals: goals })
+        }).catch(() => {});
+    } catch (e) {}
+}
+
+function toggleDomainCardMenu(event, index) {
+    if (event) event.stopPropagation();
+    document.querySelectorAll(".domain-dropdown-menu").forEach(m => {
+        if (m.id !== `domain-menu-${index}`) m.style.display = "none";
+    });
+    const menu = document.getElementById(`domain-menu-${index}`);
+    if (menu) {
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
 }
 
 function renderUserGoals() {
@@ -1578,5 +1597,6 @@ document.addEventListener("click", function(event) {
     if (!event.target.closest(".focus-dropdown-wrapper")) {
         closeNotificationDropdown();
         closeProfileDropdown();
+        document.querySelectorAll(".domain-dropdown-menu").forEach(m => m.style.display = "none");
     }
 });

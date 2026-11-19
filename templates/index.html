@@ -2178,6 +2178,67 @@ html[data-theme="light"] body {
     background: rgba(239, 68, 68, 0.2);
 }
 
+/* Domain Card 3-Dots Dropdown */
+.domain-dots-btn {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 1px 5px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+.domain-dots-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+}
+.domain-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    width: 180px;
+    background: #131923;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    padding: 0.35rem 0;
+}
+.domain-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.74rem;
+    color: #cbd5e1;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background 0.15s;
+}
+.domain-dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+[data-theme="light"] .domain-dropdown-menu {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
+}
+[data-theme="light"] .domain-dropdown-item {
+    color: #334155 !important;
+}
+[data-theme="light"] .domain-dropdown-item:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
 /* Light Mode Overrides for Settings & Dropdowns */
 [data-theme="light"] .focus-notification-panel,
 [data-theme="light"] .focus-profile-panel {
@@ -2518,13 +2579,26 @@ html[data-theme="light"] body {
         <!-- Top Focus Domain Cards Row (Dynamic 4 Cards + Summary Box) -->
         <section class="focus-top-cards-row">
             {% for card in grid.domain_cards %}
-            <div class="focus-domain-card" style="border-color: {{ card.color }}33; height: 84px; max-height: 84px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="focus-domain-card" style="border-color: {{ card.color }}33; height: 84px; max-height: 84px; overflow: visible; position: relative; display: flex; flex-direction: column; justify-content: space-between;">
                 <div class="domain-card-head">
                     <div class="domain-title-left">
                         <span class="domain-icon-badge" style="color: {{ card.color }}; background: {{ card.color }}22;">{{ card.icon }}</span>
                         <span class="domain-name">{{ card.name }}</span>
                     </div>
-                    <span class="domain-dots">···</span>
+                    <div class="focus-dropdown-wrapper">
+                        <button type="button" class="domain-dots-btn" onclick="toggleDomainCardMenu(event, {{ loop.index }})" aria-label="Options for {{ card.name }}" title="Track Options">···</button>
+                        <div class="domain-dropdown-menu" id="domain-menu-{{ loop.index }}" style="display: none;">
+                            <a href="/notes?tag={{ card.name | urlencode }}" class="domain-dropdown-item">
+                                <span>📝</span> View Notes
+                            </a>
+                            <button type="button" class="domain-dropdown-item" onclick="openHabitModal();">
+                                <span>⚡</span> Track Details
+                            </button>
+                            <a href="/monthly" class="domain-dropdown-item">
+                                <span>📊</span> Monthly Analytics
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <div class="domain-sparkline-area" style="height: 26px; max-height: 26px; width: 100%; overflow: hidden; margin: 2px 0;">
                     <svg viewBox="0 0 160 32" class="domain-sparkline-svg" preserveAspectRatio="none" width="100%" height="26" style="width: 100%; height: 26px; max-height: 26px; display: block;">
